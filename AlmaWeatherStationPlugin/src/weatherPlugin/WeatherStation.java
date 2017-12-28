@@ -1,4 +1,4 @@
-package org.eso.ias.plugin.test.weather;
+package weatherPlugin;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

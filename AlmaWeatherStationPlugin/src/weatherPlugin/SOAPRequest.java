@@ -1,4 +1,4 @@
-package org.eso.ias.plugin.test.weather;
+package weatherPlugin;
 
 import javax.xml.soap.*;
 
@@ -81,8 +81,6 @@ public class SOAPRequest {
 	/**
 	 * creates the soap message object with all the info required for the request,
 	 * except for the value of the id.
-	 * 
-	 * @throws SOAPException
 	 */
 	private void createMessage() {
 		try {
@@ -124,7 +122,6 @@ public class SOAPRequest {
 	 * 
 	 * @param idValue
 	 *            the value to be used in the request.
-	 * @throws Exception
 	 */
 	private void setRequestValue(String idValue) {
 		try {
