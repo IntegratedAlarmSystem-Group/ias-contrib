@@ -1,6 +1,4 @@
-package weatherPlugin;
 
-import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -51,7 +49,7 @@ public class WeatherStation {
     WeatherSensor[] sensors;
 
     /**
-     * The scheduled executor to update the values of the monitored points
+     * The scheduled executor to run the weather sensors.
      */
     private final ScheduledExecutorService schedExSvc = Executors.newScheduledThreadPool(10, new ThreadFactory() {
         @Override
@@ -67,14 +65,13 @@ public class WeatherStation {
         sensors = new WeatherSensor[lastID - firstId + 1];
 
         for (int i = 0; i < sensors.length; i++) {
-            // this may take some time as it sequentially updates every sensor.
-            sensors[i] = new WeatherSensor(firstId + i);
-        }
+            sensors[i] = new WeatherSensor(i + firstId);
 
-        for (int i = 0; i < sensors.length; i++) {
             // execute every refreshTime seconds.
             schedExSvc.scheduleAtFixedRate(sensors[i], 0, refreshTime, TimeUnit.SECONDS);
         }
+        // make sure the sensors have time to update.
+        sensors[0].updateValues();
     }
 
     /**

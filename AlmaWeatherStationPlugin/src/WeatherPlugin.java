@@ -1,4 +1,3 @@
-package weatherPlugin;
 
 import java.io.*;
 import java.util.concurrent.ExecutionException;

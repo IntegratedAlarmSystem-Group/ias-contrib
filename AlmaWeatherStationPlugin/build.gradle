@@ -6,6 +6,11 @@ sourceSets {
             srcDirs = ['src']
         }
     }
+    test {
+        java {
+            srcDirs = ['test']
+        }
+    }
 }
 
 configurations {
@@ -13,14 +18,20 @@ configurations {
     extraLibs
 }
 
+repositories {
+    jcenter()
+}
+
 dependencies {
     compile fileTree(dir: 'lib', include: '*.jar')
     extraLibs fileTree(dir: 'lib', include: '*.jar')
+
+    testCompile 'junit:junit:4.12'
 }
 
 jar {
    manifest {
-      attributes 'Main-Class': 'weatherPlugin.WeatherPlugin'
+      attributes 'Main-Class': 'WeatherPlugin'
    }
 
    from {

@@ -1,4 +1,3 @@
-package weatherPlugin;
 
 import java.io.StringReader;
 import java.util.HashMap;
@@ -76,9 +75,6 @@ public class WeatherSensor implements Runnable {
 
         // sensor id
         this.id = id;
-
-        // set initial values
-        updateValues();
     }
 
     /**
@@ -95,6 +91,27 @@ public class WeatherSensor implements Runnable {
     public void updateValues() {
         String response = soap.sendRequest(Integer.toString(id));
         Document doc = parseDOM(response);
+
+        NodeList sensors = doc.getElementsByTagName("sensor");
+
+        for (int i = 0; i < sensors.getLength(); i++) {
+            Node sensor = sensors.item(i);
+
+            NamedNodeMap atts = sensor.getAttributes();
+            String name = atts.getNamedItem("name").getTextContent();
+            double value = Double.parseDouble(sensor.getTextContent());
+
+            if (!values.containsKey(name))
+                values.put(name, value);
+            values.replace(name, value);
+        }
+    }
+
+    /**
+     * parses the xml and saves it. (for testing purposes)
+     */
+    public void updateValues(String xml) {
+        Document doc = parseDOM(xml);
 
         NodeList sensors = doc.getElementsByTagName("sensor");
 

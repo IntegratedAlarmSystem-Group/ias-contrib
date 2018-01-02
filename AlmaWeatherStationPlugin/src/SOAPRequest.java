@@ -1,4 +1,3 @@
-package weatherPlugin;
 
 import javax.xml.soap.*;
 
