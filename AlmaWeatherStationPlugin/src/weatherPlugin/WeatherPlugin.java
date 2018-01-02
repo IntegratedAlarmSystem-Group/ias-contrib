@@ -18,17 +18,12 @@ import org.eso.ias.plugin.publisher.impl.JsonFilePublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WeatherStationPlugin extends Plugin {
+public class WeatherPlugin extends Plugin {
 
     /**
      * The logger
      */
-    private static final Logger logger = LoggerFactory.getLogger(WeatherStationPlugin.class);
-
-    /**
-     * The path from the resources where JSON files for testing have been saved
-     */
-    private static final String configPath = "AlmaWeatherStationPlugin/test/resources/WeatherStationPluginTest.json";
+    private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
     /**
      * The future of the loop
@@ -40,13 +35,90 @@ public class WeatherStationPlugin extends Plugin {
      */
     private WeatherStation weather;
 
+
+    /**
+     * The path from the resources where JSON files for testing have been saved
+     */
+    private static final String configPath = "WeatherStationPluginTest.json";
+
+
+    public static void main(String[] args) {
+
+        logger.info("Started...");
+        PluginConfig config = null;
+        try {
+            File configFile = new File(configPath);
+            PluginConfigFileReader jsonFileReader = new PluginConfigFileReader(configFile);
+            Future<PluginConfig> futurePluginConfig = jsonFileReader.getPluginConfig();
+            config = futurePluginConfig.get(1, TimeUnit.MINUTES);
+        } catch (FileNotFoundException e) {
+            logger.error("Excetion opening config file", e);
+            e.printStackTrace();
+            System.exit(-1);
+        } catch (PluginConfigException pce) {
+            logger.error("Excetion reading configuratiopn", pce);
+            pce.printStackTrace();
+            System.exit(-1);
+        } catch (InterruptedException ie) {
+            logger.error("Interrupted", ie);
+            ie.printStackTrace();
+            System.exit(-1);
+        } catch (TimeoutException te) {
+            logger.error("Timeout reading configuration", te);
+            te.printStackTrace();
+            System.exit(-1);
+        } catch (ExecutionException ee) {
+            ee.printStackTrace();
+            logger.error("Execution error", ee);
+            System.exit(-1);
+        }
+        logger.info("Configuration successfully red");
+
+        // Create the file in the IAS temporary folder
+        String tmpFolderName = System.getProperty("ias.tmp.folder", ".");
+        File folder = new File(tmpFolderName);
+        BufferedWriter jsonWriter = null;
+        try {
+            File jsonFile = File.createTempFile("MonitorPointValues", ".json", folder);
+            jsonWriter = new BufferedWriter(new FileWriter(jsonFile));
+            logger.info("Moitor points to be sent to the core of the IAS will be saved in {}",
+                    jsonFile.getAbsolutePath());
+        } catch (IOException ioe) {
+            logger.error("Cannot create the JSON file", ioe);
+            System.exit(-1);
+        }
+
+        JsonFilePublisher jsonPublisher = new JsonFilePublisher(config.getId(), config.getMonitoredSystemId(),
+                config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService(), jsonWriter);
+
+        WeatherPlugin plugin = new WeatherPlugin(config, jsonPublisher);
+
+        try {
+            plugin.start();
+        } catch (PublisherException pe) {
+            logger.error("The plugin failed to start", pe);
+            System.exit(-3);
+        }
+
+        // Connect to the weather station
+        plugin.initialize();
+
+        // Start getting data from the weather station
+        //
+        // This method exits when the user presses CTRL+C
+        // and the shutdown hook disconnects from the weather station.
+        plugin.startLoop();
+
+        logger.info("Done.");
+    }
+
     /**
      * Constructor
      *
      * @param config The configuration of the plugin
      * @param sender The sender
      */
-    public WeatherStationPlugin(PluginConfig config, MonitorPointSender sender) {
+    public WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
         super(config, sender);
     }
 
@@ -62,7 +134,7 @@ public class WeatherStationPlugin extends Plugin {
      * hardware device and so on
      */
     public void initialize() {
-        // refreshes every 2 seconds
+        // refreshes every 1 seconds
         weather = new WeatherStation(2, 11, 1);
 
         // Adds the shutdown hook
@@ -114,8 +186,7 @@ public class WeatherStationPlugin extends Plugin {
      * of the IAS.
      * <p>
      * The weather stations updates the values every minute, 30 seconds and 2
-     * seconds as you can see in the definition of the
-     * {@link SimulatedMonitorPoint}.
+     * seconds as you can see in the definition of the SimulatedMonitorPoint.
      * <p>
      * In reality, the refresh time of the monitor points is described in the
      * Interface Control Document but there are cases where such a time frame does
@@ -129,11 +200,11 @@ public class WeatherStationPlugin extends Plugin {
      */
     public void startLoop() {
         loopFuture = getScheduledExecutorService().scheduleAtFixedRate(new Runnable() {
-            // Counts the second at every tick
-            int count = 0;
 
+            // send data every second.
             public void run() {
-                logger.info("Updating monitor point values from the simulated weather station");
+                logger.info("Updating monitor point values from the weather station");
+
                 for (int i = 2; i < 12; i++) {
                     Double temperature = weather.getValue(i, "temperature");
                     updateMonitorPointValue("Temperature" + i, temperature);
@@ -143,19 +214,16 @@ public class WeatherStationPlugin extends Plugin {
 
                     Double humidity = weather.getValue(i, "humidity");
                     updateMonitorPointValue("Humidity" + i, humidity);
+
                     Double pressure = weather.getValue(i, "pressure");
                     updateMonitorPointValue("Pressure" + i, pressure);
 
-                    // 2 seconds
                     Double windSpeed = weather.getValue(i, "wind speed");
-                    // The ID of the monitor point is that of the configuration file
                     updateMonitorPointValue("WindSpeed" + i, windSpeed);
 
                     Double windDir = weather.getValue(i, "wind direction");
                     updateMonitorPointValue("WindDirection" + i, windDir);
-
                 }
-                count = (count < Integer.MAX_VALUE) ? count + 2 : 0;
                 logger.info("Monitor point values updated");
             }
         }, 0, 1, TimeUnit.SECONDS);
@@ -164,77 +232,7 @@ public class WeatherStationPlugin extends Plugin {
         } catch (ExecutionException ee) {
             logger.error("Execution exception getting values from the weather station", ee);
         } catch (Exception ce) {
-            logger.info("Loop to get minitor point values from the weather station terminated");
+            logger.info("Loop to get monitor point values from the weather station terminated");
         }
     }
-
-    public static void main(String[] args) {
-        logger.info("Started...");
-        PluginConfig config = null;
-        try {
-            File configFile = new File(configPath);
-            PluginConfigFileReader jsonFileReader = new PluginConfigFileReader(configFile);
-            Future<PluginConfig> futurePluginConfig = jsonFileReader.getPluginConfig();
-            config = futurePluginConfig.get(1, TimeUnit.MINUTES);
-        } catch (FileNotFoundException e) {
-            logger.error("Excetion opening config file", e);
-            e.printStackTrace();
-            System.exit(-1);
-        } catch (PluginConfigException pce) {
-            logger.error("Excetion reading configuratiopn", pce);
-            pce.printStackTrace();
-            System.exit(-1);
-        } catch (InterruptedException ie) {
-            logger.error("Interrupted", ie);
-            ie.printStackTrace();
-            System.exit(-1);
-        } catch (TimeoutException te) {
-            logger.error("Timeout reading configuration", te);
-            te.printStackTrace();
-            System.exit(-1);
-        } catch (ExecutionException ee) {
-            ee.printStackTrace();
-            logger.error("Execution error", ee);
-            System.exit(-1);
-        }
-        logger.info("Configuration successfully red");
-
-        // Create the file in the IAS temporary folder
-        String tmpFolderName = System.getProperty("ias.tmp.folder", ".");
-        File folder = new File(tmpFolderName);
-        BufferedWriter jsonWriter = null;
-        try {
-            File jsonFile = File.createTempFile("MonitorPointValues", ".json", folder);
-            jsonWriter = new BufferedWriter(new FileWriter(jsonFile));
-            logger.info("Moitor points to be sent to the core of the IAS will be saved in {}",
-                    jsonFile.getAbsolutePath());
-        } catch (IOException ioe) {
-            logger.error("Cannot create the JSON file", ioe);
-            System.exit(-1);
-        }
-
-        JsonFilePublisher jsonPublisher = new JsonFilePublisher(config.getId(), config.getMonitoredSystemId(),
-                config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService(), jsonWriter);
-
-        WeatherStationPlugin plugin = new WeatherStationPlugin(config, jsonPublisher);
-
-        try {
-            plugin.start();
-        } catch (PublisherException pe) {
-            logger.error("The plugin failed to start", pe);
-            System.exit(-3);
-        }
-
-        // Connect to the weather station
-        plugin.initialize();
-
-        // Start getting data from the weather station
-        //
-        // This method exits when the user presses CTRL+C
-        // and the shutdown hook disconnects from the weather station.
-        plugin.startLoop();
-
-        logger.info("Done.");
-    }
-
 }

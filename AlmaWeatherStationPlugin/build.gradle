@@ -1,0 +1,35 @@
+apply plugin: 'java'
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+    }
+}
+
+configurations {
+    // configuration that holds jars to include in the jar
+    extraLibs
+}
+
+dependencies {
+    compile fileTree(dir: 'lib', include: '*.jar')
+    extraLibs fileTree(dir: 'lib', include: '*.jar')
+}
+
+jar {
+   manifest {
+      attributes 'Main-Class': 'weatherPlugin.WeatherPlugin'
+   }
+
+   from {
+       configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+   }
+}
+
+task listJars {
+    doLast {
+        configurations.runtime.each { File file -> println file.name }
+    }
+}
