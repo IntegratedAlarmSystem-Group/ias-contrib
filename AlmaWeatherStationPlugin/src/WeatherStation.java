@@ -4,6 +4,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * keeps an array of sensors updating in parallel every refreshTime seconds, and has access to their values through
+ * getValue(sensorId, parameterName).
+ */
 public class WeatherStation {
 
     public static void main(String[] args) {
@@ -46,7 +50,7 @@ public class WeatherStation {
     private WeatherSensor[] sensors;
 
     /**
-     * The scheduled executor to run the weather sensors.
+     * The scheduled executor to run the weather sensors in parallel.
      */
     private final ScheduledExecutorService schedExSvc = Executors.newScheduledThreadPool(
             10,
@@ -74,13 +78,13 @@ public class WeatherStation {
      * returns the requested value in the sensor with the given id, if the sensor
      * doesn't exists in this weather station ???.
      *
-     * @param id   of the sensor accesed.
+     * @param sensorId   of the sensor accesed.
      * @param name of the parameter requested.
      * @return the value requested, or 0 if it doesn't exist.
      */
-    public double getValue(int id, String name) {
-        if (firstId <= id && id < firstId + sensors.length)
-            return sensors[id - firstId].getValue(name);
+    public double getValue(int sensorId, String name) {
+        if (firstId <= sensorId && sensorId < firstId + sensors.length)
+            return sensors[sensorId - firstId].getValue(name);
 
         // TODO: what to do with unexisting sensors? exception?
         return 0.;

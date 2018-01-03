@@ -17,30 +17,39 @@ import org.eso.ias.plugin.publisher.impl.JsonFilePublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+/**
+ * publishes data from a weather station to a Kafka Queue
+ */
 public class WeatherPlugin extends Plugin {
 
     /**
-     * The logger
+     * The logger.
      */
     private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
     /**
-     * The future of the loop
+     * the loop to keep the plugin running.
      */
     private ScheduledFuture<?> loopFuture;
 
     /**
-     * the weather station to retrieve the data
+     * the weather station to retrieve the data.
      */
-    private WeatherStation weather;
+    private WeatherStation weatherStation;
 
 
     /**
-     * The path from the resources where JSON files for testing have been saved
+     * The path to the config file for the plugin.
      */
     private static final String configPath = "WeatherStationPluginTest.json";
 
 
+    /**
+     * runs the plugin.
+     *
+     * @param args .
+     */
     public static void main(String[] args) {
 
         logger.info("Started...");
@@ -99,11 +108,10 @@ public class WeatherPlugin extends Plugin {
             System.exit(-3);
         }
 
-        // Connect to the weather station
+        // Connect to the weather station.
         plugin.initialize();
 
         // Start getting data from the weather station
-        //
         // This method exits when the user presses CTRL+C
         // and the shutdown hook disconnects from the weather station.
         plugin.startLoop();
@@ -114,47 +122,33 @@ public class WeatherPlugin extends Plugin {
     /**
      * Constructor
      *
-     * @param config The configuration of the plugin
-     * @param sender The sender
+     * @param config The configuration of the plugin.
+     * @param sender The sender.
      */
     private WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
         super(config, sender);
     }
 
     /**
-     * Connect to the monitored system.
-     * <p>
-     * In this example there is no real connection/initialization because the remote
-     * system is simulated by a java object. However we need to get at least a
-     * reference to the simulated value to start the updating threads: we consider
-     * this our initialization with the monitored system
-     * <p>
-     * In a real system it can be opening a socket, connecting to a database or to a
-     * hardware device and so on
+     * Connect to the Weather Station and add the shutdown hook.
      */
     private void initialize() {
         // refreshes every 1 seconds
-        weather = new WeatherStation(2, 11, 1);
+        weatherStation = new WeatherStation(2, 11, 1);
 
         // Adds the shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release weather station shutdown hook"));
     }
 
     /**
-     * Close the connection with the remote system before exiting.
-     * <p>
-     * In the example there is no real connection but we take opportunity here to
-     * terminate the threads to update the values of the monitor points
-     * <p>
-     * In a real system it can be closing a socket, disconnecting from a database or
-     * a hardware device and so on
+     * Terminate the thread that publishes the data and disconnects from the weather station.
      */
     private void cleanUp() {
         if (loopFuture != null) {
             loopFuture.cancel(false);
         }
 
-        weather.release();
+        weatherStation.release();
     }
 
     /**
@@ -162,9 +156,6 @@ public class WeatherPlugin extends Plugin {
      * <p>
      * In the example we do not take any special action if the Plugin returns an
      * error when submitting a new value.
-     *
-     * @see org.eso.ias.plugin.Plugin#updateMonitorPointValue(java.lang.String,
-     * java.lang.Object)
      */
     @Override
     public void updateMonitorPointValue(String mPointID, Object value) {
@@ -176,48 +167,31 @@ public class WeatherPlugin extends Plugin {
     }
 
     /**
-     * The loop to get monitor values from the weather station and send to the core
-     * of the IAS.
-     * <p>
-     * The weather stations updates the values every minute, 30 seconds and 2
-     * seconds as you can see in the definition of the SimulatedMonitorPoint.
-     * <p>
-     * In reality, the refresh time of the monitor points is described in the
-     * Interface Control Document but there are cases where such a time frame does
-     * not exist and the user must poll the value when he/she needs. Even more,
-     * there are other cases where the monitored control system notify the listeners
-     * about changes of the values of the monitor points. <BR>
-     * It is not easy to generalize the loop but it must be developed case by case
-     * depending on the API provided by the monitored control software.
-     * <p>
-     * For the simulated weather station, it is enough to loop every 2 seconds.
+     * The loop to get monitor values from the weather station and send to the core of the IAS.
      */
     private void startLoop() {
         // send data every second.
-        loopFuture = getScheduledExecutorService().scheduleAtFixedRate(() -> {
-            logger.info("Updating monitor point values from the weather station");
+        loopFuture = getScheduledExecutorService().scheduleAtFixedRate(
+                () -> {
+                    logger.info("Updating monitor point values from the weather station");
 
-            for (int i = 2; i < 12; i++) {
-                Double temperature = weather.getValue(i, "temperature");
-                updateMonitorPointValue("Temperature" + i, temperature);
+                    for (int i = 2; i < 12; i++) {
+                        Double temperature = weatherStation.getValue(i, "temperature");
+                        Double dewpoint = weatherStation.getValue(i, "dewpoint");
+                        Double humidity = weatherStation.getValue(i, "humidity");
+                        Double pressure = weatherStation.getValue(i, "pressure");
+                        Double windSpeed = weatherStation.getValue(i, "wind speed");
+                        Double windDir = weatherStation.getValue(i, "wind direction");
 
-                Double dewpoint = weather.getValue(i, "dewpoint");
-                updateMonitorPointValue("Dewpoint" + i, dewpoint);
-
-                Double humidity = weather.getValue(i, "humidity");
-                updateMonitorPointValue("Humidity" + i, humidity);
-
-                Double pressure = weather.getValue(i, "pressure");
-                updateMonitorPointValue("Pressure" + i, pressure);
-
-                Double windSpeed = weather.getValue(i, "wind speed");
-                updateMonitorPointValue("WindSpeed" + i, windSpeed);
-
-                Double windDir = weather.getValue(i, "wind direction");
-                updateMonitorPointValue("WindDirection" + i, windDir);
-            }
-            logger.info("Monitor point values updated");
-        }, 0, 1, TimeUnit.SECONDS);
+                        updateMonitorPointValue("Temperature" + i, temperature);
+                        updateMonitorPointValue("Dewpoint" + i, dewpoint);
+                        updateMonitorPointValue("Humidity" + i, humidity);
+                        updateMonitorPointValue("Pressure" + i, pressure);
+                        updateMonitorPointValue("WindSpeed" + i, windSpeed);
+                        updateMonitorPointValue("WindDirection" + i, windDir);
+                    }
+                    logger.info("Monitor point values updated");
+                }, 0, 1, TimeUnit.SECONDS);
         try {
             loopFuture.get();
         } catch (ExecutionException ee) {

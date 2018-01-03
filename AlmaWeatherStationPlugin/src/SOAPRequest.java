@@ -1,6 +1,9 @@
 
 import javax.xml.soap.*;
 
+/**
+ * Connects to a soap service and makes requests with one parameter, returning the text content of the body.
+ */
 public class SOAPRequest {
 
     // SAAJ - SOAP Client Testing
