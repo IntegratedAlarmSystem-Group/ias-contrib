@@ -117,7 +117,7 @@ public class WeatherPlugin extends Plugin {
      * @param config The configuration of the plugin
      * @param sender The sender
      */
-    public WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
+    private WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
         super(config, sender);
     }
 
@@ -132,17 +132,12 @@ public class WeatherPlugin extends Plugin {
      * In a real system it can be opening a socket, connecting to a database or to a
      * hardware device and so on
      */
-    public void initialize() {
+    private void initialize() {
         // refreshes every 1 seconds
         weather = new WeatherStation(2, 11, 1);
 
         // Adds the shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                cleanUp();
-            }
-        }, "Release weather station shutdown hook"));
+        Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release weather station shutdown hook"));
     }
 
     /**
@@ -154,7 +149,7 @@ public class WeatherPlugin extends Plugin {
      * In a real system it can be closing a socket, disconnecting from a database or
      * a hardware device and so on
      */
-    public void cleanUp() {
+    private void cleanUp() {
         if (loopFuture != null) {
             loopFuture.cancel(false);
         }
@@ -197,34 +192,31 @@ public class WeatherPlugin extends Plugin {
      * <p>
      * For the simulated weather station, it is enough to loop every 2 seconds.
      */
-    public void startLoop() {
-        loopFuture = getScheduledExecutorService().scheduleAtFixedRate(new Runnable() {
+    private void startLoop() {
+        // send data every second.
+        loopFuture = getScheduledExecutorService().scheduleAtFixedRate(() -> {
+            logger.info("Updating monitor point values from the weather station");
 
-            // send data every second.
-            public void run() {
-                logger.info("Updating monitor point values from the weather station");
+            for (int i = 2; i < 12; i++) {
+                Double temperature = weather.getValue(i, "temperature");
+                updateMonitorPointValue("Temperature" + i, temperature);
 
-                for (int i = 2; i < 12; i++) {
-                    Double temperature = weather.getValue(i, "temperature");
-                    updateMonitorPointValue("Temperature" + i, temperature);
+                Double dewpoint = weather.getValue(i, "dewpoint");
+                updateMonitorPointValue("Dewpoint" + i, dewpoint);
 
-                    Double dewpoint = weather.getValue(i, "dewpoint");
-                    updateMonitorPointValue("Dewpoint" + i, dewpoint);
+                Double humidity = weather.getValue(i, "humidity");
+                updateMonitorPointValue("Humidity" + i, humidity);
 
-                    Double humidity = weather.getValue(i, "humidity");
-                    updateMonitorPointValue("Humidity" + i, humidity);
+                Double pressure = weather.getValue(i, "pressure");
+                updateMonitorPointValue("Pressure" + i, pressure);
 
-                    Double pressure = weather.getValue(i, "pressure");
-                    updateMonitorPointValue("Pressure" + i, pressure);
+                Double windSpeed = weather.getValue(i, "wind speed");
+                updateMonitorPointValue("WindSpeed" + i, windSpeed);
 
-                    Double windSpeed = weather.getValue(i, "wind speed");
-                    updateMonitorPointValue("WindSpeed" + i, windSpeed);
-
-                    Double windDir = weather.getValue(i, "wind direction");
-                    updateMonitorPointValue("WindDirection" + i, windDir);
-                }
-                logger.info("Monitor point values updated");
+                Double windDir = weather.getValue(i, "wind direction");
+                updateMonitorPointValue("WindDirection" + i, windDir);
             }
+            logger.info("Monitor point values updated");
         }, 0, 1, TimeUnit.SECONDS);
         try {
             loopFuture.get();

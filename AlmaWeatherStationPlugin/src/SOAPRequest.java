@@ -48,12 +48,12 @@ public class SOAPRequest {
      * Creates a SOAPRequest that can send requests to the endpoint specified,
      * providing the target, action and name of the id given to the service.
      *
-     * @param endpointUrl
-     * @param target
-     * @param action
-     * @param idName
+     * @param endpointUrl soap endpoint.
+     * @param target soap target.
+     * @param action soap action.
+     * @param idName name of the ONLY parameter of the service.
      */
-    public SOAPRequest(String endpointUrl, String target, String action, String idName) {
+    SOAPRequest(String endpointUrl, String target, String action, String idName) {
         this.endpointUrl = endpointUrl;
         this.target = target;
         this.action = action;
@@ -73,7 +73,7 @@ public class SOAPRequest {
             connection = connectionFactory.createConnection();
         } catch (Exception e) {
             System.err.println("Error occurred while creating connection.");
-            System.err.println(e.getMessage() + e.getStackTrace());
+            e.printStackTrace();
         }
     }
 
@@ -112,7 +112,7 @@ public class SOAPRequest {
 
         } catch (Exception e) {
             System.err.println("Error occurred while creating message.");
-            System.err.println(e.getMessage() + e.getStackTrace());
+            e.printStackTrace();
         }
     }
 
@@ -127,7 +127,7 @@ public class SOAPRequest {
             message.saveChanges();
         } catch (Exception e) {
             System.err.println("Error while setting request value.");
-            System.err.println(e.getMessage() + e.getStackTrace());
+            e.printStackTrace();
         }
     }
 
@@ -135,7 +135,7 @@ public class SOAPRequest {
      * Sends a request using the message and connection from the class, changes the
      * value of the message to the given parameter.
      *
-     * @param idValue
+     * @param idValue value to be sent in the request.
      * @return the text of the response, if there's more than one node with text
      * it's concatenated.
      */
@@ -146,9 +146,9 @@ public class SOAPRequest {
         try {
             // send request and get response
             SOAPMessage soapResponse = connection.call(message, endpointUrl);
-            String body = soapResponse.getSOAPPart().getEnvelope().getTextContent();
 
-            return body;
+            // return body content
+            return soapResponse.getSOAPPart().getEnvelope().getTextContent();
 
         } catch (Exception e) {
             System.err.println("Error while making the call");

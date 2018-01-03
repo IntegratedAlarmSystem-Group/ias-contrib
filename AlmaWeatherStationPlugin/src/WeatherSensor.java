@@ -1,6 +1,7 @@
 
 import java.io.StringReader;
 import java.util.HashMap;
+import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -62,9 +63,9 @@ public class WeatherSensor implements Runnable {
      * creates a sensor with the given id, the id is the value given in the soap
      * request to access the data.
      *
-     * @param id
+     * @param id of the sensor to request.
      */
-    public WeatherSensor(int id) {
+    WeatherSensor(int id) {
         // soap requests
         String url = "http://weather.aiv.alma.cl/ws_weather.php";
         String action = "getCurrentWeatherData";
@@ -92,7 +93,7 @@ public class WeatherSensor implements Runnable {
         String response = soap.sendRequest(Integer.toString(id));
         Document doc = parseDOM(response);
 
-        NodeList sensors = doc.getElementsByTagName("sensor");
+        NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
 
         for (int i = 0; i < sensors.getLength(); i++) {
             Node sensor = sensors.item(i);
@@ -113,7 +114,7 @@ public class WeatherSensor implements Runnable {
     public void updateValues(String xml) {
         Document doc = parseDOM(xml);
 
-        NodeList sensors = doc.getElementsByTagName("sensor");
+        NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
 
         for (int i = 0; i < sensors.getLength(); i++) {
             Node sensor = sensors.item(i);
@@ -150,14 +151,14 @@ public class WeatherSensor implements Runnable {
 
         } catch (Exception e) {
             System.err.println("Error occurred while creating document builder.");
-            System.err.println(e.getMessage() + "\n" + e.getStackTrace());
+            e.printStackTrace();
         }
     }
 
     /**
      * parses a soap request in xml format and returns the generated document.
      *
-     * @param response
+     * @param response the xml response of the soap weather service.
      * @return a DOM document containing the xml tree.
      */
     private Document parseDOM(String response) {
@@ -166,7 +167,7 @@ public class WeatherSensor implements Runnable {
 
         } catch (Exception e) {
             System.err.println("Error occurred while parsing the DOM.");
-            System.err.println(e.getMessage() + e.getStackTrace());
+            e.printStackTrace();
         }
         return null;
     }

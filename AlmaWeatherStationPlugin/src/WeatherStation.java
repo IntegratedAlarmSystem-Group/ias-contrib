@@ -2,7 +2,6 @@
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 public class WeatherStation {
@@ -12,24 +11,22 @@ public class WeatherStation {
         int refhreshTime = 1;
         WeatherStation ws = new WeatherStation(2, 11, refhreshTime);
 
-        ScheduledExecutorService schedExecutorSvc = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread t = new Thread(r);
-                t.setDaemon(true);
-                return t;
-            }
-        });
+        ScheduledExecutorService schedExecutorSvc = Executors.newScheduledThreadPool(
+                1,
+                r -> {
+                    Thread t = new Thread(r);
+                    t.setDaemon(true);
+                    return t;
+                });
 
-        ScheduledFuture<?> loopFuture = schedExecutorSvc.scheduleAtFixedRate(new Runnable() {
-            public void run() {
-                for (int i = 2; i < 12; i++) {
-                    Double temperature = ws.getValue(i, "temperature");
-                    System.out.println("temp" + i + ": " + temperature);
-                }
-                System.out.println();
-            }
-        }, 0, 1, TimeUnit.SECONDS);
+        ScheduledFuture<?> loopFuture = schedExecutorSvc.scheduleAtFixedRate(
+                () -> {
+                    for (int i = 2; i < 12; i++) {
+                        Double temperature = ws.getValue(i, "temperature");
+                        System.out.println("temp" + i + ": " + temperature);
+                    }
+                    System.out.println();
+                }, 0, 1, TimeUnit.SECONDS);
 
         try {
             loopFuture.get();
@@ -41,26 +38,25 @@ public class WeatherStation {
     /**
      * the first sensor id in the sensor array.
      */
-    int firstId;
+    private int firstId;
 
     /**
      * the array of sensors for this station.
      */
-    WeatherSensor[] sensors;
+    private WeatherSensor[] sensors;
 
     /**
      * The scheduled executor to run the weather sensors.
      */
-    private final ScheduledExecutorService schedExSvc = Executors.newScheduledThreadPool(10, new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r);
-            t.setDaemon(true);
-            return t;
-        }
-    });
+    private final ScheduledExecutorService schedExSvc = Executors.newScheduledThreadPool(
+            10,
+            r -> {
+                Thread t = new Thread(r);
+                t.setDaemon(true);
+                return t;
+            });
 
-    public WeatherStation(int firstId, int lastID, int refreshTime) {
+    WeatherStation(int firstId, int lastID, int refreshTime) {
         this.firstId = firstId;
         sensors = new WeatherSensor[lastID - firstId + 1];
 
@@ -78,9 +74,9 @@ public class WeatherStation {
      * returns the requested value in the sensor with the given id, if the sensor
      * doesn't exists in this weather station ???.
      *
-     * @param id
-     * @param name
-     * @return
+     * @param id   of the sensor accesed.
+     * @param name of the parameter requested.
+     * @return the value requested, or 0 if it doesn't exist.
      */
     public double getValue(int id, String name) {
         if (firstId <= id && id < firstId + sensors.length)
