@@ -13,9 +13,10 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 /**
- * A class that parses and saves weather data from http://weather.aiv.alma.cl/ws_weather.php.
+ * A class that parses and saves weather data from http://weather.aiv.alma.cl/ws_weather.php,
+ * to work it must be in a network from ALMA, ESO, NAOJ or NRAO.
  *
- * The values can be updated using updateValues() or run() (for scheduling)
+ * The values can be updated using updateValues() or run() (for scheduling).
  */
 public class WeatherSensor implements Runnable {
 

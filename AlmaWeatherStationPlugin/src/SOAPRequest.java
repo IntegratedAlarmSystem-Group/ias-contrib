@@ -90,17 +90,17 @@ public class SOAPRequest {
             message = messageFactory.createMessage();
             SOAPPart part = message.getSOAPPart();
 
-            String ns = "ns";
+            String namespace = "ns";
 
             // SOAP Envelope
             SOAPEnvelope envelope = part.getEnvelope();
-            envelope.addNamespaceDeclaration(ns, target);
+            envelope.addNamespaceDeclaration(namespace, target);
             envelope.addNamespaceDeclaration("xsi", "http://www.w3.org/2001/XMLSchema-instance");
             envelope.addNamespaceDeclaration("ns3", "http://www.w3.org/2001/XMLSchema");
 
             // SOAP Body
             SOAPBody body = envelope.getBody();
-            SOAPElement elem = body.addChildElement(action, ns);
+            SOAPElement elem = body.addChildElement(action, namespace);
 
             // where to add the value
             SOAPElement elemInfo = elem.addChildElement(idName);
@@ -129,7 +129,7 @@ public class SOAPRequest {
             text.setTextContent(idValue);
             message.saveChanges();
         } catch (Exception e) {
-            System.err.println("Error while setting request value.");
+            System.err.println("Error while setting request value " + idName + "=" + idValue);
             e.printStackTrace();
         }
     }
@@ -154,7 +154,7 @@ public class SOAPRequest {
             return soapResponse.getSOAPPart().getEnvelope().getTextContent();
 
         } catch (Exception e) {
-            System.err.println("Error while making the call");
+            System.err.println("Error while making the call to the service: " + endpointUrl);
             e.printStackTrace();
         }
 

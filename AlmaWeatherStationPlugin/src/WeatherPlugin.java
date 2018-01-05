@@ -13,7 +13,7 @@ import org.eso.ias.plugin.config.PluginConfigException;
 import org.eso.ias.plugin.config.PluginConfigFileReader;
 import org.eso.ias.plugin.publisher.MonitorPointSender;
 import org.eso.ias.plugin.publisher.PublisherException;
-import org.eso.ias.plugin.publisher.impl.JsonFilePublisher;
+import org.eso.ias.plugin.publisher.impl.KafkaPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,24 +82,10 @@ public class WeatherPlugin extends Plugin {
         }
         logger.info("Configuration successfully red");
 
-        // Create the file in the IAS temporary folder
-        String tmpFolderName = System.getProperty("ias.tmp.folder", ".");
-        File folder = new File(tmpFolderName);
-        BufferedWriter jsonWriter = null;
-        try {
-            File jsonFile = File.createTempFile("MonitorPointValues", ".json", folder);
-            jsonWriter = new BufferedWriter(new FileWriter(jsonFile));
-            logger.info("Moitor points to be sent to the core of the IAS will be saved in {}",
-                    jsonFile.getAbsolutePath());
-        } catch (IOException ioe) {
-            logger.error("Cannot create the JSON file", ioe);
-            System.exit(-1);
-        }
+        KafkaPublisher kafkaPublisher = new KafkaPublisher(config.getId(), config.getMonitoredSystemId(),
+                config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService());
 
-        JsonFilePublisher jsonPublisher = new JsonFilePublisher(config.getId(), config.getMonitoredSystemId(),
-                config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService(), jsonWriter);
-
-        WeatherPlugin plugin = new WeatherPlugin(config, jsonPublisher);
+        WeatherPlugin plugin = new WeatherPlugin(config, kafkaPublisher);
 
         try {
             plugin.start();
