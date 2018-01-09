@@ -38,9 +38,3 @@ jar {
        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
    }
 }
-
-task listJars {
-    doLast {
-        configurations.runtime.each { File file -> println file.name }
-    }
-}
