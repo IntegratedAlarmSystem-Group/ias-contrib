@@ -14,6 +14,7 @@ import org.eso.ias.plugin.config.PluginConfigFileReader;
 import org.eso.ias.plugin.publisher.MonitorPointSender;
 import org.eso.ias.plugin.publisher.PublisherException;
 import org.eso.ias.plugin.publisher.impl.KafkaPublisher;
+import org.eso.ias.prototype.input.java.OperationalMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +97,7 @@ public class WeatherPlugin extends Plugin {
 
         // Connect to the weather station.
         plugin.initialize();
+        plugin.setPluginOperationalMode(OperationalMode.OPERATIONAL);
 
         // Start getting data from the weather station
         // This method exits when the user presses CTRL+C

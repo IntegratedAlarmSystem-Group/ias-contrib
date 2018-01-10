@@ -60,6 +60,7 @@ public class WeatherStation {
                 return t;
             });
 
+
     WeatherStation(int firstId, int lastID, int refreshTime) {
         this.firstId = firstId;
         sensors = new WeatherSensor[lastID - firstId + 1];
