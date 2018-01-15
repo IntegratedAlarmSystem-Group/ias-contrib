@@ -24,27 +24,6 @@ import org.slf4j.LoggerFactory;
  */
 public class WeatherPlugin extends Plugin {
 
-    /**
-     * The logger.
-     */
-    private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
-
-    /**
-     * the loop to keep the plugin running.
-     */
-    private ScheduledFuture<?> loopFuture;
-
-    /**
-     * the weather station to retrieve the data.
-     */
-    private WeatherStation weatherStation;
-
-
-    /**
-     * The path to the config file for the plugin.
-     */
-    private static final String configPath = "WeatherStationPluginTest.json";
-
 
     /**
      * runs the plugin.
@@ -108,6 +87,27 @@ public class WeatherPlugin extends Plugin {
     }
 
     /**
+     * The logger.
+     */
+    private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
+
+    /**
+     * the loop to keep the plugin running.
+     */
+    private ScheduledFuture<?> loopFuture;
+
+    /**
+     * the weather station to retrieve the data.
+     */
+    private WeatherStation weatherStation;
+
+
+    /**
+     * The path to the config file for the plugin.
+     */
+    private static final String configPath = "WeatherStationPluginTest.json";
+
+    /**
      * Constructor
      *
      * @param config The configuration of the plugin.
@@ -121,8 +121,8 @@ public class WeatherPlugin extends Plugin {
      * Connect to the Weather Station and add the shutdown hook.
      */
     private void initialize() {
-        // refreshes every 1 seconds
-        weatherStation = new WeatherStation(2, 11, 1);
+        // refreshes every 1000 milliseconds
+        weatherStation = new WeatherStation(2, 11, 1000);
 
         // Adds the shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release weather station shutdown hook"));
@@ -135,7 +135,6 @@ public class WeatherPlugin extends Plugin {
         if (loopFuture != null) {
             loopFuture.cancel(false);
         }
-
         weatherStation.release();
     }
 
@@ -163,20 +162,28 @@ public class WeatherPlugin extends Plugin {
                 () -> {
                     logger.info("Updating monitor point values from the weather station");
 
-                    for (int i = 2; i < 12; i++) {
-                        Double temperature = weatherStation.getValue(i, "temperature");
-                        Double dewpoint = weatherStation.getValue(i, "dewpoint");
-                        Double humidity = weatherStation.getValue(i, "humidity");
-                        Double pressure = weatherStation.getValue(i, "pressure");
-                        Double windSpeed = weatherStation.getValue(i, "wind speed");
-                        Double windDir = weatherStation.getValue(i, "wind direction");
+                    for (int i = 2; i < 3; i++) {
+                        Double temperature = null, dewpoint = null,
+                                humidity = null, pressure = null,
+                                windSpeed = null, windDir = null;
 
-                        updateMonitorPointValue("Temperature" + i, temperature);
-                        updateMonitorPointValue("Dewpoint" + i, dewpoint);
-                        updateMonitorPointValue("Humidity" + i, humidity);
-                        updateMonitorPointValue("Pressure" + i, pressure);
-                        updateMonitorPointValue("WindSpeed" + i, windSpeed);
-                        updateMonitorPointValue("WindDirection" + i, windDir);
+                        try {
+                            temperature = weatherStation.getValue(i, "temperature");
+                            dewpoint = weatherStation.getValue(i, "dewpoint");
+                            humidity = weatherStation.getValue(i, "humidity");
+                            pressure = weatherStation.getValue(i, "pressure");
+                            windSpeed = weatherStation.getValue(i, "wind speed");
+                            windDir = weatherStation.getValue(i, "wind direction");
+
+                            updateMonitorPointValue("Temperature" + i, temperature);
+                            updateMonitorPointValue("Dewpoint" + i, dewpoint);
+                            updateMonitorPointValue("Humidity" + i, humidity);
+                            updateMonitorPointValue("Pressure" + i, pressure);
+                            updateMonitorPointValue("WindSpeed" + i, windSpeed);
+                            updateMonitorPointValue("WindDirection" + i, windDir);
+                        } catch (Exception e) {
+                            logger.error(e.getMessage());
+                        }
                     }
                     logger.info("Monitor point values updated");
                 }, 0, 1, TimeUnit.SECONDS);

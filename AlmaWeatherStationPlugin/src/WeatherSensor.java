@@ -66,6 +66,16 @@ public class WeatherSensor implements Runnable {
     private HashMap<String, Double> values = new HashMap<>();
 
     /**
+     * The timestamp from the last time the values were updated.
+     */
+    private long lastUpdated = 0;
+
+    /**
+     * time to live of the values in this plugin, in milliseconds.
+     */
+    private long ttl;
+
+    /**
      * creates a sensor with the given id, the id is the value given in the soap
      * request to access the data.
      *
@@ -82,6 +92,7 @@ public class WeatherSensor implements Runnable {
 
         // sensor id
         this.id = id;
+        ttl = 2000;
     }
 
     /**
@@ -98,7 +109,6 @@ public class WeatherSensor implements Runnable {
     public void updateValues() {
         String response = soap.sendRequest(Integer.toString(id));
         Document doc = parseDOM(response);
-
         NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
 
         for (int i = 0; i < sensors.getLength(); i++) {
@@ -112,6 +122,8 @@ public class WeatherSensor implements Runnable {
                 values.put(name, value);
             values.replace(name, value);
         }
+
+        lastUpdated = System.currentTimeMillis();
     }
 
     /**
@@ -119,7 +131,6 @@ public class WeatherSensor implements Runnable {
      */
     public void updateValues(String xml) {
         Document doc = parseDOM(xml);
-
         NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
 
         for (int i = 0; i < sensors.getLength(); i++) {
@@ -136,14 +147,23 @@ public class WeatherSensor implements Runnable {
     }
 
     /**
-     * returns the requested value for this sensor, if the name doesn't exists ???.
+     * Returns the requested value for this sensor, if the name doesn't exists throws an exception.
+     * If the time since the last update is greater than the ttl, throw exception.
+     *
+     * @param name the name of the parameter.
+     * @return the value requested
+     * @throws Exception if it doesnt exists, or it is too old.
      */
-    public double getValue(String name) {
+    public double getValue(String name) throws Exception {
+        // throw exception when out of date
+        if (System.currentTimeMillis() - lastUpdated > ttl)
+            throw new Exception("The values are too old, sensor" + id + " needs update.");
+
         if (values.containsKey(name))
             return values.get(name);
 
-        // TODO: what to do with unexisting values? exception?
-        return 0.;
+        // throws exception when value not found
+        throw new Exception("The value " + name + " was not found.");
     }
 
     /**

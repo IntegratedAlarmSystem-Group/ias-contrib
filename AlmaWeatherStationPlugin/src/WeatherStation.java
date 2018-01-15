@@ -12,7 +12,7 @@ public class WeatherStation {
 
     public static void main(String[] args) {
 
-        int refhreshTime = 1;
+        int refhreshTime = 1000;
         WeatherStation ws = new WeatherStation(2, 11, refhreshTime);
 
         ScheduledExecutorService schedExecutorSvc = Executors.newScheduledThreadPool(
@@ -26,7 +26,14 @@ public class WeatherStation {
         ScheduledFuture<?> loopFuture = schedExecutorSvc.scheduleAtFixedRate(
                 () -> {
                     for (int i = 2; i < 12; i++) {
-                        Double temperature = ws.getValue(i, "temperature");
+                        Double temperature = null;
+
+                        try {
+                            temperature = ws.getValue(i, "temperature");
+                        } catch (Exception e) {
+                            System.err.println(e.getMessage());
+                        }
+
                         System.out.println("temp" + i + ": " + temperature);
                     }
                     System.out.println();
@@ -60,16 +67,25 @@ public class WeatherStation {
                 return t;
             });
 
-
+    /**
+     * creates a list of sensors and starts running them.
+     *
+     * @param firstId first sensor.
+     * @param lastID last sensor, included.
+     * @param refreshTime in milliseconds.
+     */
     WeatherStation(int firstId, int lastID, int refreshTime) {
         this.firstId = firstId;
         sensors = new WeatherSensor[lastID - firstId + 1];
+
+        System.out.println("starting weather sensors with " + refreshTime + " refresh time.");
 
         for (int i = 0; i < sensors.length; i++) {
             sensors[i] = new WeatherSensor(i + firstId);
 
             // execute every refreshTime seconds.
-            schedExSvc.scheduleAtFixedRate(sensors[i], 0, refreshTime, TimeUnit.SECONDS);
+            schedExSvc.scheduleAtFixedRate(sensors[i], 0,
+                    refreshTime, TimeUnit.MILLISECONDS);
         }
         // make sure the sensors have time to update.
         sensors[0].updateValues();
@@ -77,18 +93,19 @@ public class WeatherStation {
 
     /**
      * returns the requested value in the sensor with the given id, if the sensor
-     * doesn't exists in this weather station ???.
+     * doesn't exists in this weather station throws an exception..
      *
-     * @param sensorId   of the sensor accesed.
-     * @param name of the parameter requested.
-     * @return the value requested, or 0 if it doesn't exist.
+     * @param sensorId of the sensor accesed.
+     * @param name     of the parameter requested.
+     * @return the value requested.
+     * @throws Exception if the sensor doesnt exist.
      */
-    public double getValue(int sensorId, String name) {
+    public double getValue(int sensorId, String name) throws Exception {
         if (firstId <= sensorId && sensorId < firstId + sensors.length)
             return sensors[sensorId - firstId].getValue(name);
 
-        // TODO: what to do with unexisting sensors? exception?
-        return 0.;
+        // throws exception when value not found
+        throw new Exception("The station " + sensorId + " doesn't exist.");
     }
 
     /**

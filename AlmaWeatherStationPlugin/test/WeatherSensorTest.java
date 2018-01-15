@@ -33,10 +33,7 @@ public class WeatherSensorTest {
     }
 
     @Test
-    public void getValue() {
-        // non existing values return 0.
-        assertEquals(0., sensor.getValue("SomeValue"), 0.);
-
+    public void getValue() throws Exception {
         // check that it gets all the values in the xml
         assertEquals(32.131, sensor.getValue("humidity"), 0.);
         assertEquals(-0.064, sensor.getValue("temperature"), 0.);
@@ -44,5 +41,10 @@ public class WeatherSensorTest {
         assertEquals(274., sensor.getValue("wind direction"), 0.);
         assertEquals(12.4, sensor.getValue("wind speed"), 0.);
         assertEquals(554.91, sensor.getValue("pressure"), 0.);
+    }
+
+    @Test(expected = Exception.class)
+    public void getValueError() throws Exception {
+        sensor.getValue("SomeValue");
     }
 }
