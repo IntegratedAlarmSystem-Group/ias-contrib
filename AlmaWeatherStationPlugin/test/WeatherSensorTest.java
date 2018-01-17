@@ -13,13 +13,15 @@ public class WeatherSensorTest {
      */
     private WeatherSensor sensor;
 
+    private String xml;
+
     @Before
     public void setUp() {
         // sensor with any id, wont be used.
         sensor = new WeatherSensor(0);
 
         // response of the soap service example.
-        String xml = "<weather id='2' timestamp='1.3734218308E+17' status='true' serialNumber='D2320028D1810012'><sensors>" +
+        xml = "<weather id='2' timestamp='1.3734218308E+17' status='true' serialNumber='D2320028D1810012'><sensors>" +
                 "<sensor name='humidity' unit='percentage'>32.131</sensor>" +
                 "<sensor name='temperature' unit='celsius'>-0.064</sensor>" +
                 "<sensor name='dewpoint' unit='celsius'>-14.689</sensor>" +
@@ -29,11 +31,12 @@ public class WeatherSensorTest {
                 "</sensors></weather>\n";
 
         // update values
-        sensor.updateValues(xml);
     }
 
     @Test
     public void getValue() throws Exception {
+        sensor.updateValues(xml);
+
         // check that it gets all the values in the xml
         assertEquals(32.131, sensor.getValue("humidity"), 0.);
         assertEquals(-0.064, sensor.getValue("temperature"), 0.);

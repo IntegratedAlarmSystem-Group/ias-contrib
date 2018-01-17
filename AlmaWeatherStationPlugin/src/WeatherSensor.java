@@ -144,6 +144,8 @@ public class WeatherSensor implements Runnable {
                 values.put(name, value);
             values.replace(name, value);
         }
+
+        lastUpdated = System.currentTimeMillis();
     }
 
     /**
