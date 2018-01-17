@@ -2,7 +2,8 @@
 import javax.xml.soap.*;
 
 /**
- * Connects to a soap service and makes requests with one parameter, returning the text content of the body.
+ * Connects to a soap service and makes requests with one parameter,
+ * returning the text content of the body.
  */
 public class SOAPRequest {
 
@@ -126,8 +127,8 @@ public class SOAPRequest {
      * @param idValue the value to be used in the request.
      */
     private void setRequestValue(String idValue) throws SOAPException {
-            text.setTextContent(idValue);
-            message.saveChanges();
+        text.setTextContent(idValue);
+        message.saveChanges();
     }
 
     /**

@@ -1,12 +1,15 @@
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * keeps an array of sensors updating in parallel every refreshTime seconds, and has access to their values through
- * getValue(sensorId, parameterName).
+ * keeps an array of sensors updating in parallel every refreshTime seconds,
+ * and has access to their values through getValue(sensorId, parameterName).
  */
 public class WeatherStation {
 
@@ -31,12 +34,11 @@ public class WeatherStation {
                         try {
                             temperature = ws.getValue(i, "temperature");
                         } catch (Exception e) {
-                            System.err.println(e.getMessage());
+                            logger.error("error getting values", e.getMessage());
                         }
 
-                        System.out.println("temp" + i + ": " + temperature);
+                        logger.info("temp{}: {}", i, temperature);
                     }
-                    System.out.println();
                 }, 0, 1, TimeUnit.SECONDS);
 
         try {
@@ -45,6 +47,11 @@ public class WeatherStation {
             System.out.println("execution terminated");
         }
     }
+
+    /**
+     * The logger.
+     */
+    private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
     /**
      * the first sensor id in the sensor array.
@@ -70,15 +77,15 @@ public class WeatherStation {
     /**
      * creates a list of sensors and starts running them.
      *
-     * @param firstId first sensor.
-     * @param lastID last sensor, included.
+     * @param firstId     first sensor.
+     * @param lastID      last sensor, included.
      * @param refreshTime in milliseconds.
      */
     WeatherStation(int firstId, int lastID, int refreshTime) {
         this.firstId = firstId;
         sensors = new WeatherSensor[lastID - firstId + 1];
 
-        System.out.println("starting weather sensors with " + refreshTime + " refresh time.");
+        logger.info("starting weather sensors with {}ms refresh time.", refreshTime);
 
         for (int i = 0; i < sensors.length; i++) {
             sensors[i] = new WeatherSensor(i + firstId);

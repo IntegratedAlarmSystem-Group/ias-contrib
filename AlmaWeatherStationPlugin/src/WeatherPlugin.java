@@ -1,11 +1,3 @@
-
-import java.io.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import org.eso.ias.plugin.Plugin;
 import org.eso.ias.plugin.PluginException;
 import org.eso.ias.plugin.config.PluginConfig;
@@ -18,12 +10,15 @@ import org.eso.ias.prototype.input.java.OperationalMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.concurrent.*;
+
 
 /**
  * publishes data from a weather station to a Kafka Queue
  */
 public class WeatherPlugin extends Plugin {
-
 
     /**
      * runs the plugin.
@@ -191,7 +186,7 @@ public class WeatherPlugin extends Plugin {
             loopFuture.get();
         } catch (ExecutionException ee) {
             logger.error("Execution exception getting values from the weather station", ee);
-        } catch (Exception ce) {
+        } catch (Exception e) {
             logger.info("Loop to get monitor point values from the weather station terminated");
         }
     }

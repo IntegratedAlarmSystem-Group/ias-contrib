@@ -1,21 +1,19 @@
-
-import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Objects;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Objects;
+
 /**
  * A class that parses and saves weather data from http://weather.aiv.alma.cl/ws_weather.php,
  * to work it must be in a network from ALMA, ESO, NAOJ or NRAO.
- *
+ * <p>
  * The values can be updated using updateValues() or run() (for scheduling).
  */
 public class WeatherSensor implements Runnable {
