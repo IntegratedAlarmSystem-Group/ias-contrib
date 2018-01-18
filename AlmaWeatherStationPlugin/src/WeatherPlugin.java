@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.concurrent.*;
 
-
 /**
  * publishes data from a weather station to a Kafka Queue
  */
@@ -96,7 +95,6 @@ public class WeatherPlugin extends Plugin {
      */
     private WeatherStation weatherStation;
 
-
     /**
      * The path to the config file for the plugin.
      */
@@ -149,7 +147,8 @@ public class WeatherPlugin extends Plugin {
     }
 
     /**
-     * The loop to get monitor values from the weather station and send to the core of the IAS.
+     * The loop to get monitor values from the weather station
+     * and update the values sent to the core of the IAS.
      */
     private void startLoop() {
         // send data every second.
@@ -158,24 +157,27 @@ public class WeatherPlugin extends Plugin {
                     logger.info("Updating monitor point values from the weather station");
 
                     for (int i = 2; i < 3; i++) {
-                        Double temperature = null, dewpoint = null,
-                                humidity = null, pressure = null,
-                                windSpeed = null, windDir = null;
+                        Double temperature, windSpeed; // dewpoint, humidity, pressure, windDir;
 
                         try {
                             temperature = weatherStation.getValue(i, "temperature");
-                            dewpoint = weatherStation.getValue(i, "dewpoint");
-                            humidity = weatherStation.getValue(i, "humidity");
-                            pressure = weatherStation.getValue(i, "pressure");
                             windSpeed = weatherStation.getValue(i, "wind speed");
-                            windDir = weatherStation.getValue(i, "wind direction");
 
                             updateMonitorPointValue("Temperature" + i, temperature);
-                            updateMonitorPointValue("Dewpoint" + i, dewpoint);
+                            updateMonitorPointValue("WindSpeed" + i, windSpeed);
+
+                            /*
+                            humidity = weatherStation.getValue(i, "humidity");
+                            pressure = weatherStation.getValue(i, "pressure");
+                            dewpoint = weatherStation.getValue(i, "dewpoint");
+                            windDir = weatherStation.getValue(i, "wind direction");
+
                             updateMonitorPointValue("Humidity" + i, humidity);
                             updateMonitorPointValue("Pressure" + i, pressure);
-                            updateMonitorPointValue("WindSpeed" + i, windSpeed);
+                            updateMonitorPointValue("Dewpoint" + i, dewpoint);
                             updateMonitorPointValue("WindDirection" + i, windDir);
+                            */
+
                         } catch (Exception e) {
                             logger.error(e.getMessage());
                         }

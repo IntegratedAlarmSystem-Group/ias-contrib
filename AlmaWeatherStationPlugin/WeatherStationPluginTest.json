@@ -12,31 +12,7 @@
       "filterOptions": ""
     },
     {
-      "id": "WindDirection2",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
       "id": "WindSpeed2",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Humidity2",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Pressure2",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Dewpoint2",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
@@ -48,31 +24,7 @@
       "filterOptions": ""
     },
     {
-      "id": "WindDirection3",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
       "id": "WindSpeed3",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Humidity3",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Pressure3",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Dewpoint3",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
@@ -84,31 +36,7 @@
       "filterOptions": ""
     },
     {
-      "id": "WindDirection4",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
       "id": "WindSpeed4",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Humidity4",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Pressure4",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Dewpoint4",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
@@ -120,31 +48,7 @@
       "filterOptions": ""
     },
     {
-      "id": "WindDirection5",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
       "id": "WindSpeed5",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Humidity5",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Pressure5",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Dewpoint5",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
@@ -156,31 +60,7 @@
       "filterOptions": ""
     },
     {
-      "id": "WindDirection6",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
       "id": "WindSpeed6",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Humidity6",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Pressure6",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Dewpoint6",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
@@ -192,31 +72,7 @@
       "filterOptions": ""
     },
     {
-      "id": "WindDirection7",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
       "id": "WindSpeed7",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Humidity7",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Pressure7",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Dewpoint7",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
@@ -228,31 +84,7 @@
       "filterOptions": ""
     },
     {
-      "id": "WindDirection8",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
       "id": "WindSpeed8",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Humidity8",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Pressure8",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Dewpoint8",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
@@ -264,31 +96,7 @@
       "filterOptions": ""
     },
     {
-      "id": "WindDirection9",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
       "id": "WindSpeed9",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Humidity9",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Pressure9",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Dewpoint9",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
@@ -300,31 +108,7 @@
       "filterOptions": ""
     },
     {
-      "id": "WindDirection10",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
       "id": "WindSpeed10",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Humidity10",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Pressure10",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Dewpoint10",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
@@ -336,31 +120,7 @@
       "filterOptions": ""
     },
     {
-      "id": "WindDirection11",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
       "id": "WindSpeed11",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Humidity11",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Pressure11",
-      "refreshTime": "2000",
-      "filter": "",
-      "filterOptions": ""
-    },
-    {
-      "id": "Dewpoint11",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
