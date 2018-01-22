@@ -21,6 +21,7 @@ public class WeatherSensor implements Runnable {
     // sensor testing
     public static void main(String[] args) {
         WeatherSensor sensor = new WeatherSensor(2);
+        sensor.updateValues();
         System.out.println(sensor);
     }
 
