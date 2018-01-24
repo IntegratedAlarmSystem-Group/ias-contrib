@@ -156,7 +156,7 @@ public class WeatherPlugin extends Plugin {
                 () -> {
                     logger.info("Updating monitor point values from the weather station");
 
-                    for (int i = 2; i < 3; i++) {
+                    for (int i = 2; i < 12; i++) {
                         Double temperature, windSpeed; // dewpoint, humidity, pressure, windDir;
 
                         try {
