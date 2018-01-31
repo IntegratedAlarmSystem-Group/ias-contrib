@@ -21,185 +21,217 @@ import java.util.concurrent.TimeUnit;
  */
 public class DummyPlugin extends Plugin {
 
-    private double value;
-    private static String valueId = "dummy";
-    private int updateTime = 1000;
+  private double value = 0;
+  private String valueId;
+  private int updateTime = 1000;
 
-    /**
-     * runs the plugin.
-     */
-    public static void main(String[] args) throws IOException {
-        System.err.println("Starting dummy plugin...");
+  /**
+   * runs the plugin.
+   */
+  public static void main(String[] args) throws IOException {
+    System.err.println("Starting dummy plugin...");
 
-        // stop logging
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        loggerContext.stop();
-        System.err.println("Stopped logging");
+    // stop logging
+    LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+    loggerContext.stop();
+    System.err.println("Stopped logging");
 
-        // IASIO
-        int refreshTime = 1000;
+    // IASIO
+    int refreshTime = 1000;
+    String id = "dummy";
 
-        // configuration
-        PluginConfig config = new PluginConfig();
-        config.setId("DummyPlugin");
-        config.setMonitoredSystemId("DummyStation");
-        config.setSinkServer("localhost");
-        config.setSinkPort(9092);
+    // configuration
+    PluginConfig config = new PluginConfig();
+    config.setId("DummyPlugin");
+    config.setMonitoredSystemId("DummyStation");
+    config.setSinkServer("localhost");
+    config.setSinkPort(9092);
 
-        // values
-        Value dummyVal = new Value();
-        dummyVal.setId(valueId);
-        dummyVal.setRefreshTime(refreshTime);
-        config.setValues(new Value[]{dummyVal});
+    // values
+    Value dummyVal = new Value();
+    dummyVal.setId(id);
+    dummyVal.setRefreshTime(refreshTime);
+    config.setValues(new Value[]{dummyVal});
 
-        // publisher
-        KafkaPublisher publisher = new KafkaPublisher(config.getId(),
-                config.getMonitoredSystemId(),
-                config.getSinkServer(),
-                config.getSinkPort(),
-                Plugin.getScheduledExecutorService());
+    // publisher
+    KafkaPublisher publisher = new KafkaPublisher(config.getId(),
+        config.getMonitoredSystemId(),
+        config.getSinkServer(),
+        config.getSinkPort(),
+        Plugin.getScheduledExecutorService());
 
-        // start plugin
-        DummyPlugin dummy = new DummyPlugin(config, publisher);
-        try {
-            dummy.start();
-        } catch (PublisherException pe) {
-            System.err.println("The plugin failed to start");
-            pe.printStackTrace(System.err);
-            System.exit(-3);
-        }
+    // start plugin
+    DummyPlugin dummy = new DummyPlugin(config, publisher);
+    dummy.valueId = id;
+    try {
+      dummy.start();
+    } catch (PublisherException pe) {
+      System.err.println("The plugin failed to start");
+      pe.printStackTrace(System.err);
+      System.exit(-3);
+    }
 
-        // set mode
-        dummy.setPluginOperationalMode(OperationalMode.OPERATIONAL);
-        dummy.startLoop();
-        System.err.println("Plugin started, sending value 0. waiting for user input...");
+    // set mode
+    dummy.setPluginOperationalMode(OperationalMode.OPERATIONAL);
+    dummy.startLoop();
 
-        System.err.println("\nAvailable commands:");
+    // instructions
+    System.err.println("Plugin started, sending value 0. waiting for user input...");
 
-        System.err.println("\t> value [double]");
-        System.err.println("\tchanges the value the plugin is sending\n");
+    System.err.println("\nAvailable commands:");
 
-        System.err.println("\t> mode [operational/maintenance/initialization/unknown]");
-        System.err.println("\tchanges the operational mode of the plugin\n");
+    System.err.println("  > value [double]");
+    System.err.println("  Changes the value the plugin is sending.");
+    System.err.println("  By default, any value outside ]0,50[ will trigger the alarm.\n");
 
-        System.err.println("\t> update [int]");
-        System.err.println("\tchanges the rate at wich the value in the plugin is updated (milliseconds)\n");
+    System.err.println("  > mode [mode]");
+    System.err.println("  Changes the operational mode of the plugin. The options are:");
+    System.err.println("  operational, maintenance, startup, initialization, degraded, closing, shutteddown and unknown.\n");
 
-        // start reading values from input
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String line;
-        while ((line = br.readLine()) != null) {
-            String[] arg = line.split(" ");
+    System.err.println("  > update [int]");
+    System.err.println("  Changes the rate at wich the value in the plugin is updated (milliseconds).");
+    System.err.println("  If this value is higher than 1500 the value sent will be invalid.\n");
 
-            if (arg.length != 2){
-                System.err.println("Invalid expression: " + line);
-                continue;
-            }
 
-            // modify value
-            if (arg[0].toLowerCase().equals("value")) {
-                try {
-                    Double value = Double.parseDouble(arg[1]);
-                    dummy.value = value;
-                    dummy.updateMonitorPointValue(valueId, value);
+    // start reading values from input
+    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    String line;
+    while ((line = br.readLine()) != null) {
+      String[] arg = line.split(" ");
 
-                    System.err.println("dummy value updated to " + value);
-                } catch (Exception e) {
-                    System.err.println("Invalid value: " + arg[1]);
-                }
+      if (arg.length != 2) {
+        System.err.println("Invalid expression: " + line);
+        continue;
+      }
 
-                // operational mode
-            } else if (arg[0].toLowerCase().equals("mode")) {
-                String msg = "operational mode changed to: ";
+      switch (arg[0].toLowerCase()) {
 
-                switch (arg[1].toLowerCase()) {
-                    case "operational":
-                        dummy.setPluginOperationalMode(OperationalMode.OPERATIONAL);
-                        System.err.println(msg + "operational");
-                        break;
+        // modify value
+        case "value":
+          try {
+            Double value = Double.parseDouble(arg[1]);
+            dummy.value = value;
+            dummy.updateMonitorPointValue(dummy.valueId, value);
 
-                    case "maintenance":
-                        dummy.setPluginOperationalMode(OperationalMode.MAINTENANCE);
-                        System.err.println(msg + "maintenance");
-                        break;
+            System.err.println("dummy value updated to " + value);
+          } catch (Exception e) {
+            System.err.println("Invalid value: " + arg[1]);
+          }
+          break;
 
-                    case "initialization":
-                        dummy.setPluginOperationalMode(OperationalMode.INTIALIZATION);
-                        System.err.println(msg + "initialization");
-                        break;
+        // operational mode
+        case "mode":
+          String msg = "operational mode changed to: ";
 
-                    case "unknown":
-                        dummy.setPluginOperationalMode(OperationalMode.UNKNOWN);
-                        System.err.println(msg + "unknown");
-                        break;
+          switch (arg[1].toLowerCase()) {
+            case "operational":
+              dummy.setPluginOperationalMode(OperationalMode.OPERATIONAL);
+              System.err.println(msg + arg[1]);
+              break;
 
-                    default:
-                        System.err.println("unrecongnized operational mode: " + arg[1]);
-                        break;
-                }
+            case "maintenance":
+              dummy.setPluginOperationalMode(OperationalMode.MAINTENANCE);
+              System.err.println(msg + arg[1]);
+              break;
 
-                // update time
-            } else if (arg[0].toLowerCase().equals("update")) {
-                try {
-                    Integer value = Integer.parseInt(arg[1]);
-                    dummy.updateTime = value;
+            case "startup":
+              dummy.setPluginOperationalMode(OperationalMode.STARTUP);
+              System.err.println(msg + arg[1]);
+              break;
 
-                    // restart loop
-                    dummy.loopFuture.cancel(true);
-                    dummy.startLoop();
+            case "initialization":
+              dummy.setPluginOperationalMode(OperationalMode.INTIALIZATION);
+              System.err.println(msg + arg[1]);
+              break;
 
-                    System.err.println("update time changed to " + value + " ms");
-                } catch (Exception e) {
-                    System.err.println("Invalid update time: " + arg[1]);
-                }
+            case "degraded":
+              dummy.setPluginOperationalMode(OperationalMode.DEGRADED);
+              System.err.println(msg + arg[1]);
+              break;
 
-            } else {
-                System.err.println("unrecognized command: " + line);
-            }
-        }
+            case "closing":
+              dummy.setPluginOperationalMode(OperationalMode.CLOSING);
+              System.err.println(msg + arg[1]);
+              break;
 
-        br.close();
-        System.err.println("Closing plugin");
+            case "shutteddown":
+              dummy.setPluginOperationalMode(OperationalMode.SHUTTEDDOWN);
+              System.err.println(msg + arg[1]);
+              break;
 
-        try {
+            case "unknown":
+              dummy.setPluginOperationalMode(OperationalMode.UNKNOWN);
+              System.err.println(msg + arg[1]);
+              break;
+
+            default:
+              System.err.println("unrecongnized operational mode: " + arg[1]);
+              break;
+          }
+          break;
+
+        // update time
+        case "update":
+          try {
+            Integer value = Integer.parseInt(arg[1]);
+            dummy.updateTime = value;
+
+            // restart loop
             dummy.loopFuture.cancel(true);
-        } catch (Exception e) {
-            System.err.println("loop terminated");
-        }
+            dummy.startLoop();
+
+            System.err.println("update time changed to " + value + " ms");
+          } catch (Exception e) {
+            System.err.println("Invalid update time: " + arg[1]);
+          }
+          break;
+
+        default:
+          System.err.println("unrecognized command: " + line);
+          break;
+      }
     }
 
-    /**
-     * the loop to keep the plugin running.
-     */
-    private ScheduledFuture<?> loopFuture;
+    br.close();
+    System.err.println("Closing plugin");
 
-    private DummyPlugin(PluginConfig config, MonitorPointSender sender) {
-        super(config, sender);
+    try {
+      dummy.loopFuture.cancel(true);
+    } catch (Exception e) {
+      System.err.println("loop terminated");
     }
+  }
 
-    /**
-     * Override method to catch the exception and log a message
-     * <p>
-     * In the example we do not take any special action if the Plugin returns an
-     * error when submitting a new value.
-     */
-    @Override
-    public void updateMonitorPointValue(String mPointID, Object value) {
-        try {
-            super.updateMonitorPointValue(mPointID, value);
-        } catch (PluginException pe) {
-            System.err.println("Error sending " + mPointID + " monitor point to the core of the IAS");
-        }
-    }
+  /**
+   * the loop to keep the plugin running.
+   */
+  private ScheduledFuture<?> loopFuture;
 
-    /**
-     * The loop to update the value every 1 second
-     */
-    private void startLoop() {
-        // send data every second.
-        loopFuture = getScheduledExecutorService().scheduleAtFixedRate(
-                () -> {
-                    updateMonitorPointValue(valueId, value);
-                }, 0, updateTime, TimeUnit.MILLISECONDS);
+  private DummyPlugin(PluginConfig config, MonitorPointSender sender) {
+    super(config, sender);
+  }
+
+  /**
+   * Override method to catch the exception and log a message
+   * <p>
+   * In the example we do not take any special action if the Plugin returns an
+   * error when submitting a new value.
+   */
+  @Override
+  public void updateMonitorPointValue(String mPointID, Object value) {
+    try {
+      super.updateMonitorPointValue(mPointID, value);
+    } catch (PluginException pe) {
+      System.err.println("Error sending " + mPointID + " monitor point to the core of the IAS");
     }
+  }
+
+  /**
+   * The loop to update the value every 1 second
+   */
+  private void startLoop() {
+    // send data every second.
+    loopFuture = getScheduledExecutorService().scheduleAtFixedRate(
+        () -> updateMonitorPointValue(valueId, value), 0, updateTime, TimeUnit.MILLISECONDS);
+  }
 }
