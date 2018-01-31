@@ -5,20 +5,11 @@ sourceSets {
         java {
             srcDirs = ['src']
         }
-        resources {
-            srcDirs = ['resources']
-        }
-    }
-    test {
-        java {
-            srcDirs = ['test']
-        }
     }
 }
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
@@ -32,13 +23,11 @@ dependencies {
             'org.slf4j:slf4j-api:1.7.25',
             'ch.qos.logback:logback-core:1.2.3',
             'ch.qos.logback:logback-classic:1.2.3'
-
-    testCompile 'junit:junit:4.12'
 }
 
 jar {
    manifest {
-      attributes 'Main-Class': 'WeatherPlugin'
+      attributes 'Main-Class': 'DummyPlugin'
    }
 
    from {

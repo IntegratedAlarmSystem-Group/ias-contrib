@@ -1,0 +1,9 @@
+{
+  "id": "Dasudummy",
+  "asceIDs": [
+    "Ascedummy"
+  ],
+  "outputId": "Alarmdummy",
+  "logLevel": "FATAL",
+  "supervisorID": "SupervisorDummy"
+}

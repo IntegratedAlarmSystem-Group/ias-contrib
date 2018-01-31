@@ -8,7 +8,7 @@
 *.ctxt
 
 # Package Files #
-# *.jar
+*.jar
 *.war
 *.ear
 *.zip
@@ -27,3 +27,6 @@ out/
 # Gradle
 .gradle
 build/
+
+# mac
+.DS_Store

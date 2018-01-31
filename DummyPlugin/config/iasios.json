@@ -1,0 +1,14 @@
+[
+  {
+    "id": "dummy",
+    "shortDesc": "dummy reported by the weather station ",
+    "iasType": "DOUBLE",
+    "refreshRate": 2000
+  },
+  {
+    "id": "Alarmdummy",
+    "shortDesc": "dummy reported by the weather station out of range",
+    "iasType": "ALARM",
+    "refreshRate": 2000
+  }
+]
