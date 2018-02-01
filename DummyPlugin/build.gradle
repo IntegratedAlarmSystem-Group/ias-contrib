@@ -1,36 +1,39 @@
 apply plugin: 'java'
 
 sourceSets {
-    main {
-        java {
-            srcDirs = ['src']
-        }
+  main {
+    java {
+      srcDirs = ['src']
     }
+  }
 }
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 dependencies {
-    compile files('../lib/ias-plugin.jar',
-                  '../lib/ias-basic-types.jar')
+  compile files('../lib/ias-plugin.jar',
+                '../lib/ias-basic-types.jar'),
+          'org.slf4j:slf4j-api:1.7.25',
+          'ch.qos.logback:logback-classic:1.2.3'
 
-    compile 'com.fasterxml.jackson.core:jackson-core:2.8.7',
-            'com.fasterxml.jackson.core:jackson-databind:2.8.7',
-            'com.fasterxml.jackson.core:jackson-annotations:2.8.7',
-            'org.apache.kafka:kafka-clients:1.0.0',
-            'org.slf4j:slf4j-api:1.7.25',
-            'ch.qos.logback:logback-core:1.2.3',
-            'ch.qos.logback:logback-classic:1.2.3'
+  runtime 'com.fasterxml.jackson.core:jackson-core:2.8.7',
+          'com.fasterxml.jackson.core:jackson-databind:2.8.7',
+          'com.fasterxml.jackson.core:jackson-annotations:2.8.7',
+          'org.apache.kafka:kafka-clients:1.0.0',
+          'ch.qos.logback:logback-core:1.2.3'
 }
 
 jar {
-   manifest {
-      attributes 'Main-Class': 'DummyPlugin'
-   }
+  manifest {
+    attributes 'Main-Class': 'DummyPlugin'
+  }
 
-   from {
-       configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-   }
+  destinationDir = file('dist/')
+
+  // add dependencies to the jar - fat jar
+  from {
+    configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+  }
 }
