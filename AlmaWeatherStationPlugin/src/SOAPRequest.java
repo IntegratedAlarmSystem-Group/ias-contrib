@@ -66,14 +66,14 @@ public class SOAPRequest {
     try {
       createConnection();
     } catch (SOAPException e) {
-      System.err.println("Error ocurred while creating the connection.");
+      System.err.println("Error occurred while creating the connection.");
       e.printStackTrace();
       System.exit(1);
     }
     try {
       createMessage();
     } catch (SOAPException e) {
-      System.err.println("Error ocurred while creating the message.");
+      System.err.println("Error occurred while creating the message.");
       e.printStackTrace();
       System.exit(2);
     }
@@ -95,12 +95,11 @@ public class SOAPRequest {
   private void createMessage() throws SOAPException {
     MessageFactory messageFactory = MessageFactory.newInstance();
     message = messageFactory.createMessage();
-    SOAPPart part = message.getSOAPPart();
+    SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
 
     String namespace = "ns";
 
-    // SOAP Envelope
-    SOAPEnvelope envelope = part.getEnvelope();
+    // namespace declarations
     envelope.addNamespaceDeclaration(namespace, target);
     envelope.addNamespaceDeclaration("xsi", "http://www.w3.org/2001/XMLSchema-instance");
     envelope.addNamespaceDeclaration("ns3", "http://www.w3.org/2001/XMLSchema");
@@ -159,8 +158,8 @@ public class SOAPRequest {
 
     } catch (Exception e) {
       System.err.println("\nError while making the call to the service: " + endpointUrl);
-      System.err.println("\tmake sure you have access to the requested url, now exiting.\n");
-      System.exit(3);
+      System.err.println("\tmake sure you have access to the requested url. Now exiting.\n");
+      System.exit(1);
     }
 
     return null;
