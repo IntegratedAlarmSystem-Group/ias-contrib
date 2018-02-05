@@ -1,0 +1,8 @@
+{
+  "id": "SupervisorDummy",
+  "dasusIDs": [
+    "Dasudummy"
+  ],
+  "hostName": "almaias.eso.org",
+  "logLevel": "INFO"
+}

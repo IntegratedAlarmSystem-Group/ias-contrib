@@ -5,20 +5,11 @@ sourceSets {
     java {
       srcDirs = ['src']
     }
-    resources {
-      srcDirs = ['resources']
-    }
-  }
-  test {
-    java {
-      srcDirs = ['test']
-    }
   }
 }
 
 repositories {
   mavenCentral()
-  jcenter()
 }
 
 dependencies {
@@ -32,13 +23,11 @@ dependencies {
           'com.fasterxml.jackson.core:jackson-annotations:2.8.7',
           'org.apache.kafka:kafka-clients:1.0.0',
           'ch.qos.logback:logback-core:1.2.3'
-
-  testCompile 'junit:junit:4.12'
 }
 
 jar {
   manifest {
-    attributes 'Main-Class': 'WeatherPlugin'
+    attributes 'Main-Class': 'DummyPlugin'
   }
 
   destinationDir = file('dist/')

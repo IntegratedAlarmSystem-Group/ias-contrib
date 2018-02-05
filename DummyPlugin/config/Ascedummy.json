@@ -1,0 +1,27 @@
+{
+  "dasuID": "Dasudummy",
+  "id": "Ascedummy",
+  "inputIDs": [
+    "dummy"
+  ],
+  "outputID": "Alarmdummy",
+  "transferFunctionID": "org.eso.ias.prototype.transfer.impls.MinMaxThresholdTF",
+   "props": [
+    {
+      "name": "org.eso.ias.tf.minmaxthreshold.highOn",
+      "value": "50"
+    },
+    {
+      "name": "org.eso.ias.tf.minmaxthreshold.highOff",
+      "value": "50"
+    },
+    {
+      "name": "org.eso.ias.tf.minmaxthreshold.lowOn",
+      "value": "0"
+    },
+    {
+      "name": "org.eso.ias.tf.minmaxthreshold.lowOff",
+      "value": "0"
+    }
+  ]
+}
