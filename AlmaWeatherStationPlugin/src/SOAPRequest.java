@@ -1,4 +1,7 @@
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.soap.*;
 
 /**
@@ -21,6 +24,11 @@ public class SOAPRequest {
       System.out.println(response);
     }
   }
+
+  /**
+   * The logger.
+   */
+  private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
   // request parameters
   /**
@@ -66,15 +74,14 @@ public class SOAPRequest {
     try {
       createConnection();
     } catch (SOAPException e) {
-      System.err.println("Error occurred while creating the connection.");
-      e.printStackTrace();
+      logger.error("Error occurred while creating the connection.");
       System.exit(1);
     }
+
     try {
       createMessage();
     } catch (SOAPException e) {
-      System.err.println("Error occurred while creating the message.");
-      e.printStackTrace();
+      logger.error("Error occurred while creating the message.");
       System.exit(2);
     }
   }
@@ -143,9 +150,9 @@ public class SOAPRequest {
     // set value for request
     try {
       setRequestValue(idValue);
+
     } catch (SOAPException e) {
-      System.err.println("Error while setting request value " + idName + "=" + idValue);
-      e.printStackTrace();
+      logger.warn("Error while setting request value " + idName + "=" + idValue);
       return null;
     }
 
@@ -157,9 +164,7 @@ public class SOAPRequest {
       return soapResponse.getSOAPPart().getEnvelope().getTextContent();
 
     } catch (Exception e) {
-      System.err.println("\nError while making the call to the service: " + endpointUrl);
-      System.err.println("\tmake sure you have access to the requested url. Now exiting.\n");
-      System.exit(1);
+      logger.warn("Error while making the call to the service: " + endpointUrl + "make sure you have access to the requested url.");
     }
 
     return null;

@@ -43,8 +43,8 @@ public class WeatherStation {
 
     try {
       loopFuture.get();
-    } catch (Exception ce) {
-      System.out.println("execution terminated");
+    } catch (Exception e) {
+      logger.info("execution terminated");
     }
   }
 
@@ -88,7 +88,7 @@ public class WeatherStation {
     logger.info("starting weather sensors with {}ms refresh time.", refreshTime);
 
     for (int i = 0; i < sensors.length; i++) {
-      sensors[i] = new WeatherSensor(i + firstId);
+      sensors[i] = new WeatherSensor(i + firstId, refreshTime * 2);
 
       // execute every refreshTime seconds.
       schedExSvc.scheduleAtFixedRate(sensors[i], 0,

@@ -18,7 +18,7 @@ public class WeatherSensorTest {
     @Before
     public void setUp() {
         // sensor with any id, wont be used.
-        sensor = new WeatherSensor(0);
+        sensor = new WeatherSensor(0, 1000);
 
         // response of the soap service example.
         xml = "<weather id='2' timestamp='1.3734218308E+17' status='true' serialNumber='D2320028D1810012'><sensors>" +

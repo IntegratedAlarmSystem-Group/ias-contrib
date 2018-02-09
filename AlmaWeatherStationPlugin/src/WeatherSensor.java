@@ -1,3 +1,5 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -20,7 +22,7 @@ public class WeatherSensor implements Runnable {
 
   // sensor testing
   public static void main(String[] args) {
-    WeatherSensor sensor = new WeatherSensor(2);
+    WeatherSensor sensor = new WeatherSensor(2, 2000);
     sensor.updateValues();
     System.out.println(sensor);
   }
@@ -42,6 +44,11 @@ public class WeatherSensor implements Runnable {
 
     return sb.toString().trim();
   }
+
+  /**
+   * The logger.
+   */
+  private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
   /**
    * sensor id the will be sent in the soap request.
@@ -80,7 +87,7 @@ public class WeatherSensor implements Runnable {
    *
    * @param id of the sensor to request.
    */
-  WeatherSensor(int id) {
+  WeatherSensor(int id, int timeToLive) {
     // soap requests
     String url = "http://weather.aiv.alma.cl/ws_weather.php";
     String action = "getCurrentWeatherData";
@@ -91,7 +98,7 @@ public class WeatherSensor implements Runnable {
 
     // sensor id
     this.id = id;
-    ttl = 2000;
+    ttl = timeToLive;
   }
 
   /**
@@ -107,7 +114,13 @@ public class WeatherSensor implements Runnable {
    */
   public void updateValues() {
     String response = soap.sendRequest(Integer.toString(id));
+    if (response == null)
+      return;
+
     Document doc = parseDOM(response);
+    if (doc == null)
+      return;
+
     NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
 
     for (int i = 0; i < sensors.getLength(); i++) {
@@ -177,8 +190,9 @@ public class WeatherSensor implements Runnable {
       dBuilder = dbFactory.newDocumentBuilder();
 
     } catch (Exception e) {
-      System.err.println("Error occurred while creating document builder.");
+      logger.error("Error occurred while creating document builder.");
       e.printStackTrace();
+      System.exit(1);
     }
   }
 
@@ -193,8 +207,7 @@ public class WeatherSensor implements Runnable {
       return dBuilder.parse(new InputSource(new StringReader(response)));
 
     } catch (Exception e) {
-      System.err.println("Error occurred while parsing the DOM.");
-      e.printStackTrace();
+      logger.warn("Error occurred while parsing the DOM.");
     }
     return null;
   }
