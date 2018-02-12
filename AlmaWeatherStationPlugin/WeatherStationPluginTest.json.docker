@@ -1,0 +1,129 @@
+{
+  "id": "WeatherStationPlugin",
+  "monitoredSystemId": "WeatherStationSystem",
+  "sinkServer": "kafka",
+  "sinkPort": "9092",
+  "properties": [],
+  "values": [
+    {
+      "id": "Temperature2",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WindSpeed2",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "Temperature3",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WindSpeed3",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "Temperature4",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WindSpeed4",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "Temperature5",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WindSpeed5",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "Temperature6",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WindSpeed6",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "Temperature7",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WindSpeed7",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "Temperature8",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WindSpeed8",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "Temperature9",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WindSpeed9",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "Temperature10",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WindSpeed10",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "Temperature11",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WindSpeed11",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    }
+  ]
+}
