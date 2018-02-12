@@ -1,0 +1,13 @@
+version: "2"
+
+services:
+    alma-weather-plugin:
+        image: alma_weather_plugin:latest
+        command: java -jar dist/AlmaWeatherStationPlugin.jar
+        links:
+            - "kafka"
+    kafka:
+        image: spotify/kafka:latest
+        ports:
+            - "9092:9092"
+            - "2181:2181"

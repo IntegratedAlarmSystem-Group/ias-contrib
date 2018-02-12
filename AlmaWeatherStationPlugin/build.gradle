@@ -25,10 +25,10 @@ repositories {
 }
 
 dependencies {
-    compile files('lib/ias-basic-types.jar'),
-    'org.slf4j:slf4j-api:1.7.25',
+    compile 'org.slf4j:slf4j-api:1.7.25',
     'ch.qos.logback:logback-classic:1.2.3',
-    'org.eso.ias:plugin:1.0.0'
+    'org.eso.ias:plugin:1.0.0',
+    'org.eso.ias:basic-types:1.0.0'
 
     runtime 'com.fasterxml.jackson.core:jackson-core:2.8.7',
     'com.fasterxml.jackson.core:jackson-databind:2.8.7',
@@ -43,7 +43,7 @@ jar {
     manifest {
         attributes 'Main-Class': 'WeatherPlugin'
     }
-
+    from('config') { include '*.json' into 'config' }
     destinationDir = file('dist/')
 
     // add dependencies to the jar - fat jar
