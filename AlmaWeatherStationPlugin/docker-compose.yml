@@ -3,7 +3,6 @@ version: "2"
 services:
     alma-weather-plugin:
         image: alma-weather-plugin:latest
-        command: java -jar AlmaWeatherStationPlugin.jar
         links:
             - "kafka"
     kafka:
