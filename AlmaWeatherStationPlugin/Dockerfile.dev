@@ -1,5 +1,5 @@
 FROM openjdk:8
 WORKDIR /usr/src/alma_weather_plugin
-COPY . /usr/src/alma_weather_plugin
-# RUN mv /usr/src/alma_weather_plugin/config-docker.json /usr/src/alma_weather_plugin/config-dev.json
-RUN ./gradlew build
+COPY dist/AlmaWeatherStationPlugin.jar /usr/src/alma_weather_plugin
+COPY config/config-docker.json /usr/src/alma_weather_plugin
+RUN mv /usr/src/alma_weather_plugin/config-docker.json /usr/src/alma_weather_plugin/config-dev.json

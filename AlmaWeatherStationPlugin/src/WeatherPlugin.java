@@ -98,7 +98,7 @@ public class WeatherPlugin extends Plugin {
   /**
    * The path to the config file for the plugin.
    */
-  private static final String configPath = "config/config-dev.json";
+  private static final String configPath = "config-dev.json";
 
   /**
    * Constructor

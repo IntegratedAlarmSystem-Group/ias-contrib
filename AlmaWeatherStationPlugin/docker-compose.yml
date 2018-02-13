@@ -2,8 +2,8 @@ version: "2"
 
 services:
     alma-weather-plugin:
-        image: alma_weather_plugin:latest
-        command: java -jar dist/AlmaWeatherStationPlugin.jar
+        image: alma-weather-plugin:latest
+        command: java -jar AlmaWeatherStationPlugin.jar
         links:
             - "kafka"
     kafka:
