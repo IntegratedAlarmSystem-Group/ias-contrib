@@ -10,3 +10,13 @@ services:
         ports:
             - "9092:9092"
             - "2181:2181"
+    ias-core:
+        image: ias:latest
+        links:
+            - "kafka"
+        volumes:
+            - "/tmp/cdb:/CDB"
+    cdb:
+        image: cdb:latest
+        volumes:
+            - "/tmp/cdb:/usr/src/cdb/CDB"
