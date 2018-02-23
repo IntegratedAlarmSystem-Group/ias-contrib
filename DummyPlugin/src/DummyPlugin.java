@@ -44,7 +44,7 @@ public class DummyPlugin extends Plugin {
     PluginConfig config = new PluginConfig();
     config.setId("DummyPlugin");
     config.setMonitoredSystemId("DummyStation");
-    config.setSinkServer("localhost");
+    config.setSinkServer("kafka");
     config.setSinkPort(9092);
 
     // values
