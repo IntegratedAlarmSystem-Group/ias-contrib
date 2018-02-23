@@ -77,7 +77,8 @@ class IasTestForAstri extends ComponentClient{
 		super(logger, managerLoc, clientName);
 	}
 
-	public static void main(String[] args) {	
+	public static void main(String[] args) {
+		
 		String managerLoc = System.getProperty("ACS.manager");
 		String clientName = "IasTestForAstri";
 		try{
@@ -118,13 +119,17 @@ class IasTestForAstri extends ComponentClient{
 			public void run() {
 				int i=0;
 				try{
+					//Try to take the component from the container;
 					ws = astri.TCS.WeatherStationHelper.narrow(getContainerServices().getComponent("WeatherStation"));
 					while(i<10){
 						//System.out.println("Thread started");
+						// Convert the value of Windspd into ROdouble
 						ROdouble windSpeedProp = ws.WS_WINDSPD();
 						CompletionHolder c = new CompletionHolder();
+						//Extract the value
 						double val = windSpeedProp.get_sync(c);
 						m_logger.info(" Wind speed is: "+val);
+						//Update the monitor point with ID and Value
 						updateMonitorPointValue("WS_WINDSP",val);
 						Thread.sleep(1000);
 						i++;
