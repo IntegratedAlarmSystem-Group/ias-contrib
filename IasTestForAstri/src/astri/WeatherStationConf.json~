@@ -1,0 +1,12 @@
+{ 
+	"id":"WeatherStation",
+	"monitoredSystemId":"CTA",
+	"sinkServer":"localhost",
+	"sinkPort":"8081",
+	"properties": [],
+	"values":[
+		{"id":"WS_WINDSP",
+		"refreshTime":"2000",
+		"filter":"",
+		"filterOptions":""}]
+}
