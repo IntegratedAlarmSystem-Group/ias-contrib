@@ -3,7 +3,6 @@ RUN apt-get update && apt-get install -y netcat
 WORKDIR /usr/src/alma_weather_plugin
 COPY dist/AlmaWeatherStationPlugin.jar /usr/src/alma_weather_plugin
 RUN mkdir -p /usr/src/alma_weather_plugin/config
-COPY config/config-docker.json /usr/src/alma_weather_plugin/config
-RUN mv /usr/src/alma_weather_plugin/config/config-docker.json /usr/src/alma_weather_plugin/config/config-dev.json
+COPY config.json /usr/src/alma_weather_plugin/
 COPY entrypoint.sh /usr/src/alma_weather_plugin
-CMD ["./entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]

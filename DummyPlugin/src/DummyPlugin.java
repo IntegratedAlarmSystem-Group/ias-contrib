@@ -59,7 +59,7 @@ public class DummyPlugin extends Plugin {
         }
       }
     }
-    System.out.println("Kafka server: "+sinkServer+":"+sinkPort);
+    System.out.println("Kafka sink server: "+sinkServer+":"+sinkPort);
     config.setSinkServer(sinkServer);
     config.setSinkPort(sinkPort);
 
