@@ -44,8 +44,25 @@ public class DummyPlugin extends Plugin {
     PluginConfig config = new PluginConfig();
     config.setId("DummyPlugin");
     config.setMonitoredSystemId("DummyStation");
-    config.setSinkServer("kafka");
-    config.setSinkPort(9092);
+
+    String sinkServer = "localhost";
+    int sinkPort = 9092;
+
+    if (args.length > 0) {
+      sinkServer = args[0];
+      if (args.length > 1) {
+        try {
+          sinkPort = Integer.parseInt(args[1]);
+        } catch (NumberFormatException e) {
+          System.err.println("Sink port" + args[1] + " must be an integer.");
+          System.exit(1);
+        }
+      }
+    }
+    System.out.println("Kafka server: "+sinkServer+":"+sinkPort);
+    config.setSinkServer(sinkServer);
+    config.setSinkPort(sinkPort);
+
 
     // values
     Value dummyVal = new Value();
