@@ -54,7 +54,26 @@ public class WeatherPlugin extends Plugin {
       logger.error("Execution error", ee);
       System.exit(-1);
     }
-    logger.info("Configuration successfully red");
+    logger.info("Configuration successfully read");
+
+		String sinkServer = config.getSinkServer();
+    int sinkPort = config.getSinkPort();
+
+    logger.info("args length = "+args.length);
+    if (args.length > 0) {
+      sinkServer = args[0];
+      if (args.length > 1) {
+        try {
+          sinkPort = Integer.parseInt(args[1]);
+        } catch (NumberFormatException e) {
+          System.err.println("Sink port" + args[1] + " must be an integer.");
+          System.exit(1);
+        }
+      }
+    }
+    logger.info("Kafka sink server: "+sinkServer+":"+sinkPort);
+    config.setSinkServer(sinkServer);
+    config.setSinkPort(sinkPort);
 
     KafkaPublisher kafkaPublisher = new KafkaPublisher(config.getId(), config.getMonitoredSystemId(),
         config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService());
@@ -98,7 +117,7 @@ public class WeatherPlugin extends Plugin {
   /**
    * The path to the config file for the plugin.
    */
-  private static final String configPath = "WeatherStationPluginTest.json";
+  private static final String configPath = "config.json";
 
   /**
    * Constructor
