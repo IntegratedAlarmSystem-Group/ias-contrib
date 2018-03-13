@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 while ! nc -z kafka 9092
 do
