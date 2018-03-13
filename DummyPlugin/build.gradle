@@ -10,11 +10,15 @@ sourceSets {
 
 repositories {
   mavenCentral()
+  jcenter()
+  maven {
+      url "http://artifactory.inria.cl:8081/artifactory/inria-maven"
+  }
 }
 
 dependencies {
-  compile files('../lib/ias-plugin.jar',
-                '../lib/ias-basic-types.jar'),
+  compile 'org.eso.ias:plugin:1.0.1',
+          'org.eso.ias:basic-types:1.0.1',
           'org.slf4j:slf4j-api:1.7.25',
           'ch.qos.logback:logback-classic:1.2.3'
 

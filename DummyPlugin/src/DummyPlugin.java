@@ -7,7 +7,7 @@ import org.eso.ias.plugin.config.Value;
 import org.eso.ias.plugin.publisher.MonitorPointSender;
 import org.eso.ias.plugin.publisher.PublisherException;
 import org.eso.ias.plugin.publisher.impl.KafkaPublisher;
-import org.eso.ias.prototype.input.java.OperationalMode;
+import org.eso.ias.types.OperationalMode;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
@@ -157,7 +157,7 @@ public class DummyPlugin extends Plugin {
               break;
 
             case "initialization":
-              dummy.setPluginOperationalMode(OperationalMode.INTIALIZATION);
+              dummy.setPluginOperationalMode(OperationalMode.INITIALIZATION);
               System.err.println(msg + arg[1]);
               break;
 
