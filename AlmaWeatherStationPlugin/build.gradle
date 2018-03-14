@@ -36,6 +36,7 @@ dependencies {
     'org.apache.kafka:kafka-clients:1.0.0',
     'ch.qos.logback:logback-core:1.2.3'
 
+
     testCompile 'junit:junit:4.12'
 }
 
