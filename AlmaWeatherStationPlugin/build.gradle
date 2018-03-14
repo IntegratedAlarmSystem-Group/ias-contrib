@@ -14,7 +14,7 @@ apply plugin: 'java'
 apply plugin: "com.jfrog.artifactory"
 
 group = 'org.eso.ias'
-version = System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "local"
+version = "dev"
 
 sourceSets {
     main {
