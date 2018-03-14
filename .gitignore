@@ -10,6 +10,7 @@
 # Package Files #
 *.jar
 !AlmaWeatherStationPlugin/gradle/wrapper/gradle-wrapper.jar
+!DummyPlugin/gradle/wrapper/gradle-wrapper.jar
 *.war
 *.ear
 *.zip
