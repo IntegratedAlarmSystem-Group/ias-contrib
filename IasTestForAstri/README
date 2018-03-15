@@ -1,4 +1,0 @@
-This prototype create a connection between IAS plugin and ACS, start collecting one monitor point (WS_WINDSPD) and send the value into jsonfile.
-In this test there is only the plugin, it was the first prototype created.
-REQUIREMENT:
-* ACS start and running;
