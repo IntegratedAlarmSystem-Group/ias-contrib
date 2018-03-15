@@ -13,6 +13,7 @@ The OpcuaClientPlugin class is created for connect the Plugin with a OPC UA serv
 # RUN:	
 After check the requirement you can run the OpcuaClientPlugin class.
 Example of the connection.
+*
 	-----------------------------
 	Select the port number for the connection
 	0 -> port number: 52520 for WeatherStation
@@ -21,7 +22,7 @@ Example of the connection.
 	3 -> port number: 52523 for TCU
 	4 -> port number: 52524 for THCU
 	-----------------------------
-
+*
 Select the port number for start a connection beetween one OPCUA server, this class collect monitor point from the server (in this case only the wind speed value named ws_windspd). 
 The Plugin save the monitor points in a Kafka topics named "PluginsKtopic", the Converter take the data from the Plugin topic and convert it into IASValue, after the conversion they are saved in another Kafka topic named BsdbCoreKTopic.
 This Prototype first start the converter loop then the Plugin, at this point start a client OPC UA and connect it to a server OPC UA, at this time it's possible take monitor points.
