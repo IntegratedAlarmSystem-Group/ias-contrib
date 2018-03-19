@@ -1,0 +1,5 @@
+FROM openjdk:8-jdk-alpine
+RUN apk update && apk add netcat-openbsd wget
+WORKDIR /usr/src/dummy_plugin
+COPY dist/dummy-plugin-dev.jar /usr/src/dummy_plugin
+ENTRYPOINT ["java", "-jar", "dummy-plugin-dev.jar"]
