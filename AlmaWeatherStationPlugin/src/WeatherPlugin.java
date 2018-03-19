@@ -96,7 +96,7 @@ public class WeatherPlugin extends Plugin {
     // and the shutdown hook disconnects from the weather station.
     plugin.startLoop();
 
-    logger.info("Done.");
+    logger.info("Configuration done.");
   }
 
   /**
@@ -173,7 +173,7 @@ public class WeatherPlugin extends Plugin {
     // send data every second.
     loopFuture = getScheduledExecutorService().scheduleAtFixedRate(
         () -> {
-          logger.info("Updating monitor point values from the weather station");
+          logger.debug("Updating monitor point values from the weather station");
 
           for (int i = 2; i < 12; i++) {
             Double temperature, windSpeed; // dewpoint, humidity, pressure, windDir;
@@ -201,14 +201,14 @@ public class WeatherPlugin extends Plugin {
               logger.error(e.getMessage());
             }
           }
-          logger.info("Monitor point values updated");
+          logger.debug("Monitor point values updated");
         }, 0, 1, TimeUnit.SECONDS);
     try {
       loopFuture.get();
     } catch (ExecutionException ee) {
       logger.error("Execution exception getting values from the weather station", ee);
     } catch (Exception e) {
-      logger.info("Loop to get monitor point values from the weather station terminated");
+      logger.warn("Loop to get monitor point values from the weather station terminated");
     }
   }
 }
