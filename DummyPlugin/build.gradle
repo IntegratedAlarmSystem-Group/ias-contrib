@@ -33,8 +33,8 @@ repositories {
 }
 
 dependencies {
-  compile 'org.eso.ias:plugin:1.0.1',
-          'org.eso.ias:basic-types:1.0.1',
+  compile 'org.eso.ias:plugin:+',
+          'org.eso.ias:basic-types:+',
           'org.slf4j:slf4j-api:1.7.25',
           'ch.qos.logback:logback-classic:1.2.3'
 
