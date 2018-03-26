@@ -11,9 +11,9 @@ To be able to connect to the station the device must be connected to a network f
 The following programs must be installed:
 
 * Zookeeper (v.3.4.9)
-* Apache Kafka (v.2.12)
+* Apache Kafka (v.1.0)
 * Gradle (v.4.4.1)
-* Java JDK (v.1.8.0)
+* Java JDK (v.1.8.x)
 
 ## Build and Run
 
