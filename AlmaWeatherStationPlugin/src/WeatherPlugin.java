@@ -3,6 +3,8 @@ import org.eso.ias.plugin.PluginException;
 import org.eso.ias.plugin.config.PluginConfig;
 import org.eso.ias.plugin.config.PluginConfigException;
 import org.eso.ias.plugin.config.PluginConfigFileReader;
+import org.eso.ias.plugin.config.Property;
+import org.eso.ias.plugin.config.Value;
 import org.eso.ias.plugin.publisher.MonitorPointSender;
 import org.eso.ias.plugin.publisher.PublisherException;
 import org.eso.ias.plugin.publisher.impl.KafkaPublisher;
@@ -12,6 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.*;
 
 /**
@@ -118,6 +123,10 @@ public class WeatherPlugin extends Plugin {
    * The path to the config file for the plugin.
    */
   private static final String configPath = "config.json";
+  
+  private static Collection<Value> values;
+  
+  private static Map<String,String> monitorPoints = new HashMap<String, String>();
 
   /**
    * Constructor
@@ -127,6 +136,11 @@ public class WeatherPlugin extends Plugin {
    */
   private WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
     super(config, sender);
+    values = config.getValuesAsCollection();
+    Property[] props = config.getProperties();
+    for (Property prop : props) {
+    	monitorPoints.put(prop.getKey(), prop.getValue());
+    }
   }
 
   /**
@@ -134,7 +148,7 @@ public class WeatherPlugin extends Plugin {
    */
   private void initialize() {
     // refreshes every 1000 milliseconds
-    weatherStation = new WeatherStation(2, 11, 1000);
+    weatherStation = new WeatherStation(1, 11, 1000);
 
     // Adds the shutdown hook
     Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release weather station shutdown hook"));
@@ -174,33 +188,19 @@ public class WeatherPlugin extends Plugin {
     loopFuture = getScheduledExecutorService().scheduleAtFixedRate(
         () -> {
           logger.debug("Updating monitor point values from the weather station");
+          
+          values.forEach(value -> {
+              try {
+            	String [] parts = monitorPoints.get(value.getId()).split("-");
+            	double v = weatherStation.getValue(Integer.parseInt(parts[0]), parts[1]);
 
-          for (int i = 2; i < 12; i++) {
-            Double temperature, windSpeed; // dewpoint, humidity, pressure, windDir;
+                updateMonitorPointValue(value.getId(), v);
 
-            try {
-              temperature = weatherStation.getValue(i, "temperature");
-              windSpeed = weatherStation.getValue(i, "wind speed");
-
-              updateMonitorPointValue("Temperature" + i, temperature);
-              updateMonitorPointValue("WindSpeed" + i, windSpeed);
-
-                            /*
-                            humidity = weatherStation.getValue(i, "humidity");
-                            pressure = weatherStation.getValue(i, "pressure");
-                            dewpoint = weatherStation.getValue(i, "dewpoint");
-                            windDir = weatherStation.getValue(i, "wind direction");
-
-                            updateMonitorPointValue("Humidity" + i, humidity);
-                            updateMonitorPointValue("Pressure" + i, pressure);
-                            updateMonitorPointValue("Dewpoint" + i, dewpoint);
-                            updateMonitorPointValue("WindDirection" + i, windDir);
-                            */
-
-            } catch (Exception e) {
-              logger.error(e.getMessage());
-            }
-          }
+              } catch (Exception e) {
+                logger.error(e.getMessage());
+              }
+          });
+          
           logger.debug("Monitor point values updated");
         }, 0, 1, TimeUnit.SECONDS);
     try {

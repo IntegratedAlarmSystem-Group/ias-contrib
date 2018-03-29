@@ -33,3 +33,7 @@ dist/
 
 # mac
 .DS_Store
+
+# Eclipse
+*.project
+*.classpath
