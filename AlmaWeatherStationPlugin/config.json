@@ -6,121 +6,232 @@
   "properties": [],
   "values": [
     {
-      "id": "Temperature2",
+      "id": "WS-MeteoTB1-Temperature",
+      "internalId": "1",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "WindSpeed2",
+      "id": "WS-MeteoTB1-WindSpeed",
+      "internalId": "1",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "Temperature3",
+      "id": "WS-MeteoTB1-Humidity",
+      "internalId": "1",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "WindSpeed3",
+      "id": "WS-MeteoTB2-Temperature",
+      "internalId": "2",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "Temperature4",
+      "id": "WS-MeteoTB2-WindSpeed",
+      "internalId": "2",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "WindSpeed4",
+      "id": "WS-MeteoTB2-Humidity",
+      "internalId": "2",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "Temperature5",
+      "id": "WS-MeteoOSF-Temperature",
+      "internalId": "3",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "WindSpeed5",
+      "id": "WS-MeteoOSF-WindSpeed",
+      "internalId": "3",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "Temperature6",
+      "id": "WS-MeteoOSF-Humidity",
+      "internalId": "3",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "WindSpeed6",
+      "id": "WS-MeteoItinerant-Temperature",
+      "internalId": "4",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "Temperature7",
+      "id": "WS-MeteoItinerant-WindSpeed",
+      "internalId": "4",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "WindSpeed7",
+      "id": "WS-MeteoItinerant-Humidity",
+      "internalId": "4",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "Temperature8",
+      "id": "WS-Meteo201-Temperature",
+      "internalId": "5",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "WindSpeed8",
+      "id": "WS-Meteo201-WindSpeed",
+      "internalId": "5",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "Temperature9",
+      "id": "WS-Meteo201-Humidity",
+      "internalId": "5",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "WindSpeed9",
+      "id": "WS-MeteoCentral-Temperature",
+      "internalId": "6",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "Temperature10",
+      "id": "WS-MeteoCentral-WindSpeed",
+      "internalId": "6",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "WindSpeed10",
+      "id": "WS-MeteoCentral-Humidity",
+      "internalId": "6",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "Temperature11",
+      "id": "WS-Meteo309-Temperature",
+      "internalId": "7",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
     },
     {
-      "id": "WindSpeed11",
+      "id": "WS-Meteo309-WindSpeed",
+      "internalId": "7",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo309-Humidity",
+      "internalId": "7",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo410-Temperature",
+      "internalId": "8",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo410-WindSpeed",
+      "internalId": "8",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo410-Humidity",
+      "internalId": "8",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo131-Temperature",
+      "internalId": "9",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo131-WindSpeed",
+      "internalId": "9",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo131-Humidity",
+      "internalId": "9",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo129-Temperature",
+      "internalId": "10",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo129-WindSpeed",
+      "internalId": "10",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo129-Humidity",
+      "internalId": "10",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo130-Temperature",
+      "internalId": "11",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo130-WindSpeed",
+      "internalId": "11",
+      "refreshTime": "2000",
+      "filter": "",
+      "filterOptions": ""
+    },
+    {
+      "id": "WS-Meteo130-Humidity",
+      "internalId": "11",
       "refreshTime": "2000",
       "filter": "",
       "filterOptions": ""
