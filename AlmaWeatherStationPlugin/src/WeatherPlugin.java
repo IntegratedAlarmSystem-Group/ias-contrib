@@ -54,6 +54,11 @@ public class WeatherPlugin extends Plugin {
 	 * The path to the config file for the plugin.
 	 */
 	private static final String configPath = "config.json";
+	
+	/**
+	 * Refresh time
+	 */
+	private static final int refreshTime = 5000;
 
 	/**
 	 * Constructor
@@ -77,7 +82,7 @@ public class WeatherPlugin extends Plugin {
 	 */
 	private void initialize() {
 		// refreshes every 1000 milliseconds
-		weatherStation = new WeatherStation(1, 11, 1000);
+		weatherStation = new WeatherStation(1, 11, this.refreshTime);
 
 		// Adds the shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release weather station shutdown hook"));

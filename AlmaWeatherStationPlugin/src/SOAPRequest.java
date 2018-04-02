@@ -10,21 +10,6 @@ import javax.xml.soap.*;
  */
 public class SOAPRequest {
 
-	// SAAJ - SOAP Client Testing
-	public static void main(String args[]) {
-		String endpointUrl = "http://weather.aiv.alma.cl/ws_weather.php";
-		String target = "http://weather.aiv.alma.cl/ws_weather.php";
-		String action = "getCurrentWeatherData";
-		String idName = "id";
-
-		SOAPRequest soap = new SOAPRequest(endpointUrl, target, action, idName);
-
-		for (int i = 2; i < 12; i++) {
-			String response = soap.sendRequest(Integer.toString(i));
-			System.out.println(response);
-		}
-	}
-
 	/**
 	 * The logger.
 	 */
@@ -94,7 +79,6 @@ public class SOAPRequest {
 	 * readies the connection and the message to send request to the web service.
 	 */
 	private void createConnection() throws SOAPException {
-		// Create SOAP Connection
 		SOAPConnectionFactory connectionFactory = SOAPConnectionFactory.newInstance();
 		connection = connectionFactory.createConnection();
 	}
@@ -175,5 +159,20 @@ public class SOAPRequest {
 		}
 
 		return null;
+	}
+	
+	// SAAJ - SOAP Client Testing
+	public static void main(String args[]) {
+		String endpointUrl = "http://weather.aiv.alma.cl/ws_weather.php";
+		String target = "http://weather.aiv.alma.cl/ws_weather.php";
+		String action = "getCurrentWeatherData";
+		String idName = "id";
+
+		SOAPRequest soap = new SOAPRequest(endpointUrl, target, action, idName);
+
+		for (int i = 1; i < 12; i++) {
+			String response = soap.sendRequest(Integer.toString(i));
+			System.out.println(response);
+		}
 	}
 }

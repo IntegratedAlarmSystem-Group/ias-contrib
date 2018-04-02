@@ -13,38 +13,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class WeatherStation {
 
-	public static void main(String[] args) {
-
-		int refhreshTime = 1000;
-		WeatherStation ws = new WeatherStation(2, 11, refhreshTime);
-
-		ScheduledExecutorService schedExecutorSvc = Executors.newScheduledThreadPool(1, r -> {
-			Thread t = new Thread(r);
-			t.setDaemon(true);
-			return t;
-		});
-
-		ScheduledFuture<?> loopFuture = schedExecutorSvc.scheduleAtFixedRate(() -> {
-			for (int i = 2; i < 12; i++) {
-				Double temperature = null;
-
-				try {
-					temperature = ws.getValue(i, "temperature");
-				} catch (Exception e) {
-					logger.error("error getting values", e.getMessage());
-				}
-
-				logger.info("temp{}: {}", i, temperature);
-			}
-		}, 0, 1, TimeUnit.SECONDS);
-
-		try {
-			loopFuture.get();
-		} catch (Exception e) {
-			logger.info("execution terminated");
-		}
-	}
-
 	/**
 	 * The logger.
 	 */
@@ -121,5 +89,37 @@ public class WeatherStation {
 	 */
 	public void release() {
 		schedExSvc.shutdown();
+	}
+	
+	public static void main(String[] args) {
+
+		int refhreshTime = 1000;
+		WeatherStation ws = new WeatherStation(1, 11, refhreshTime);
+
+		ScheduledExecutorService schedExecutorSvc = Executors.newScheduledThreadPool(1, r -> {
+			Thread t = new Thread(r);
+			t.setDaemon(true);
+			return t;
+		});
+
+		ScheduledFuture<?> loopFuture = schedExecutorSvc.scheduleAtFixedRate(() -> {
+			for (int i = 2; i < 12; i++) {
+				Double temperature = null;
+
+				try {
+					temperature = ws.getValue(i, "temperature");
+				} catch (Exception e) {
+					logger.error("error getting values", e.getMessage());
+				}
+
+				logger.info("temp{}: {}", i, temperature);
+			}
+		}, 0, 1, TimeUnit.SECONDS);
+
+		try {
+			loopFuture.get();
+		} catch (Exception e) {
+			logger.info("execution terminated");
+		}
 	}
 }

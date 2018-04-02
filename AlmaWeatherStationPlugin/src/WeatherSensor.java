@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Date;
 
 /**
  * A class that parses and saves weather data from
@@ -56,6 +57,11 @@ public class WeatherSensor implements Runnable {
 	 * time to live of the values in this plugin, in milliseconds.
 	 */
 	private long ttl;
+	
+	/**
+	 * Max delay for getting data from a weather station
+	 */
+	private int maxDelay = 60000;
 
 	/**
 	 * creates a sensor with the given id, the id is the value given in the soap
@@ -77,7 +83,7 @@ public class WeatherSensor implements Runnable {
 		this.id = id;
 		ttl = timeToLive;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -111,20 +117,31 @@ public class WeatherSensor implements Runnable {
 		String response = soap.sendRequest(Integer.toString(id));
 		if (response == null)
 			return;
-
+		
 		Document doc = parseDOM(response);
 		if (doc == null)
 			return;
 
-		NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
+		// Check timestamp
+		Node weatherNode = Objects.requireNonNull(doc).getElementsByTagName("weather").item(0);
+		NamedNodeMap weatherAtts = weatherNode.getAttributes();
+		long almaZeroTimestamp = 122192928000000000L;
+		long timestamp = Long.parseLong(weatherAtts.getNamedItem("timestamp").getTextContent());
 
+		long stationTimestamp = (timestamp - almaZeroTimestamp) / 10000;
+		long currentTimestamp = new Date().getTime();
+		long diff = currentTimestamp - stationTimestamp;
+
+		if( diff > maxDelay) 
+			return;
+
+		// Update Values
+		NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
 		for (int i = 0; i < sensors.getLength(); i++) {
 			Node sensor = sensors.item(i);
-
 			NamedNodeMap atts = sensor.getAttributes();
 			String name = atts.getNamedItem("name").getTextContent();
 			double value = Double.parseDouble(sensor.getTextContent());
-
 			if (!values.containsKey(name))
 				values.put(name, value);
 			values.replace(name, value);
@@ -139,7 +156,6 @@ public class WeatherSensor implements Runnable {
 	public void updateValues(String xml) {
 		Document doc = parseDOM(xml);
 		NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
-
 		for (int i = 0; i < sensors.getLength(); i++) {
 			Node sensor = sensors.item(i);
 
@@ -210,7 +226,7 @@ public class WeatherSensor implements Runnable {
 		}
 		return null;
 	}
-	
+
 	// sensor testing
 	public static void main(String[] args) {
 		WeatherSensor sensor = new WeatherSensor(2, 2000);
