@@ -25,90 +25,20 @@ import java.util.concurrent.*;
 public class WeatherPlugin extends Plugin {
 
 	/**
-	 * runs the plugin.
-	 *
-	 * @param args
-	 *            .
-	 */
-	public static void main(String[] args) {
-
-		logger.info("Started...");
-		PluginConfig config = null;
-		try {
-			File configFile = new File(configPath);
-			PluginConfigFileReader jsonFileReader = new PluginConfigFileReader(configFile);
-			Future<PluginConfig> futurePluginConfig = jsonFileReader.getPluginConfig();
-			config = futurePluginConfig.get(1, TimeUnit.MINUTES);
-		} catch (FileNotFoundException e) {
-			logger.error("Exception opening config file", e);
-			e.printStackTrace();
-			System.exit(-1);
-		} catch (PluginConfigException pce) {
-			logger.error("Exception reading configuration", pce);
-			pce.printStackTrace();
-			System.exit(-1);
-		} catch (InterruptedException ie) {
-			logger.error("Interrupted", ie);
-			ie.printStackTrace();
-			System.exit(-1);
-		} catch (TimeoutException te) {
-			logger.error("Timeout reading configuration", te);
-			te.printStackTrace();
-			System.exit(-1);
-		} catch (ExecutionException ee) {
-			ee.printStackTrace();
-			logger.error("Execution error", ee);
-			System.exit(-1);
-		}
-		logger.info("Configuration successfully read");
-
-		String sinkServer = config.getSinkServer();
-		int sinkPort = config.getSinkPort();
-
-		logger.info("args length = " + args.length);
-		if (args.length > 0) {
-			sinkServer = args[0];
-			if (args.length > 1) {
-				try {
-					sinkPort = Integer.parseInt(args[1]);
-				} catch (NumberFormatException e) {
-					System.err.println("Sink port" + args[1] + " must be an integer.");
-					System.exit(1);
-				}
-			}
-		}
-		logger.info("Kafka sink server: " + sinkServer + ":" + sinkPort);
-		config.setSinkServer(sinkServer);
-		config.setSinkPort(sinkPort);
-
-		KafkaPublisher kafkaPublisher = new KafkaPublisher(config.getId(), config.getMonitoredSystemId(),
-				config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService());
-
-		WeatherPlugin plugin = new WeatherPlugin(config, kafkaPublisher);
-
-		try {
-			plugin.start();
-		} catch (PublisherException pe) {
-			logger.error("The plugin failed to start", pe);
-			System.exit(-3);
-		}
-
-		// Connect to the weather station.
-		plugin.initialize();
-		plugin.setPluginOperationalMode(OperationalMode.OPERATIONAL);
-
-		// Start getting data from the weather station
-		// This method exits when the user presses CTRL+C
-		// and the shutdown hook disconnects from the weather station.
-		plugin.startLoop();
-
-		logger.info("Configuration done.");
-	}
-
-	/**
 	 * The logger.
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
+	
+	/**
+	 * Hash map with the relation between the monitor points core ids and the 
+	 * weather sensor number. Specified in configuration properties.
+	 */
+	private static Map<String, String> monitorPoints = new HashMap<String, String>();
+	
+	/**
+	 * The List of monitored points
+	 */
+	private static Collection<Value> values;
 
 	/**
 	 * the loop to keep the plugin running.
@@ -124,10 +54,6 @@ public class WeatherPlugin extends Plugin {
 	 * The path to the config file for the plugin.
 	 */
 	private static final String configPath = "config.json";
-
-	private static Collection<Value> values;
-
-	private static Map<String, String> monitorPoints = new HashMap<String, String>();
 
 	/**
 	 * Constructor
@@ -213,5 +139,86 @@ public class WeatherPlugin extends Plugin {
 		} catch (Exception e) {
 			logger.warn("Loop to get monitor point values from the weather station terminated");
 		}
+	}
+	
+	/**
+	 * runs the plugin.
+	 *
+	 * @param args
+	 *            .
+	 */
+	public static void main(String[] args) {
+
+		logger.info("Started...");
+		PluginConfig config = null;
+		try {
+			File configFile = new File(configPath);
+			PluginConfigFileReader jsonFileReader = new PluginConfigFileReader(configFile);
+			Future<PluginConfig> futurePluginConfig = jsonFileReader.getPluginConfig();
+			config = futurePluginConfig.get(1, TimeUnit.MINUTES);
+		} catch (FileNotFoundException e) {
+			logger.error("Exception opening config file", e);
+			e.printStackTrace();
+			System.exit(-1);
+		} catch (PluginConfigException pce) {
+			logger.error("Exception reading configuration", pce);
+			pce.printStackTrace();
+			System.exit(-1);
+		} catch (InterruptedException ie) {
+			logger.error("Interrupted", ie);
+			ie.printStackTrace();
+			System.exit(-1);
+		} catch (TimeoutException te) {
+			logger.error("Timeout reading configuration", te);
+			te.printStackTrace();
+			System.exit(-1);
+		} catch (ExecutionException ee) {
+			ee.printStackTrace();
+			logger.error("Execution error", ee);
+			System.exit(-1);
+		}
+		logger.info("Configuration successfully read");
+
+		String sinkServer = config.getSinkServer();
+		int sinkPort = config.getSinkPort();
+
+		logger.info("args length = " + args.length);
+		if (args.length > 0) {
+			sinkServer = args[0];
+			if (args.length > 1) {
+				try {
+					sinkPort = Integer.parseInt(args[1]);
+				} catch (NumberFormatException e) {
+					System.err.println("Sink port" + args[1] + " must be an integer.");
+					System.exit(1);
+				}
+			}
+		}
+		logger.info("Kafka sink server: " + sinkServer + ":" + sinkPort);
+		config.setSinkServer(sinkServer);
+		config.setSinkPort(sinkPort);
+
+		KafkaPublisher kafkaPublisher = new KafkaPublisher(config.getId(), config.getMonitoredSystemId(),
+				config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService());
+
+		WeatherPlugin plugin = new WeatherPlugin(config, kafkaPublisher);
+
+		try {
+			plugin.start();
+		} catch (PublisherException pe) {
+			logger.error("The plugin failed to start", pe);
+			System.exit(-3);
+		}
+
+		// Connect to the weather station.
+		plugin.initialize();
+		plugin.setPluginOperationalMode(OperationalMode.OPERATIONAL);
+
+		// Start getting data from the weather station
+		// This method exits when the user presses CTRL+C
+		// and the shutdown hook disconnects from the weather station.
+		plugin.startLoop();
+
+		logger.info("Configuration done.");
 	}
 }

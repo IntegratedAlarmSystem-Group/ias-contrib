@@ -21,31 +21,6 @@ import java.util.Objects;
  */
 public class WeatherSensor implements Runnable {
 
-	// sensor testing
-	public static void main(String[] args) {
-		WeatherSensor sensor = new WeatherSensor(2, 2000);
-		sensor.updateValues();
-		System.out.println(sensor);
-	}
-
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("id: ");
-		sb.append(id);
-		sb.append(System.lineSeparator());
-
-		for (String key : values.keySet()) {
-			sb.append("  ");
-			sb.append(key);
-			sb.append(": ");
-			sb.append(values.get(key));
-			sb.append(System.lineSeparator());
-		}
-
-		return sb.toString().trim();
-	}
-
 	/**
 	 * The logger.
 	 */
@@ -101,6 +76,24 @@ public class WeatherSensor implements Runnable {
 		// sensor id
 		this.id = id;
 		ttl = timeToLive;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("id: ");
+		sb.append(id);
+		sb.append(System.lineSeparator());
+
+		for (String key : values.keySet()) {
+			sb.append("  ");
+			sb.append(key);
+			sb.append(": ");
+			sb.append(values.get(key));
+			sb.append(System.lineSeparator());
+		}
+
+		return sb.toString().trim();
 	}
 
 	/**
@@ -216,5 +209,12 @@ public class WeatherSensor implements Runnable {
 			logger.warn("Error occurred while parsing the DOM.");
 		}
 		return null;
+	}
+	
+	// sensor testing
+	public static void main(String[] args) {
+		WeatherSensor sensor = new WeatherSensor(2, 2000);
+		sensor.updateValues();
+		System.out.println(sensor);
 	}
 }
