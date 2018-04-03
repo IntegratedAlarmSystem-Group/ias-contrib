@@ -9,6 +9,8 @@
 
 # Package Files #
 *.jar
+!AlmaWeatherStationPlugin/gradle/wrapper/gradle-wrapper.jar
+!DummyPlugin/gradle/wrapper/gradle-wrapper.jar
 *.war
 *.ear
 *.zip
@@ -27,6 +29,11 @@ out/
 # Gradle
 .gradle
 build/
+dist/
 
 # mac
 .DS_Store
+
+# Eclipse
+*.project
+*.classpath

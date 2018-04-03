@@ -7,7 +7,7 @@ import org.eso.ias.plugin.config.Value;
 import org.eso.ias.plugin.publisher.MonitorPointSender;
 import org.eso.ias.plugin.publisher.PublisherException;
 import org.eso.ias.plugin.publisher.impl.KafkaPublisher;
-import org.eso.ias.prototype.input.java.OperationalMode;
+import org.eso.ias.types.OperationalMode;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
@@ -44,8 +44,25 @@ public class DummyPlugin extends Plugin {
     PluginConfig config = new PluginConfig();
     config.setId("DummyPlugin");
     config.setMonitoredSystemId("DummyStation");
-    config.setSinkServer("localhost");
-    config.setSinkPort(9092);
+
+    String sinkServer = "localhost";
+    int sinkPort = 9092;
+
+    if (args.length > 0) {
+      sinkServer = args[0];
+      if (args.length > 1) {
+        try {
+          sinkPort = Integer.parseInt(args[1]);
+        } catch (NumberFormatException e) {
+          System.err.println("Sink port" + args[1] + " must be an integer.");
+          System.exit(1);
+        }
+      }
+    }
+    System.out.println("Kafka sink server: "+sinkServer+":"+sinkPort);
+    config.setSinkServer(sinkServer);
+    config.setSinkPort(sinkPort);
+
 
     // values
     Value dummyVal = new Value();
@@ -140,7 +157,7 @@ public class DummyPlugin extends Plugin {
               break;
 
             case "initialization":
-              dummy.setPluginOperationalMode(OperationalMode.INTIALIZATION);
+              dummy.setPluginOperationalMode(OperationalMode.INITIALIZATION);
               System.err.println(msg + arg[1]);
               break;
 

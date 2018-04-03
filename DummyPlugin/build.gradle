@@ -1,4 +1,20 @@
+buildscript {
+  repositories {
+    jcenter()
+    maven {
+			url "http://artifactory.inria.cl:8081/artifactory/inria-maven"
+		}
+  }
+  dependencies {
+    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
+  }
+}
+
 apply plugin: 'java'
+apply plugin: "com.jfrog.artifactory"
+
+group = 'org.eso.ias'
+version = "dev"
 
 sourceSets {
   main {
@@ -10,11 +26,15 @@ sourceSets {
 
 repositories {
   mavenCentral()
+  jcenter()
+  maven {
+      url "http://artifactory.inria.cl:8081/artifactory/inria-maven"
+  }
 }
 
 dependencies {
-  compile files('../lib/ias-plugin.jar',
-                '../lib/ias-basic-types.jar'),
+  compile 'org.eso.ias:plugin:+',
+          'org.eso.ias:basic-types:+',
           'org.slf4j:slf4j-api:1.7.25',
           'ch.qos.logback:logback-classic:1.2.3'
 
@@ -24,6 +44,7 @@ dependencies {
           'org.apache.kafka:kafka-clients:1.0.0',
           'ch.qos.logback:logback-core:1.2.3'
 }
+
 
 jar {
   manifest {
@@ -36,6 +57,18 @@ jar {
   from {
     configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
   }
+}
+
+uploadArchives {
+	repositories {
+		maven {
+			credentials {
+				username System.getenv('ARTIFACTORY_USERNAME')
+				password System.getenv('ARTIFACTORY_PASSWORD')
+			}
+			url "http://artifactory.inria.cl:8081/artifactory/inria-maven"
+		}
+	}
 }
 
 defaultTasks 'build', 'clean'
