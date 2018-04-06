@@ -127,8 +127,9 @@ public class WeatherPlugin extends Plugin {
 				try {
 					String[] parts = monitorPoints.get(value.getId()).split("-");
 					double v = weatherStation.getValue(Integer.parseInt(parts[0]), parts[1]);
-
-					updateMonitorPointValue(value.getId(), v);
+					if(!Double.isNaN(v)) {
+						updateMonitorPointValue(value.getId(), v);
+					}
 
 				} catch (Exception e) {
 					logger.error(e.getMessage());

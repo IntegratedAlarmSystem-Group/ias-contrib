@@ -61,7 +61,7 @@ public class WeatherSensor implements Runnable {
 	/**
 	 * Max delay for getting data from a weather station
 	 */
-	private int maxDelay = 60000;
+	private int maxDelay = 300000;
 
 	/**
 	 * creates a sensor with the given id, the id is the value given in the soap
@@ -132,9 +132,6 @@ public class WeatherSensor implements Runnable {
 		long currentTimestamp = new Date().getTime();
 		long diff = currentTimestamp - stationTimestamp;
 
-		if( diff > maxDelay) 
-			return;
-
 		// Update Values
 		NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
 		for (int i = 0; i < sensors.getLength(); i++) {
@@ -142,9 +139,14 @@ public class WeatherSensor implements Runnable {
 			NamedNodeMap atts = sensor.getAttributes();
 			String name = atts.getNamedItem("name").getTextContent();
 			double value = Double.parseDouble(sensor.getTextContent());
+			
+			if( diff > maxDelay) {
+				value = Double.parseDouble("NaN");
+			}
 			if (!values.containsKey(name))
 				values.put(name, value);
 			values.replace(name, value);
+			
 		}
 
 		lastUpdated = System.currentTimeMillis();
