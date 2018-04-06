@@ -1,0 +1,34 @@
+FROM openjdk:8-jdk-alpine
+RUN apk update && apk add netcat-openbsd wget
+
+# --------------------------------------
+# Install Gradle
+# --------------------------------------
+WORKDIR /usr/src/alma_weather_plugin/src
+COPY gradlew .
+COPY gradle ./gradle
+COPY gradle.properties .
+COPY settings.gradle .
+COPY build.gradle .
+RUN ./gradlew
+
+# --------------------------------------
+# Build Project
+# --------------------------------------
+COPY . .
+RUN rm -rf dist
+RUN mkdir dist
+RUN ls dist
+RUN ./gradlew build
+
+# --------------------------------------
+# Move JARs and Clean
+# --------------------------------------
+RUN ls
+WORKDIR /usr/src/alma_weather_plugin
+RUN mv src/dist/alma-weather-station-plugin-dev.jar alma-weather-station-plugin.jar
+RUN rm -rf /usr/src/alma_weather_plugin/src
+COPY config.json /usr/src/alma_weather_plugin/
+COPY entrypoint.sh /usr/src/alma_weather_plugin
+RUN ls
+ENTRYPOINT ["./entrypoint.sh"]
