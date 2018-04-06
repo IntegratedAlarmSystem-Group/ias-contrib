@@ -26,7 +26,7 @@ RUN ./gradlew build
 # --------------------------------------
 RUN ls
 WORKDIR /usr/src/alma_weather_plugin
-RUN mv src/dist/alma-weather-station-plugin-dev.jar alma-weather-station-plugin.jar
+RUN mv src/dist/alma-weather-station-plugin.jar alma-weather-station-plugin.jar
 RUN rm -rf /usr/src/alma_weather_plugin/src
 COPY config.json /usr/src/alma_weather_plugin/
 COPY entrypoint.sh /usr/src/alma_weather_plugin
