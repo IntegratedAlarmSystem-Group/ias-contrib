@@ -1,0 +1,29 @@
+FROM openjdk:8-jdk-alpine
+RUN apk update && apk add netcat-openbsd wget
+
+# --------------------------------------
+# Install Gradle
+# --------------------------------------
+WORKDIR /usr/src/dummy_plugin/src
+COPY gradlew .
+COPY gradle ./gradle
+COPY gradle.properties .
+COPY settings.gradle .
+COPY build.gradle .
+RUN ./gradlew
+
+# --------------------------------------
+# Build Project
+# --------------------------------------
+COPY . .
+RUN rm -rf dist
+RUN mkdir dist
+RUN ./gradlew build
+
+# --------------------------------------
+# Move JARs and Clean
+# --------------------------------------
+WORKDIR /usr/src/dummy_plugin
+RUN mv src/dist/dummy-plugin.jar dummy-plugin.jar
+RUN rm -rf /usr/src/dummy_plugin/src
+ENTRYPOINT ["java", "-jar", "dummy-plugin.jar"]
