@@ -1,5 +1,9 @@
-FROM openjdk:8-jdk-alpine
-RUN apk update && apk add netcat-openbsd wget
+FROM centos:7
+RUN yum update -y && \
+  yum install java-1.8.0-openjdk-devel \
+  wget \
+  nmap-ncat \
+  -y
 WORKDIR /usr/src/alma_weather_plugin
 COPY dist/alma-weather-station-plugin.jar /usr/src/alma_weather_plugin/alma-weather-station-plugin.jar
 COPY config.json /usr/src/alma_weather_plugin/
