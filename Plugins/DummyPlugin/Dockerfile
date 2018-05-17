@@ -1,4 +1,9 @@
-FROM openjdk:8-jdk-alpine
+FROM centos:7
+RUN yum update -y && \
+  yum install java-1.8.0-openjdk-devel \
+  wget \
+  -y
+ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk
 WORKDIR /usr/src/dummy_plugin
 ARG version=dev
 RUN echo "Using version = "${version}

@@ -1,5 +1,10 @@
-FROM openjdk:8-jdk-alpine
-RUN apk update && apk add netcat-openbsd wget
+FROM centos:7
+RUN yum update -y && \
+  yum install java-1.8.0-openjdk-devel \
+  wget \
+  nmap-ncat \
+  -y
+ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk
 WORKDIR /usr/src/alma_weather_plugin
 ARG version=dev
 RUN echo "Using version = "${version}

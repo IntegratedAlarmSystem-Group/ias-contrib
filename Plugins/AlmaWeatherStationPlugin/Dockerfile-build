@@ -1,10 +1,12 @@
-FROM openjdk:8-jdk-alpine
-RUN apk update && apk add netcat-openbsd wget
-
+FROM centos:7
+RUN yum update -y && \
+  yum install java-1.8.0-openjdk-devel \
+  -y
+ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk
 # --------------------------------------
 # Install Gradle
 # --------------------------------------
-WORKDIR /usr/src/dummy_plugin/src
+WORKDIR /usr/src/alma_weather_plugin/src
 COPY gradlew .
 COPY gradle ./gradle
 COPY gradle.properties .
@@ -23,7 +25,9 @@ RUN ./gradlew build
 # --------------------------------------
 # Move JARs and Clean
 # --------------------------------------
-WORKDIR /usr/src/dummy_plugin
-RUN mv src/dist/dummy-plugin.jar dummy-plugin.jar
-RUN rm -rf /usr/src/dummy_plugin/src
-ENTRYPOINT ["java", "-jar", "dummy-plugin.jar"]
+WORKDIR /usr/src/alma_weather_plugin
+RUN mv src/dist/alma-weather-station-plugin.jar alma-weather-station-plugin.jar
+RUN rm -rf /usr/src/alma_weather_plugin/src
+COPY config.json /usr/src/alma_weather_plugin/
+COPY entrypoint.sh /usr/src/alma_weather_plugin
+ENTRYPOINT ["./entrypoint.sh"]
