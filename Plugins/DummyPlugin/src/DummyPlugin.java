@@ -225,7 +225,7 @@ public class DummyPlugin extends Plugin {
   private ScheduledFuture<?> loopFuture;
 
   private DummyPlugin(PluginConfig config, MonitorPointSender sender) {
-    super(config, sender);
+    super(config, sender, null);
   }
 
   /**

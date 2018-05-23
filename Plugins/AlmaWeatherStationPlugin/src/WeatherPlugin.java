@@ -28,13 +28,13 @@ public class WeatherPlugin extends Plugin {
 	 * The logger.
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
-	
+
 	/**
-	 * Hash map with the relation between the monitor points core ids and the 
+	 * Hash map with the relation between the monitor points core ids and the
 	 * weather sensor number. Specified in configuration properties.
 	 */
 	private static Map<String, String> monitorPoints = new HashMap<String, String>();
-	
+
 	/**
 	 * The List of monitored points
 	 */
@@ -54,7 +54,7 @@ public class WeatherPlugin extends Plugin {
 	 * The path to the config file for the plugin.
 	 */
 	private static final String configPath = "config.json";
-	
+
 	/**
 	 * Refresh time
 	 */
@@ -69,7 +69,7 @@ public class WeatherPlugin extends Plugin {
 	 *            The sender.
 	 */
 	private WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
-		super(config, sender);
+		super(config, sender, null);
 		values = config.getValuesAsCollection();
 		Property[] props = config.getProperties();
 		for (Property prop : props) {
@@ -146,7 +146,7 @@ public class WeatherPlugin extends Plugin {
 			logger.warn("Loop to get monitor point values from the weather station terminated");
 		}
 	}
-	
+
 	/**
 	 * runs the plugin.
 	 *
