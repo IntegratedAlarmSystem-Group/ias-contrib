@@ -1,3 +1,5 @@
+import org.eso.ias.heartbeat.publisher.HbKafkaProducer;
+import org.eso.ias.heartbeat.serializer.HbJsonSerializer;
 import org.eso.ias.plugin.Plugin;
 import org.eso.ias.plugin.PluginException;
 import org.eso.ias.plugin.config.PluginConfig;
@@ -69,7 +71,10 @@ public class WeatherPlugin extends Plugin {
 	 *            The sender.
 	 */
 	private WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
-		super(config, sender, null);
+		super(config, sender, new HbKafkaProducer(
+			"AlmaWeatherPlugin", config.getSinkServer() + ":" + config.getSinkPort(),
+			new HbJsonSerializer())
+		);
 		values = config.getValuesAsCollection();
 		Property[] props = config.getProperties();
 		for (Property prop : props) {

@@ -1,5 +1,7 @@
 
 import ch.qos.logback.classic.LoggerContext;
+import org.eso.ias.heartbeat.publisher.HbKafkaProducer;
+import org.eso.ias.heartbeat.serializer.HbJsonSerializer;
 import org.eso.ias.plugin.Plugin;
 import org.eso.ias.plugin.PluginException;
 import org.eso.ias.plugin.config.PluginConfig;
@@ -225,7 +227,10 @@ public class DummyPlugin extends Plugin {
   private ScheduledFuture<?> loopFuture;
 
   private DummyPlugin(PluginConfig config, MonitorPointSender sender) {
-    super(config, sender, null);
+    super(config, sender, new HbKafkaProducer(
+			config.getId(), config.getSinkServer() + ":" + config.getSinkPort(),
+			new HbJsonSerializer())
+		);
   }
 
   /**
