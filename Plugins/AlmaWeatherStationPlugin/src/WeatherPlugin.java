@@ -133,9 +133,12 @@ public class WeatherPlugin extends Plugin {
 					String[] parts = monitorPoints.get(value.getId()).split("-");
 					double v = weatherStation.getValue(Integer.parseInt(parts[0]), parts[1]);
 					if(!Double.isNaN(v)) {
-						updateMonitorPointValue(value.getId(), v);
+						setOperationalMode(value.getId(), OperationalMode.OPERATIONAL);
 					}
-
+					else {
+						setOperationalMode(value.getId(), OperationalMode.SHUTTEDDOWN);
+					}
+					updateMonitorPointValue(value.getId(), v);
 				} catch (Exception e) {
 					logger.error(e.getMessage());
 				}
@@ -223,7 +226,6 @@ public class WeatherPlugin extends Plugin {
 
 		// Connect to the weather station.
 		plugin.initialize();
-		plugin.setPluginOperationalMode(OperationalMode.OPERATIONAL);
 
 		// Start getting data from the weather station
 		// This method exits when the user presses CTRL+C
