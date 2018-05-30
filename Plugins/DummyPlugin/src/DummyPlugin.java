@@ -72,6 +72,9 @@ public class DummyPlugin extends Plugin {
     dummyVal.setRefreshTime(refreshTime);
     config.setValues(new Value[]{dummyVal});
 
+    // autoSendTimeInterval
+    config.setAutoSendTimeInterval(3);
+
     // publisher
     KafkaPublisher publisher = new KafkaPublisher(config.getId(),
         config.getMonitoredSystemId(),
