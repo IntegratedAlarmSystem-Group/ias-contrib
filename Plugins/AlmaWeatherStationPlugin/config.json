@@ -3,6 +3,7 @@
   "monitoredSystemId": "WeatherStationSystem",
   "sinkServer": "localhost",
   "sinkPort": "9092",
+  "autoSendTimeInterval":"3",
   "properties": [
     {
       "key": "WS-MeteoTB1-Temperature-Value",
