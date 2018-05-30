@@ -60,7 +60,7 @@ public class WeatherPlugin extends Plugin {
 	/**
 	 * Refresh time
 	 */
-	private static final int refreshTime = 5000;
+	private static final int refreshTime = 3000;
 
 	/**
 	 * Constructor
