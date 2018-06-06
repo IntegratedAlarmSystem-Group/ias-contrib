@@ -1,3 +1,5 @@
+import org.eso.ias.heartbeat.publisher.HbKafkaProducer;
+import org.eso.ias.heartbeat.serializer.HbJsonSerializer;
 import org.eso.ias.plugin.Plugin;
 import org.eso.ias.plugin.PluginException;
 import org.eso.ias.plugin.config.PluginConfig;
@@ -28,13 +30,13 @@ public class WeatherPlugin extends Plugin {
 	 * The logger.
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
-	
+
 	/**
-	 * Hash map with the relation between the monitor points core ids and the 
+	 * Hash map with the relation between the monitor points core ids and the
 	 * weather sensor number. Specified in configuration properties.
 	 */
 	private static Map<String, String> monitorPoints = new HashMap<String, String>();
-	
+
 	/**
 	 * The List of monitored points
 	 */
@@ -54,11 +56,11 @@ public class WeatherPlugin extends Plugin {
 	 * The path to the config file for the plugin.
 	 */
 	private static final String configPath = "config.json";
-	
+
 	/**
 	 * Refresh time
 	 */
-	private static final int refreshTime = 5000;
+	private static final int refreshTime = 3000;
 
 	/**
 	 * Constructor
@@ -69,7 +71,10 @@ public class WeatherPlugin extends Plugin {
 	 *            The sender.
 	 */
 	private WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
-		super(config, sender);
+		super(config, sender, new HbKafkaProducer(
+			"AlmaWeatherPlugin", config.getSinkServer() + ":" + config.getSinkPort(),
+			new HbJsonSerializer())
+		);
 		values = config.getValuesAsCollection();
 		Property[] props = config.getProperties();
 		for (Property prop : props) {
@@ -128,9 +133,12 @@ public class WeatherPlugin extends Plugin {
 					String[] parts = monitorPoints.get(value.getId()).split("-");
 					double v = weatherStation.getValue(Integer.parseInt(parts[0]), parts[1]);
 					if(!Double.isNaN(v)) {
-						updateMonitorPointValue(value.getId(), v);
+						setOperationalMode(value.getId(), OperationalMode.OPERATIONAL);
 					}
-
+					else {
+						setOperationalMode(value.getId(), OperationalMode.SHUTTEDDOWN);
+					}
+					updateMonitorPointValue(value.getId(), v);
 				} catch (Exception e) {
 					logger.error(e.getMessage());
 				}
@@ -146,7 +154,7 @@ public class WeatherPlugin extends Plugin {
 			logger.warn("Loop to get monitor point values from the weather station terminated");
 		}
 	}
-	
+
 	/**
 	 * runs the plugin.
 	 *
@@ -218,7 +226,6 @@ public class WeatherPlugin extends Plugin {
 
 		// Connect to the weather station.
 		plugin.initialize();
-		plugin.setPluginOperationalMode(OperationalMode.OPERATIONAL);
 
 		// Start getting data from the weather station
 		// This method exits when the user presses CTRL+C

@@ -224,15 +224,15 @@ public class WeatherSensor implements Runnable {
 			return dBuilder.parse(new InputSource(new StringReader(response)));
 
 		} catch (Exception e) {
-			logger.warn("Error occurred while parsing the DOM.");
+			logger.warn("Error occurred while parsing the DOM. \n" + e);
 		}
 		return null;
 	}
 
 	// sensor testing
-	public static void main(String[] args) {
-		WeatherSensor sensor = new WeatherSensor(2, 2000);
-		sensor.updateValues();
-		System.out.println(sensor);
-	}
+	// public static void main(String[] args) {
+	// 	WeatherSensor sensor = new WeatherSensor(2, 2000);
+	// 	sensor.updateValues();
+	// 	System.out.println(sensor);
+	// }
 }
