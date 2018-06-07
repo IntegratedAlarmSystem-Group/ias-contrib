@@ -1,6 +1,12 @@
-<configuration packagingData="false">
+<configuration debug="false" scan="false" packagingData="false">
+  <!--
+  	debug: logs logback status messages
+  	scan: dynamically check if the configuration has been changed
+  	      and update the loggging without restarting the application
+  	packagingData: nicely print stack traces (expansive)
+   -->
 
-    <timestamp key="tStamp" datePattern="yyyy-MM-dd-HH:mm:ss"/>
+    <timestamp key="tStamp" datePattern="yyyy-MM-dd-HH:mm:ss.SSS" timeReference="-3"/>
 
     <shutdownHook/>
 
@@ -8,23 +14,30 @@
         <!-- encoders are assigned the type
              ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %level %file - %msg%n</pattern>
+            <pattern>%d{HH-mm-ss.SSS, UTC} |%-5level| [%file:%line] [%thread] %msg%n</pattern>
         </encoder>
     </appender>
 
-    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <append>true</append>
         <prudent>true</prudent> <!--  Can slow down the logging -->
-        <file>log/WeatherPlugin${tStamp}.log</file>
+        <file>./logs/AlmaWeatherPlugin-${tStamp}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+          <fileNamePattern>./logs/AlmaWeatherPlugin.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+          <maxFileSize>100MB</maxFileSize>
+          <maxHistory>30</maxHistory>
+          <totalSizeCap>512MB</totalSizeCap>
+        </rollingPolicy>
 
         <encoder>
-            <pattern>%d{yyyy-MM-dd-HH:mm:ss} %level %file - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS, UTC} | %-5level [%file:%line] [%thread] %msg%n</pattern>
             <outputPatternAsHeader>true</outputPatternAsHeader>
         </encoder>
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="STDOUT"/>
+      <appender-ref ref="STDOUT" />
+      <appender-ref ref="FILE"/>
     </root>
 
 </configuration>
