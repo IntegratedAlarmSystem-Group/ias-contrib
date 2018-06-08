@@ -27,8 +27,10 @@ public class WeatherSensor implements Runnable {
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
+	private static final long almaZeroTimestamp = 122192928000000000L;
+
 	/**
-	 * sensor id the will be sent in the soap request.
+	 * Station id used in the soap request to obtain the current state.
 	 */
 	private int id;
 
@@ -38,7 +40,7 @@ public class WeatherSensor implements Runnable {
 	private DocumentBuilder dBuilder;
 
 	/**
-	 * soap client.
+	 * SOAP client.
 	 */
 	private SOAPRequest soap;
 
@@ -54,34 +56,39 @@ public class WeatherSensor implements Runnable {
 	private long lastUpdated = 0;
 
 	/**
-	 * time to live of the values in this plugin, in milliseconds.
+	 * Time to live of the values in this plugin in milliseconds. The weather
+	 * station values should be updated before the ttl time passes.
 	 */
 	private long ttl;
-	
-	/**
-	 * Max delay for getting data from a weather station
-	 */
-	private int maxDelay = 300000;
 
 	/**
-	 * creates a sensor with the given id, the id is the value given in the soap
-	 * request to access the data.
+	 * Max difference between current time and weather station response time to
+	 * be consider as not responding.
+	 */
+	private int maxDelay = 600000;
+
+	/**
+	 * Creates a station with the given id.
+	 * The id is the value associated with each station, necessary to get the
+	 * data through SOAP request.
 	 *
 	 * @param id
-	 *            of the sensor to request.
+	 *            Identifier of the weather station to be requested.
 	 */
 	WeatherSensor(int id, int timeToLive) {
-		// soap requests
+
+		// Create the SOAP Request
 		String url = "http://weather.aiv.alma.cl/ws_weather.php";
 		String action = "getCurrentWeatherData";
 		String idName = "id";
-		soap = new SOAPRequest(url, url, action, idName);
+		this.soap = new SOAPRequest(url, url, action, idName);
 
-		createDOMBuilder();
+		// Document Builder to parse the SOAP responses
+		this.dBuilder = createDOMBuilder();
 
-		// sensor id
+		// Weather Station id
 		this.id = id;
-		ttl = timeToLive;
+		this.ttl = timeToLive;
 	}
 
 	@Override
@@ -111,49 +118,68 @@ public class WeatherSensor implements Runnable {
 	}
 
 	/**
-	 * creates a soap request for the sensor data, parses and saves it.
+	 * Send a SOAP request and handle the response to update the values
 	 */
-	public void updateValues() {
-		String response = soap.sendRequest(Integer.toString(id));
+	public void updateValues(){
+		this.handleResponse(this.sendSoapRequest());
+	}
+
+	/**
+	 * Parses a SOAP Request response and saves it.
+	 *
+	 * @param response
+	 *							String corresponding to a Weather Station SOAP Request Response
+	 */
+	private void handleResponse(String response) {
 		if (response == null)
 			return;
-		
+
 		Document doc = parseDOM(response);
 		if (doc == null)
 			return;
 
-		// Check timestamp
 		Node weatherNode = Objects.requireNonNull(doc).getElementsByTagName("weather").item(0);
-		NamedNodeMap weatherAtts = weatherNode.getAttributes();
-		long almaZeroTimestamp = 122192928000000000L;
-		long timestamp = Long.parseLong(weatherAtts.getNamedItem("timestamp").getTextContent());
+		NamedNodeMap weatherAttributes = weatherNode.getAttributes();
 
-		long stationTimestamp = (timestamp - almaZeroTimestamp) / 10000;
-		long currentTimestamp = new Date().getTime();
-		long diff = currentTimestamp - stationTimestamp;
+		// Get station status
+		// String stationStatus = weatherAttributes.getNamedItem("status").getTextContent();
 
-		// Update Values
+		// Get station timestamp
+		long timestamp = Long.parseLong(weatherAttributes.getNamedItem("timestamp").getTextContent());
+		boolean stationTimestampValidity = this.validateStationTimestamp(timestamp);
+
+		// Update Values for each weather station sensor
 		NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
 		for (int i = 0; i < sensors.getLength(); i++) {
 			Node sensor = sensors.item(i);
 			NamedNodeMap atts = sensor.getAttributes();
-			String name = atts.getNamedItem("name").getTextContent();
-			double value = Double.parseDouble(sensor.getTextContent());
-			
-			if( diff > maxDelay) {
-				value = Double.parseDouble("NaN");
+			String sensorName = atts.getNamedItem("name").getTextContent();
+			double sensorValue = Double.parseDouble(sensor.getTextContent());
+
+			// If the station is responding with an old value, sensor will be updated
+			// with NaN values
+			if( !stationTimestampValidity ) {
+				sensorValue = Double.parseDouble("NaN");
 			}
-			if (!values.containsKey(name))
-				values.put(name, value);
-			values.replace(name, value);
-			
+
+			// If the station has status false, update the sensors with nan values.
+			// if( stationStatus.equals("false") ) {
+			// 	sensorValue = Double.parseDouble("NaN");
+			// }
+
+			// Update sensor values
+			if (!values.containsKey(sensorName))
+				values.put(sensorName, sensorValue);
+			values.replace(sensorName, sensorValue);
+
 		}
 
 		lastUpdated = System.currentTimeMillis();
 	}
 
+
 	/**
-	 * parses the xml and saves it. (for testing purposes)
+	 * Parses the xml and saves it. (for testing purposes)
 	 */
 	public void updateValues(String xml) {
 		Document doc = parseDOM(xml);
@@ -197,19 +223,50 @@ public class WeatherSensor implements Runnable {
 	}
 
 	/**
-	 * creates the document builder that will be used later to parse the soap
-	 * response.
-	 */
-	private void createDOMBuilder() {
+	* Creates the document builder that will be used later to parse the SOAP
+	* response.
+	*
+	* @return the created document builder
+	*/
+	private DocumentBuilder createDOMBuilder() {
+		DocumentBuilder dBuilder = null;
 		try {
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			dBuilder = dbFactory.newDocumentBuilder();
-
 		} catch (Exception e) {
 			logger.error("Error occurred while creating document builder.");
 			e.printStackTrace();
 			System.exit(1);
 		}
+		return dBuilder;
+	}
+
+	/**
+	* Send the SOAP Request to get updated data for this weather station.
+	*
+	* @return The SOAP Request Response
+	*/
+	private String sendSoapRequest(){
+		return soap.sendRequest(Integer.toString(this.id));
+	}
+
+	/**
+	* Transform the given timestamp from ALMA Timestamp to UTC timestamp and
+	* compares it with the current UTC timestamp. If the difference is more than
+	* maxDelay it returns False, otherwise return True.
+	*
+	* @param timestamp
+	*							Weather Station ALMA timetamp to be validated
+	* @return False if the difference is more than maxDelay, otherwise return True
+	*/
+	private boolean validateStationTimestamp(long timestamp) {
+		long stationTimestamp = (timestamp - this.almaZeroTimestamp) / 10000;
+		long currentTimestamp = new Date().getTime();
+		long diff = currentTimestamp - stationTimestamp;
+		if( diff > this.maxDelay) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -228,11 +285,4 @@ public class WeatherSensor implements Runnable {
 		}
 		return null;
 	}
-
-	// sensor testing
-	// public static void main(String[] args) {
-	// 	WeatherSensor sensor = new WeatherSensor(2, 2000);
-	// 	sensor.updateValues();
-	// 	System.out.println(sensor);
-	// }
 }

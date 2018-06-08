@@ -1,4 +1,4 @@
-public class SimpleSoapRequest {
+public class SoapRequestExample {
 
   // SAAJ - SOAP Client Testing
   public static void main(String args[]) {
