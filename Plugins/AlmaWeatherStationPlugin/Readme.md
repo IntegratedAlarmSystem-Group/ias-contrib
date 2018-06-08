@@ -34,3 +34,11 @@ To execute the jar, you must be in the same folder as the config file _WeatherSt
  `./kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic PluginsKTopic`
 
  from the _kafka/bin/_ folder.
+
+## Run the examples
+
+After generate the jar file following the previous steps you can also run the available examples.
+
+To execute the examples, you must run:
+
+`java -cp dist/AlmaWeatherStationPlugin.jar <example-class>`

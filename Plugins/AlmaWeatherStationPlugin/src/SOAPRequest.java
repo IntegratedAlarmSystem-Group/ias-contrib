@@ -1,7 +1,5 @@
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.xml.soap.*;
 
 /**
@@ -15,7 +13,6 @@ public class SOAPRequest {
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
-	// request parameters
 	/**
 	 * endpoint to make the request.
 	 */
@@ -42,7 +39,7 @@ public class SOAPRequest {
 	private SOAPElement text;
 
 	/**
-	 * Creates a SOAPRequest that can send requests to the endpoint specified,
+	 * Creates a SOAPRequest that can send requests to the specified endpoint,
 	 * providing the target, action and name of the id given to the service.
 	 *
 	 * @param endpointUrl
@@ -159,20 +156,5 @@ public class SOAPRequest {
 		}
 
 		return null;
-	}
-	
-	// SAAJ - SOAP Client Testing
-	public static void main(String args[]) {
-		String endpointUrl = "http://weather.aiv.alma.cl/ws_weather.php";
-		String target = "http://weather.aiv.alma.cl/ws_weather.php";
-		String action = "getCurrentWeatherData";
-		String idName = "id";
-
-		SOAPRequest soap = new SOAPRequest(endpointUrl, target, action, idName);
-
-		for (int i = 1; i < 12; i++) {
-			String response = soap.sendRequest(Integer.toString(i));
-			System.out.println(response);
-		}
 	}
 }
