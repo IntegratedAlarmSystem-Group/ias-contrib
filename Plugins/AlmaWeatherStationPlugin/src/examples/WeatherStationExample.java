@@ -1,12 +1,12 @@
 public class WeatherStationExample {
 
   public static void main(String[] args) {
-    int sensorId = 2;
-    int sensorTTL = 2000;
+    int stationId = 2;
+    int stationTTL = 2000;
 
-		WeatherSensor sensor = new WeatherSensor(sensorId, sensorTTL);
-		sensor.updateValues();
-		System.out.println(sensor);
+		WeatherStation station = new WeatherStation(stationId, stationTTL);
+		station.updateValues();
+		System.out.println(station);
 	}
 
 }
