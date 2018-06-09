@@ -75,7 +75,7 @@ public class WeatherPlugin extends Plugin {
 	/**
 	 * Refresh time in milliseconds
 	 */
-	private static int refreshTime = 5000;
+	private static int refreshTime = 3000;
 
 	/**
 	 * Constructor
@@ -172,7 +172,7 @@ public class WeatherPlugin extends Plugin {
 			});
 
 			logger.debug("Monitor point values updated");
-		}, 0, this.refreshTime, TimeUnit.MILLISECONDS);
+		}, 0, 1, TimeUnit.MILLISECONDS);
 		try {
 			loopFuture.get();
 		} catch (ExecutionException ee) {
