@@ -19,10 +19,13 @@ import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.concurrent.*;
 
 /**
- * publishes data from a weather station to a Kafka Queue
+ * IAS Plugin that runs in a never-ending loop and publishes data obtained
+ * periodically from a set of weather stations to a Kafka Queue
  */
 public class WeatherPlugin extends Plugin {
 
@@ -32,15 +35,23 @@ public class WeatherPlugin extends Plugin {
 	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
 	/**
-	 * Hash map with the relation between the monitor points core ids and the
-	 * weather sensor number. Specified in configuration properties.
+	 * The List of the IDs of the WeatherStations monitorized by this Plugin.
 	 */
-	private static Map<String, String> monitorPoints = new HashMap<String, String>();
+	private static HashSet<Integer> stationsIds = new HashSet<>();
 
 	/**
-	 * The List of monitored points
+	 * The List of IAS Values to be sent by this Plugin.
 	 */
-	private static Collection<Value> values;
+	private static Collection<Value> iasValues;
+
+	/**
+	* Hash map with the relation between the IAS Values and the
+	* Monitorized Weather Stations Ids and the corresponding sensor type.
+	* They are specified in the configuration properties.
+	* Example:
+	*				{ WS-MeteoCentral-Temperature-Value : 3-temperature }
+	*/
+	private static Map<String, String> monitorPoints = new HashMap<String, String>();
 
 	/**
 	 * the loop to keep the plugin running.
@@ -48,7 +59,8 @@ public class WeatherPlugin extends Plugin {
 	private ScheduledFuture<?> loopFuture;
 
 	/**
-	 * the weather station to retrieve the data.
+	 * The weather stations pool that updates their data periodically and provides
+	 * them to the plugin
 	 */
 	private WeatherStation weatherStation;
 
@@ -58,9 +70,9 @@ public class WeatherPlugin extends Plugin {
 	private static final String configPath = "config.json";
 
 	/**
-	 * Refresh time
+	 * Refresh time in milliseconds
 	 */
-	private static final int refreshTime = 3000;
+	private static final int refreshTime = 5000;
 
 	/**
 	 * Constructor
@@ -71,23 +83,32 @@ public class WeatherPlugin extends Plugin {
 	 *            The sender.
 	 */
 	private WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
+		// Connection with the Kafka healthyness queue to report its own health state
 		super(config, sender, new HbKafkaProducer(
 			"AlmaWeatherPlugin", config.getSinkServer() + ":" + config.getSinkPort(),
 			new HbJsonSerializer())
 		);
-		values = config.getValuesAsCollection();
+
+		// Read the IAS Values that this Plugin is monitoring from the config file
+		this.iasValues = config.getValuesAsCollection();
+
+		// Read the relation IasValueName:StationID-SensorType from the properties
+		// and save it into an internal hash map
 		Property[] props = config.getProperties();
 		for (Property prop : props) {
-			monitorPoints.put(prop.getKey(), prop.getValue());
+			String value = prop.getValue();
+			this.monitorPoints.put(prop.getKey(), value);
+			this.stationsIds.add(Integer.parseInt(value.split("-")[0]));
 		}
 	}
 
 	/**
-	 * Connect to the Weather Station and add the shutdown hook.
+	 * Connect to the Weather Stations and add the shutdown hook.
 	 */
 	private void initialize() {
-		// refreshes every 1000 milliseconds
-		weatherStation = new WeatherStation(1, 11, this.refreshTime);
+		//weatherStation = new WeatherStation(1, 11, this.refreshTime);
+		Integer[] stationsIds = this.stationsIds.toArray(new Integer[this.stationsIds.size()]);
+		weatherStation = new WeatherStation(stationsIds, this.refreshTime);
 
 		// Adds the shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release weather station shutdown hook"));
@@ -128,7 +149,7 @@ public class WeatherPlugin extends Plugin {
 		loopFuture = getScheduledExecutorService().scheduleAtFixedRate(() -> {
 			logger.debug("Updating monitor point values from the weather station");
 
-			values.forEach(value -> {
+			this.iasValues.forEach(value -> {
 				try {
 					String[] parts = monitorPoints.get(value.getId()).split("-");
 					double v = weatherStation.getValue(Integer.parseInt(parts[0]), parts[1]);
