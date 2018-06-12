@@ -75,7 +75,18 @@ public class WeatherPlugin extends Plugin {
 	/**
 	 * Refresh time in milliseconds
 	 */
-	private static int refreshTime = 3000;
+	private static int refreshTime;
+
+	/**
+	 * Default refresh time in milliseconds
+	 */
+	private static int defaultRefreshTime = 3000;
+
+	/**
+	 * The name of the property to pass the kafka servers to connect to
+	 */
+	private static final String KAFKA_SERVERS_PROP_NAME = "org.eso.ias.plugins.kafka.server";
+
 
 	/**
 	 * Constructor
@@ -85,7 +96,7 @@ public class WeatherPlugin extends Plugin {
 	 * @param sender
 	 *            The sender.
 	 */
-	private WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
+	private WeatherPlugin(PluginConfig config, MonitorPointSender sender, int refreshTime) {
 		// Connection with the Kafka healthyness queue to report its own health state
 		super(config, sender, new HbKafkaProducer(
 			"AlmaWeatherPlugin", config.getSinkServer() + ":" + config.getSinkPort(),
@@ -94,6 +105,9 @@ public class WeatherPlugin extends Plugin {
 
 		// Read the IAS Values that this Plugin is monitoring from the config file
 		this.iasValues = config.getValuesAsCollection();
+
+		// Set the refresh time
+		this.refreshTime = refreshTime;
 
 		// Read the relation IasValueID:StationID-SensorType from the properties
 		// and save it into an internal hash map
@@ -182,6 +196,12 @@ public class WeatherPlugin extends Plugin {
 		}
 	}
 
+	private static void printUsage() {
+		System.out.println("Usage: alma-weather-plugin.jar [-refresh REFRESH-TIME-MILLIS]");
+		System.out.println("-refresh Override the default value of refresh time for the weather system");
+		System.out.println("   * REFRESH-TIME-MILLIS: time in milliseconds to get new data from weather monitor points\n");
+	}
+
 	/**
 	 * Runs the plugin. Args are optional and they override the sinkServer and
 	 * sinkPort defined in the configuration file.
@@ -225,30 +245,46 @@ public class WeatherPlugin extends Plugin {
 		String sinkServer = config.getSinkServer();
 		int sinkPort = config.getSinkPort();
 
-		/* If the user gives an specific sinkServer and sinkPort to connect to in
-		the arguments, they override the configuration in the config file */
-		logger.info("args length = " + args.length);
-		if (args.length > 0) {
-			sinkServer = args[0];
-			if (args.length > 1) {
-				try {
-					sinkPort = Integer.parseInt(args[1]);
-				} catch (NumberFormatException e) {
-					System.err.println("Sink port" + args[1] + " must be an integer.");
-					System.exit(1);
-				}
+		/*Kafka server and port can be set using the Java properties*/
+		String kServers= System.getProperty(KAFKA_SERVERS_PROP_NAME);
+		if (kServers!=null && !kServers.isEmpty()) {
+			try{
+				sinkServer = kServers.split(":")[0];
+				sinkPort = Integer.parseInt(kServers.split(":")[1]);
+				config.setSinkServer(sinkServer);
+				config.setSinkPort(sinkPort);
+			} catch (NumberFormatException e) {
+				printUsage();
+				System.exit(-2);
 			}
 		}
 		logger.info("Kafka sink server: " + sinkServer + ":" + sinkPort);
-		config.setSinkServer(sinkServer);
-		config.setSinkPort(sinkPort);
+
+		/* If the user gives an specific refreshRate, it overrides the default one */
+		int configuredRefreshTime = defaultRefreshTime;
+		logger.info("args length = " + args.length);
+		if (args.length == 2) {
+			String cmdLineSwitch = args[0];
+			if (cmdLineSwitch.compareTo("-refresh")!=0) {
+				printUsage();
+				System.exit(-2);
+			}
+			else {
+				try {
+					configuredRefreshTime = Integer.parseInt(args[1]);
+				} catch (NumberFormatException e) {
+					printUsage();
+					System.exit(-2);
+				}
+			}
+		}
 
 		// Instantiate a KafkaPublisher
 		KafkaPublisher kafkaPublisher = new KafkaPublisher(config.getId(), config.getMonitoredSystemId(),
 				config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService());
 
 		// Instantiate the WeatherPlugin
-		WeatherPlugin plugin = new WeatherPlugin(config, kafkaPublisher);
+		WeatherPlugin plugin = new WeatherPlugin(config, kafkaPublisher, configuredRefreshTime);
 
 		// Start the Plugin
 		try {

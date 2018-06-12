@@ -27,6 +27,9 @@ public class WeatherStation implements Runnable {
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
+	/**
+	 * Value used as Zero timestamp in the Alma Observatory
+	 */
 	private static final long almaZeroTimestamp = 122192928000000000L;
 
 	/**
@@ -145,10 +148,6 @@ public class WeatherStation implements Runnable {
 		String stationStatus = weatherAttributes.getNamedItem("status").getTextContent();
 		boolean stationStatusValidity = this.validateStationStatus(stationStatus);
 
-		// Get station timestamp
-		long timestamp = Long.parseLong(weatherAttributes.getNamedItem("timestamp").getTextContent());
-		boolean stationTimestampValidity = this.validateStationTimestamp(timestamp);
-
 		// Update Values for each weather station sensor
 		NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
 		for (int i = 0; i < sensors.getLength(); i++) {
@@ -156,12 +155,6 @@ public class WeatherStation implements Runnable {
 			NamedNodeMap atts = sensor.getAttributes();
 			String sensorName = atts.getNamedItem("name").getTextContent();
 			double sensorValue = Double.parseDouble(sensor.getTextContent());
-
-			// // If the station is responding with an old value, sensor will be updated
-			// // with null values
-			// if( !stationTimestampValidity ) {
-			// 	sensorValue = Double.parseDouble("NaN");
-			// }
 
 			// If the station has status false, update the sensors with null values.
 			if( !stationStatusValidity ) {
@@ -177,7 +170,6 @@ public class WeatherStation implements Runnable {
 
 		lastUpdated = System.currentTimeMillis();
 	}
-
 
 	/**
 	 * Parses the xml and saves it. (for testing purposes)
@@ -214,7 +206,7 @@ public class WeatherStation implements Runnable {
 	public double getValue(String name) throws Exception {
 		// throw exception when out of date
 		if (System.currentTimeMillis() - lastUpdated > ttl)
-			throw new Exception("The values are too old, sensor" + id + " needs update.");
+			throw new Exception("The values are too old, Weather Station " + id + " needs update.");
 
 		if (values.containsKey(name))
 			return values.get(name);
@@ -252,25 +244,6 @@ public class WeatherStation implements Runnable {
 	}
 
 	/**
-	* Transform the given timestamp from ALMA Timestamp to UTC timestamp and
-	* compares it with the current UTC timestamp. If the difference is more than
-	* maxDelay it returns False, otherwise return True.
-	*
-	* @param timestamp
-	*							Weather Station ALMA timetamp to be validated
-	* @return False if the difference is more than maxDelay, otherwise return True
-	*/
-	private boolean validateStationTimestamp(long timestamp) {
-		long stationTimestamp = (timestamp - this.almaZeroTimestamp) / 10000;
-		long currentTimestamp = new Date().getTime();
-		long diff = currentTimestamp - stationTimestamp;
-		if( diff > this.maxDelay) {
-			return false;
-		}
-		return true;
-	}
-
-	/**
 	 * Check the status of the WeatherStation
 	 *
 	 * @param state
@@ -287,7 +260,7 @@ public class WeatherStation implements Runnable {
 	}
 
 	/**
-	 * parses a soap request in xml format and returns the generated document.
+	 * Parses a soap request in xml format and returns the generated document.
 	 *
 	 * @param response
 	 *            the xml response of the soap weather service.

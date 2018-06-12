@@ -21,10 +21,8 @@ public class WeatherStationsPool {
 	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
 	/**
-	 * the array of weather stations that conform this WeatherStationsPool
+	 * the HashMap of weather stations that conform this WeatherStationsPool
 	 */
-	//private WeatherStation[] stations;
-
 	private static Map<Integer, WeatherStation> stations = new HashMap<Integer, WeatherStation>();
 
 	/**
@@ -57,7 +55,6 @@ public class WeatherStationsPool {
 			this.schedExSvc.scheduleAtFixedRate(this.stations.get(id), 0, refreshTime, TimeUnit.MILLISECONDS);
 		}
 		// make sure the sensors have time to update.
-		// this.stations.get(1).updateValues();
 		try{
 			TimeUnit.MILLISECONDS.sleep(refreshTime);
 		}
