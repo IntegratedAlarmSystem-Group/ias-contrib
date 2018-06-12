@@ -1,0 +1,15 @@
+{ 
+	"id":"APE1-ANTPAD",
+	"monitoredSystemId":"array",
+	"sinkServer":"ias-server01.osf.alma.cl",
+	"sinkPort":"9092",
+	"autoSendTimeInterval":"3",
+	"hbFrequency":"5",
+	"properties": [],
+	"values":[
+		{"id":"ANTvsPAD",
+		"refreshTime":"60000",
+		"filter":"",
+		"filterOptions":""}]
+}
+
