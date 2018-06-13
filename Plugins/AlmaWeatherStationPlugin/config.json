@@ -128,124 +128,94 @@
   ],
   "values": [
     {
-      "id": "WS-MeteoTB1-Temperature-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoTB1-Temperature-Value"
     },
     {
-      "id": "WS-MeteoTB1-WindSpeed-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoTB1-WindSpeed-Value"
     },
     {
-      "id": "WS-MeteoTB1-Humidity-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoTB1-Humidity-Value"
     },
     {
-      "id": "WS-MeteoTB2-Temperature-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoTB2-Temperature-Value"
     },
     {
-      "id": "WS-MeteoTB2-WindSpeed-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoTB2-WindSpeed-Value"
     },
     {
-      "id": "WS-MeteoTB2-Humidity-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoTB2-Humidity-Value"
     },
     {
-      "id": "WS-MeteoOSF-Temperature-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoOSF-Temperature-Value"
     },
     {
-      "id": "WS-MeteoOSF-WindSpeed-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoOSF-WindSpeed-Value"
     },
     {
-      "id": "WS-MeteoOSF-Humidity-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoOSF-Humidity-Value"
     },
     {
-      "id": "WS-MeteoItinerant-WindSpeed-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoItinerant-WindSpeed-Value"
     },
     {
-      "id": "WS-Meteo201-Temperature-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo201-Temperature-Value"
     },
     {
-      "id": "WS-Meteo201-WindSpeed-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo201-WindSpeed-Value"
     },
     {
-      "id": "WS-Meteo201-Humidity-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo201-Humidity-Value"
     },
     {
-      "id": "WS-MeteoCentral-Temperature-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoCentral-Temperature-Value"
     },
     {
-      "id": "WS-MeteoCentral-WindSpeed-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoCentral-WindSpeed-Value"
     },
     {
-      "id": "WS-MeteoCentral-Humidity-Value",
-      "refreshTime": "3000"
+      "id": "WS-MeteoCentral-Humidity-Value"
     },
     {
-      "id": "WS-Meteo309-Temperature-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo309-Temperature-Value"
     },
     {
-      "id": "WS-Meteo309-WindSpeed-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo309-WindSpeed-Value"
     },
     {
-      "id": "WS-Meteo309-Humidity-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo309-Humidity-Value"
     },
     {
-      "id": "WS-Meteo410-Temperature-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo410-Temperature-Value"
     },
     {
-      "id": "WS-Meteo410-WindSpeed-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo410-WindSpeed-Value"
     },
     {
-      "id": "WS-Meteo410-Humidity-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo410-Humidity-Value"
     },
     {
-      "id": "WS-Meteo131-Temperature-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo131-Temperature-Value"
     },
     {
-      "id": "WS-Meteo131-WindSpeed-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo131-WindSpeed-Value"
     },
     {
-      "id": "WS-Meteo131-Humidity-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo131-Humidity-Value"
     },
     {
-      "id": "WS-Meteo129-Temperature-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo129-Temperature-Value"
     },
     {
-      "id": "WS-Meteo129-WindSpeed-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo129-WindSpeed-Value"
     },
     {
-      "id": "WS-Meteo129-Humidity-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo129-Humidity-Value"
     },
     {
-      "id": "WS-Meteo130-Temperature-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo130-Temperature-Value"
     },
     {
-      "id": "WS-Meteo130-Humidity-Value",
-      "refreshTime": "3000"
+      "id": "WS-Meteo130-Humidity-Value"
     }
   ]
 }
