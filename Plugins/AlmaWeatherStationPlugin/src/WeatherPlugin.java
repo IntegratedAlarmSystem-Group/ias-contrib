@@ -99,7 +99,7 @@ public class WeatherPlugin extends Plugin {
 	private WeatherPlugin(PluginConfig config, MonitorPointSender sender, int refreshTime) {
 		// Connection with the Kafka healthyness queue to report its own health state
 		super(config, sender, new HbKafkaProducer(
-			"AlmaWeatherPlugin", config.getSinkServer() + ":" + config.getSinkPort(),
+			"AlmaWeatherPlugin"+"HBSender", config.getSinkServer() + ":" + config.getSinkPort(),
 			new HbJsonSerializer())
 		);
 
