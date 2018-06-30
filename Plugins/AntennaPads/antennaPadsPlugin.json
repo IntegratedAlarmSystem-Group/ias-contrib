@@ -1,13 +1,13 @@
 { 
-	"id":"APE1-ANTPAD",
+	"id":"ANTPAD",
 	"monitoredSystemId":"array",
-	"sinkServer":"ias-server01.osf.alma.cl",
+	"sinkServer":"10.195.60.180",
 	"sinkPort":"9092",
 	"autoSendTimeInterval":"3",
-	"hbFrequency":"5",
+	"hbFrequency":"3",
 	"properties": [],
 	"values":[
-		{"id":"ANTvsPAD",
+		{"id":"Array-AntennasToPads",
 		"refreshTime":"60000",
 		"filter":"",
 		"filterOptions":""}]

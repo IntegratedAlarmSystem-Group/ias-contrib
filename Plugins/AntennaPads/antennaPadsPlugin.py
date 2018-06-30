@@ -20,13 +20,13 @@
 
 from suds.client import Client
 from xml.dom import minidom
+from datetime import datetime
 import traceback, sys
-from threading import Timer
 
 from IASLogging.logConf import Log
 from IasPlugin2.UdpPlugin import UdpPlugin
 
-class VRFS(object):
+class VRFS:
     
     def __init__(self, vrfs_service):
         '''
@@ -43,6 +43,7 @@ class VRFS(object):
         try:
             client = Client(self.vrfs_service)
             xml_antennas = client.service.getAntennasInfo(ste)
+            print xml_antennas
             root = minidom.parseString(xml_antennas)
             xml_list = root.getElementsByTagName("antenna")
             for element in xml_list:
@@ -56,76 +57,42 @@ class VRFS(object):
             return self.antenna_list
         except:
             message = str(traceback.format_exc())
-            logger.error("Exception got getting the list of antennas")
+            print message
             return self.antenna_list
-
-# Counts the number of iteration to schedule the execution of each task
-iteration = 0
-
-# The plugin to send monitor points and alarms to the IAS
-udpPlugin = None
-
-# The logger
-logger = None
         
-def schedule():
-    timer = Timer(1, periodicTask)
-    timer.start() 
-
-def periodicTask():
-    """
-    The periodic task runs every second
-
-    The iteration is increased at every iteration and used
-    to schedule tasks at certain time intervals
-    """
-    global iteration
-    try:
-      if iteration < sys.maxint:
-        iteration = iteration + 1
-      else:
-        iteration = 0
-      print "Periodic task running "+str(iteration)
-      if iteration % 60 == 0:
-        # Get and send the association antenna/pad
-        getAntennaPadAssociation()
-    except:
-       message = str(traceback.format_exc())
-       logger.error("Exception got in periodic task %s", message)
-    schedule()
-
-def getAntennaPadAssociation():
-    """
-    Get and publish the association of anetnnas to pad
-    """
-    global udpPlugin
-    logger.info("Getting antennea/pad association")
-    
-    v = VRFS("http://vrfs.alma.cl/getAntInfoWS.php?wsdl")
-
-    # Get the anteannas from the 3 APEs
-    apes = [ 'APE1', 'APE2', 'TFINT' ]
-    antennas = []
-    for ape in apes:
-       antennas.extend(v.get_antenna_list(ape))
-
-    # Build the string to send to the IAS
-    strToSend = ""
-    for element in antennas:
-        s = "[%s,%s] " % (element["antenna"], element["pad"])
-        logger.info("[name:%s pad:%s] ", element["antenna"], element["pad"])
-        strToSend = strToSend+s
-    strToSend=strToSend[:-1]
-    logger.info("%d antennas found",len(antennas))
-
-    udpPlugin.submit("ANTvsPAD", strToSend, "STRING", operationalMode="OPERATIONAL")
-    logger.info("Assocation sent to the UDP port [%s]",strToSend)
-
+ 
 if __name__=="__main__":
+
     logger = Log.initLogging(__file__)
-    udpPlugin = UdpPlugin("localhost",10101)
+    
+    # Get the UDP port number from the command line
+    if len(sys.argv)!=2:
+      logger.error("UDP port expected in command line")
+      sys.exit(-1)
+    try:
+      udpPort = int(sys.argv[1])
+    except ValueError:
+      logger.error("Invalid port number %s",(sys.argv[1]))
+      sys.exit(-2)
+    logger.info("Will send alarms to UDP port %d",udpPort)
+
+    v = VRFS("http://vrfs.alma.cl/getAntInfoWS.php?wsdl")
+    antennas = v.get_antenna_list("APE1")
+    antennas.extend(v.get_antenna_list("APE2"))
+    antennas.extend(v.get_antenna_list("TFINT"))
+
+    antennaPads = []
+    for element in antennas:
+	antennaPads.append("%s:%s" % (element["antenna"], element["pad"]))
+    stringToSendToIas=",".join(antennaPads)
+    print "Found",len(antennaPads),"antennas"
+    print stringToSendToIas
+
+    udpPlugin = UdpPlugin("localhost",udpPort)
     udpPlugin.start()
-    logger.info("UDP plugin started")
 
-    schedule()
+    udpPlugin.submit("Array-AntennasToPads", stringToSendToIas, "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
 
+    udpPlugin.shutdown()
+
+        
