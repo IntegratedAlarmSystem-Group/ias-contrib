@@ -8,7 +8,7 @@
 	"properties": [],
 	"values":[
 		{"id":"Array-AntennasToPads",
-		"refreshTime":"60000",
+		"refreshTime":"300000",
 		"filter":"",
 		"filterOptions":""}]
 }
