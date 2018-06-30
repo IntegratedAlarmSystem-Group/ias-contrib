@@ -10,7 +10,12 @@ the APE wher they are connected.
 This script runs the command though ssh
 '''
 
+import sys
 from subprocess import Popen, PIPE
+from datetime import datetime
+
+from IASLogging.logConf import Log
+from IasPlugin2.UdpPlugin import UdpPlugin
 
 # The APEs with their output
 APEs = {"ape2-gns.osf.alma.cl":"","tfint-gns.osf.alma.cl":"","10.197.52.1":""}
@@ -19,6 +24,21 @@ APEs = {"ape2-gns.osf.alma.cl":"","tfint-gns.osf.alma.cl":"","10.197.52.1":""}
 mPointIdPrefix="Array-UMStatus-"
 
 if __name__=="__main__":
+
+  if len(sys.argv)!=2:
+      print "UDP port expected in command line"
+      sys.exit(-1)
+
+  try:
+    udpPort = int(sys.argv[1])
+  except ValueError:
+    logger.error("Invalid port number %s",(sys.argv[1]))
+    sys.exit(-2)
+  print"Will send alarms to UDP port %d",udpPort
+
+  udpPlugin = UdpPlugin("localhost",udpPort)
+  udpPlugin.start()
+
   for ape in APEs.keys():
     cmd = ["ssh"]
     cmd.append("ialarms@"+ape)
@@ -45,5 +65,10 @@ if __name__=="__main__":
       mpId=parts[1][1:-1]
       value=parts[6][1:-1]
       print mpId, value
+      udpPlugin.submit(mpId, value, "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
+      print "{0} [{1}] MPoint sent with value '{2}'".format(datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"), mpId,value)
     else:
       print "Wrong format, cannot extract data from ",parts
+
+
+  udpPlugin.shutdown()

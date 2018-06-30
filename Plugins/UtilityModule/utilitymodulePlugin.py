@@ -24,9 +24,6 @@ import traceback
 import sys
 from datetime import datetime
 
-from IASLogging.logConf import Log
-from IasPlugin2.UdpPlugin import UdpPlugin
-
 class UtilityModule:
     
     def __init__(self, antenna):
@@ -85,19 +82,6 @@ if __name__=="__main__":
     # by the prefix plus the name of the antenna
     mPointIdPrefix="Array-UMStatus-"
     
-    if len(sys.argv)!=2:
-      print "UDP port expected in command line"
-      sys.exit(-1)
-
-    try:
-      udpPort = int(sys.argv[1])
-    except ValueError:
-      logger.error("Invalid port number %s",(sys.argv[1]))
-      sys.exit(-2)
-    print"Will send alarms to UDP port %d",udpPort
-
-    udpPlugin = UdpPlugin("localhost",udpPort)
-    udpPlugin.start()
     # The utility module to conncet to each antenna
     utilityModules = []
     for antenna in antennas:
@@ -110,8 +94,7 @@ if __name__=="__main__":
           vals.append("%s:%s" % (mpName,utm.data[mpName]))
         valToSend= ','.join(vals)
         idOfMp = mPointIdPrefix+utm.antenna
-        udpPlugin.submit(idOfMp, valToSend, "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
+        # This is the string expected by utilitymoduleRemoteRunner.py
         print "{0} [{1}] MPoint sent with value '{2}'".format(datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"),idOfMp,valToSend)
       except Exception as e:
         print "Errror reading data from", utm.antenna
-    udpPlugin.shutdown()
