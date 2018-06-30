@@ -42,8 +42,7 @@ if __name__=="__main__":
   for ape in APEs.keys():
     cmd = ["ssh"]
     cmd.append("ialarms@"+ape)
-    cmd.append("/users/ialarms/utilitymodulepublisher/utilitymodulePlugin.py")
-    cmd.append("11112")
+    cmd.append("/users/ialarms/utilitymodulepublisher/iasUtilityModuleReader.py")
     print cmd
     proc=Popen(cmd,stdout=PIPE)
     APEs[ape]=proc.stdout.read()
