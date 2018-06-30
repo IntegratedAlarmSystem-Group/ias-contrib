@@ -124,6 +124,10 @@
     {
       "key": "WS-Meteo130-Humidity-Value",
       "value": "11-humidity"
+    },
+    {
+      "key": "WS-Meteo130-WindSpeed-Value",
+      "value": "11-wind speed"
     }
   ],
   "values": [
@@ -216,6 +220,9 @@
     },
     {
       "id": "WS-Meteo130-Humidity-Value"
+    },
+    {
+      "id": "WS-Meteo130-WindSpeed-Value"
     }
   ]
 }
