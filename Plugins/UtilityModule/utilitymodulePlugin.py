@@ -85,10 +85,8 @@ if __name__=="__main__":
     # by the prefix plus the name of the antenna
     mPointIdPrefix="Array-UMStatus-"
     
-    logger = Log.initLogging(__file__)
-
     if len(sys.argv)!=2:
-      logger.error("UDP port expected in command line")
+      print "UDP port expected in command line"
       sys.exit(-1)
 
     try:
@@ -96,7 +94,7 @@ if __name__=="__main__":
     except ValueError:
       logger.error("Invalid port number %s",(sys.argv[1]))
       sys.exit(-2)
-    logger.info("Will send alarms to UDP port %d",udpPort)
+    print"Will send alarms to UDP port %d",udpPort
 
     udpPlugin = UdpPlugin("localhost",udpPort)
     udpPlugin.start()
@@ -113,6 +111,7 @@ if __name__=="__main__":
         valToSend= ','.join(vals)
         idOfMp = mPointIdPrefix+utm.antenna
         udpPlugin.submit(idOfMp, valToSend, "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
+        print "{0} [{1}] MPoint sent with value '{2}'".format(datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"),idOfMp,valToSend)
       except Exception as e:
-        logger.error("Errror reading data from %s", utm.antenna)
+        print "Errror reading data from", utm.antenna
     udpPlugin.shutdown()
