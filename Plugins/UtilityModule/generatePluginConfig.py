@@ -23,9 +23,7 @@ antennas = [
         'PM01','PM02','PM03','PM04'
 ]
 
-mpoint_prefix = "Array-UM"
-
-mpIds = [ 'FIRE', 'AC', 'UPS', 'HVAC', 'STOWPIN', 'ATZENITH', 'CABINTEMP']
+mpoint_prefix = "Array-UMStatus"
 
 mpPrefix = '{"id":"'
 mpSuffix = '", "refreshTime":"10000", "filter":"", "filterOptions":""}'
@@ -48,16 +46,10 @@ jsonFooter = ''']
 if __name__ == '__main__':
     mpoints = ""
     cr = "\n"
-    first = True
+    jsonConfig = []
     for ant in antennas:
-        for mpId in mpIds:
-            id = "%s-%s-%s" % (mpoint_prefix,mpId,ant)
-            mpJson = "    %s%s%s" % (mpPrefix,id,mpSuffix)
-            if not first:
-                mp = "%s,%s%s" % (mp, cr, mpJson)
-            else:
-                mp = mpJson
-                first = False
+      id = "%s-%s" % (mpoint_prefix,ant)
+      mpJson = "    %s%s%s" % (mpPrefix,id,mpSuffix)
+      jsonConfig.append(mpJson)
     
-    configJson = jsonHeader+mp+jsonFooter    
-    print(configJson)
+    print (jsonHeader+",\n".join(jsonConfig)+jsonFooter)
