@@ -21,7 +21,7 @@
 from suds.client import Client
 from xml.dom import minidom
 from datetime import datetime
-import traceback, sys
+import traceback, sys, time
 
 from IASLogging.logConf import Log
 from IasPlugin2.UdpPlugin import UdpPlugin
@@ -92,6 +92,9 @@ if __name__=="__main__":
     udpPlugin.start()
 
     udpPlugin.submit("Array-AntennasToPads", stringToSendToIas, "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
+    logger.info("Sent "+stringToSendToIas)
+
+    time.sleep(1)
 
     udpPlugin.shutdown()
 
