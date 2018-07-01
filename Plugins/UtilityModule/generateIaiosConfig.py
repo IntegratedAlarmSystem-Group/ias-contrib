@@ -11,7 +11,7 @@ antennas = [
         'PM01','PM02','PM03','PM04'
 ]
 
-mpoint_prefix = "Array-UM-"
+mpoint_prefix = "Array-UMStatus-"
 
 iasioPrefix ="  {\n"
 iasioSuffix ="  }"
