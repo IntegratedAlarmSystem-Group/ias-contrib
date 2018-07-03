@@ -1,0 +1,15 @@
+{ 
+	"id":"ANTPAD",
+	"monitoredSystemId":"array",
+	"sinkServer":"10.195.60.180",
+	"sinkPort":"9092",
+	"autoSendTimeInterval":"3",
+	"hbFrequency":"3",
+	"properties": [],
+	"values":[
+		{"id":"Array-AntennasToPads",
+		"refreshTime":"300000",
+		"filter":"",
+		"filterOptions":""}]
+}
+

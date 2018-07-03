@@ -18,11 +18,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.concurrent.*;
 
 /**
- * publishes data from a weather station to a Kafka Queue
+ * IAS Plugin that runs in a never-ending loop and publishes data obtained
+ * periodically from a set of weather stations to a Kafka Queue
  */
 public class WeatherPlugin extends Plugin {
 
@@ -32,15 +33,28 @@ public class WeatherPlugin extends Plugin {
 	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
 	/**
-	 * Hash map with the relation between the monitor points core ids and the
-	 * weather sensor number. Specified in configuration properties.
+	 * The Set of IDs of the Weather Stations monitorized by this Plugin. It is a
+	 * Set to avoid duplication on setup.
 	 */
-	private static Map<String, String> monitorPoints = new HashMap<String, String>();
+	private static HashSet<Integer> stationsIds = new HashSet<>();
 
 	/**
-	 * The List of monitored points
+	 * The Collection of IAS Values to be sent by this Plugin.
 	 */
-	private static Collection<Value> values;
+	private static Collection<Value> iasValues;
+
+	/**
+	* Hash map with the relation between the IAS Values and the
+	* Monitorized Weather Stations Ids and the corresponding sensor type.
+	* The keys of the hashMap are the IAS Values Ids and the values are strings
+	* with the format StationID-SensorType
+	* They must be specified in the configuration properties as follow:
+	*		 {
+	*      "key": "WS-MeteoOSF-Temperature-Value",
+	*      "value": "3-temperature"
+	*    }
+	*/
+	private static HashMap<String, String> identifiersMap = new HashMap<String, String>();
 
 	/**
 	 * the loop to keep the plugin running.
@@ -48,9 +62,10 @@ public class WeatherPlugin extends Plugin {
 	private ScheduledFuture<?> loopFuture;
 
 	/**
-	 * the weather station to retrieve the data.
+	 * The weather stations pool that updates their data periodically and provides
+	 * them to the plugin
 	 */
-	private WeatherStation weatherStation;
+	private WeatherStationsPool weatherStationsPool;
 
 	/**
 	 * The path to the config file for the plugin.
@@ -58,9 +73,20 @@ public class WeatherPlugin extends Plugin {
 	private static final String configPath = "config.json";
 
 	/**
-	 * Refresh time
+	 * Refresh time in milliseconds
 	 */
-	private static final int refreshTime = 3000;
+	private static int refreshTime;
+
+	/**
+	 * Default refresh time in milliseconds
+	 */
+	private static int defaultRefreshTime = 3000;
+
+	/**
+	 * The name of the property to pass the kafka servers to connect to
+	 */
+	private static final String KAFKA_SERVERS_PROP_NAME = "org.eso.ias.plugins.kafka.server";
+
 
 	/**
 	 * Constructor
@@ -70,24 +96,35 @@ public class WeatherPlugin extends Plugin {
 	 * @param sender
 	 *            The sender.
 	 */
-	private WeatherPlugin(PluginConfig config, MonitorPointSender sender) {
+	private WeatherPlugin(PluginConfig config, MonitorPointSender sender, int refreshTime) {
+		// Connection with the Kafka healthyness queue to report its own health state
 		super(config, sender, new HbKafkaProducer(
-			"AlmaWeatherPlugin", config.getSinkServer() + ":" + config.getSinkPort(),
+			"AlmaWeatherPlugin"+"HBSender", config.getSinkServer() + ":" + config.getSinkPort(),
 			new HbJsonSerializer())
 		);
-		values = config.getValuesAsCollection();
+
+		// Read the IAS Values that this Plugin is monitoring from the config file
+		this.iasValues = config.getValuesAsCollection();
+
+		// Set the refresh time
+		this.refreshTime = refreshTime;
+
+		// Read the relation IasValueID:StationID-SensorType from the properties
+		// and save it into an internal hash map
 		Property[] props = config.getProperties();
 		for (Property prop : props) {
-			monitorPoints.put(prop.getKey(), prop.getValue());
+			String value = prop.getValue();
+			this.identifiersMap.put(prop.getKey(), value);
+			this.stationsIds.add(Integer.parseInt(value.split("-")[0]));
 		}
 	}
 
 	/**
-	 * Connect to the Weather Station and add the shutdown hook.
+	 * Connect to the Weather Stations and add the shutdown hook.
 	 */
 	private void initialize() {
-		// refreshes every 1000 milliseconds
-		weatherStation = new WeatherStation(1, 11, this.refreshTime);
+		Integer[] stationsIds = this.stationsIds.toArray(new Integer[this.stationsIds.size()]);
+		weatherStationsPool = new WeatherStationsPool(stationsIds, this.refreshTime);
 
 		// Adds the shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release weather station shutdown hook"));
@@ -95,13 +132,13 @@ public class WeatherPlugin extends Plugin {
 
 	/**
 	 * Terminate the thread that publishes the data and disconnects from the weather
-	 * station.
+	 * station pool.
 	 */
 	private void cleanUp() {
 		if (loopFuture != null) {
 			loopFuture.cancel(false);
 		}
-		weatherStation.release();
+		weatherStationsPool.release();
 	}
 
 	/**
@@ -128,24 +165,28 @@ public class WeatherPlugin extends Plugin {
 		loopFuture = getScheduledExecutorService().scheduleAtFixedRate(() -> {
 			logger.debug("Updating monitor point values from the weather station");
 
-			values.forEach(value -> {
+			this.iasValues.forEach(iasValue -> {
 				try {
-					String[] parts = monitorPoints.get(value.getId()).split("-");
-					double v = weatherStation.getValue(Integer.parseInt(parts[0]), parts[1]);
-					if(!Double.isNaN(v)) {
-						setOperationalMode(value.getId(), OperationalMode.OPERATIONAL);
+					String[] parts = this.identifiersMap.get(iasValue.getId()).split("-");
+					int stationId = Integer.parseInt(parts[0]);
+					String sensorName = parts[1];
+
+					double value = this.weatherStationsPool.getValue(stationId, sensorName);
+					if(value == -Double.MAX_VALUE) {
+						value = Double.parseDouble("NaN");
+						setOperationalMode(iasValue.getId(), OperationalMode.SHUTTEDDOWN);
 					}
 					else {
-						setOperationalMode(value.getId(), OperationalMode.SHUTTEDDOWN);
+						setOperationalMode(iasValue.getId(), OperationalMode.OPERATIONAL);
 					}
-					updateMonitorPointValue(value.getId(), v);
+					updateMonitorPointValue(iasValue.getId(), value);
 				} catch (Exception e) {
 					logger.error(e.getMessage());
 				}
 			});
 
 			logger.debug("Monitor point values updated");
-		}, 0, 1, TimeUnit.SECONDS);
+		}, 0, 1, TimeUnit.MILLISECONDS);
 		try {
 			loopFuture.get();
 		} catch (ExecutionException ee) {
@@ -155,11 +196,19 @@ public class WeatherPlugin extends Plugin {
 		}
 	}
 
+	private static void printUsage() {
+		System.out.println("Usage: alma-weather-plugin.jar [-refresh REFRESH-TIME-MILLIS]");
+		System.out.println("-refresh Override the default value of refresh time for the weather system");
+		System.out.println("   * REFRESH-TIME-MILLIS: time in milliseconds to get new data from weather monitor points\n");
+	}
+
 	/**
-	 * runs the plugin.
+	 * Runs the plugin. Args are optional and they override the sinkServer and
+	 * sinkPort defined in the configuration file.
 	 *
 	 * @param args
-	 *            .
+	 *          [0] optional sinkServer
+	 *					[1] optional sinkPort
 	 */
 	public static void main(String[] args) {
 
@@ -196,27 +245,48 @@ public class WeatherPlugin extends Plugin {
 		String sinkServer = config.getSinkServer();
 		int sinkPort = config.getSinkPort();
 
-		logger.info("args length = " + args.length);
-		if (args.length > 0) {
-			sinkServer = args[0];
-			if (args.length > 1) {
-				try {
-					sinkPort = Integer.parseInt(args[1]);
-				} catch (NumberFormatException e) {
-					System.err.println("Sink port" + args[1] + " must be an integer.");
-					System.exit(1);
-				}
+		/*Kafka server and port can be set using the Java properties*/
+		String kServers= System.getProperty(KAFKA_SERVERS_PROP_NAME);
+		if (kServers!=null && !kServers.isEmpty()) {
+			try{
+				sinkServer = kServers.split(":")[0];
+				sinkPort = Integer.parseInt(kServers.split(":")[1]);
+				config.setSinkServer(sinkServer);
+				config.setSinkPort(sinkPort);
+			} catch (NumberFormatException e) {
+				printUsage();
+				System.exit(-2);
 			}
 		}
 		logger.info("Kafka sink server: " + sinkServer + ":" + sinkPort);
-		config.setSinkServer(sinkServer);
-		config.setSinkPort(sinkPort);
 
+		/* If the user gives an specific refreshRate, it overrides the default one */
+		int configuredRefreshTime = defaultRefreshTime;
+		logger.info("args length = " + args.length);
+		if (args.length == 2) {
+			String cmdLineSwitch = args[0];
+			if (cmdLineSwitch.compareTo("-refresh")!=0) {
+				printUsage();
+				logger.info("Refresh time does not configured properly. Default value will be used.");
+			}
+			else {
+				try {
+					configuredRefreshTime = Integer.parseInt(args[1]);
+				} catch (NumberFormatException e) {
+					printUsage();
+					logger.info("Refresh time does not configured properly. Default value will be used.");
+				}
+			}
+		}
+
+		// Instantiate a KafkaPublisher
 		KafkaPublisher kafkaPublisher = new KafkaPublisher(config.getId(), config.getMonitoredSystemId(),
 				config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService());
 
-		WeatherPlugin plugin = new WeatherPlugin(config, kafkaPublisher);
+		// Instantiate the WeatherPlugin
+		WeatherPlugin plugin = new WeatherPlugin(config, kafkaPublisher, configuredRefreshTime);
 
+		// Start the Plugin
 		try {
 			plugin.start();
 		} catch (PublisherException pe) {
@@ -224,10 +294,10 @@ public class WeatherPlugin extends Plugin {
 			System.exit(-3);
 		}
 
-		// Connect to the weather station.
+		// Connect to the Weather Stations.
 		plugin.initialize();
 
-		// Start getting data from the weather station
+		// Start getting data from the weather stations pool
 		// This method exits when the user presses CTRL+C
 		// and the shutdown hook disconnects from the weather station.
 		plugin.startLoop();

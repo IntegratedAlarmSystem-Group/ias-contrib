@@ -5,4 +5,4 @@
 #     echo 'Waiting for queue...'
 #     sleep 1
 # done
-java -jar alma-weather-station-plugin.jar "${@}"
+java -jar "${1}" alma-weather-station-plugin.jar "${2}" "${3}"

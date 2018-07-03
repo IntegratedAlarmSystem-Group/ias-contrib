@@ -6,19 +6,19 @@ import org.junit.Test;
 /**
  * test the Weather Sensor, in charge of parsing the SOAP requests made to the service.
  */
-public class WeatherSensorTest {
+public class WeatherStationTest {
 
     /**
      * sensor to be used in the tests.
      */
-    private WeatherSensor sensor;
+    private WeatherStation station;
 
     private String xml;
 
     @Before
     public void setUp() {
-        // sensor with any id, wont be used.
-        sensor = new WeatherSensor(0, 1000);
+        // station with any id, wont be used.
+        station = new WeatherStation(0, 1000);
 
         // response of the soap service example.
         xml = "<weather id='2' timestamp='1.3734218308E+17' status='true' serialNumber='D2320028D1810012'><sensors>" +
@@ -35,19 +35,19 @@ public class WeatherSensorTest {
 
     @Test
     public void getValue() throws Exception {
-        sensor.updateValues(xml);
+        station.updateValues(xml);
 
         // check that it gets all the values in the xml
-        assertEquals(32.131, sensor.getValue("humidity"), 0.);
-        assertEquals(-0.064, sensor.getValue("temperature"), 0.);
-        assertEquals(-14.689, sensor.getValue("dewpoint"), 0.);
-        assertEquals(274., sensor.getValue("wind direction"), 0.);
-        assertEquals(12.4, sensor.getValue("wind speed"), 0.);
-        assertEquals(554.91, sensor.getValue("pressure"), 0.);
+        assertEquals(32.131, station.getValue("humidity"), 0.);
+        assertEquals(-0.064, station.getValue("temperature"), 0.);
+        assertEquals(-14.689, station.getValue("dewpoint"), 0.);
+        assertEquals(274., station.getValue("wind direction"), 0.);
+        assertEquals(12.4, station.getValue("wind speed"), 0.);
+        assertEquals(554.91, station.getValue("pressure"), 0.);
     }
 
     @Test(expected = Exception.class)
     public void getValueError() throws Exception {
-        sensor.getValue("SomeValue");
+        station.getValue("SomeValue");
     }
 }
