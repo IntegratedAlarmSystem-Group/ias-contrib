@@ -267,14 +267,14 @@ public class WeatherPlugin extends Plugin {
 			String cmdLineSwitch = args[0];
 			if (cmdLineSwitch.compareTo("-refresh")!=0) {
 				printUsage();
-				System.exit(-2);
+				logger.info("Refresh time does not configured properly. Default value will be used.");
 			}
 			else {
 				try {
 					configuredRefreshTime = Integer.parseInt(args[1]);
 				} catch (NumberFormatException e) {
 					printUsage();
-					System.exit(-2);
+					logger.info("Refresh time does not configured properly. Default value will be used.");
 				}
 			}
 		}
