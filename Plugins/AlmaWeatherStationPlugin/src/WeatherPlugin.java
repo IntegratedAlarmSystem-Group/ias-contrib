@@ -203,12 +203,12 @@ public class WeatherPlugin extends Plugin {
 	}
 
 	/**
-	 * Runs the plugin. Args are optional and they override the sinkServer and
-	 * sinkPort defined in the configuration file.
+	 * Runs the plugin. The sinkserver and port can be overrided using the java
+	 * property. Args are optional and they override the refresh time.
 	 *
 	 * @param args
-	 *          [0] optional sinkServer
-	 *					[1] optional sinkPort
+	 *          [0] optional -refresh
+	 *					[1] optional REFRESH-TIME-MILLIS
 	 */
 	public static void main(String[] args) {
 
