@@ -59,9 +59,12 @@ public class DummyPlugin extends Plugin {
           System.err.println("Sink port" + args[1] + " must be an integer.");
           System.exit(1);
         }
+        if (args.length > 2) {
+          id = args[2];
+        }
       }
     }
-    System.out.println("Kafka sink server: "+sinkServer+":"+sinkPort);
+    System.out.println("Sending messages for ID: " + id + ", to Kafka sink server: "+sinkServer+":"+sinkPort);
     config.setSinkServer(sinkServer);
     config.setSinkPort(sinkPort);
 
