@@ -51,7 +51,8 @@ public class MultiDummyPlugin extends Plugin {
 
 
     // configuration
-      File f =new File("dummy-config.json");
+      File f =new File(args[0]);
+      System.err.println(args[0]);
     PluginConfigFileReader configReader=new  PluginConfigFileReader(f);
     Future<PluginConfig> future=configReader.getPluginConfig();
 
