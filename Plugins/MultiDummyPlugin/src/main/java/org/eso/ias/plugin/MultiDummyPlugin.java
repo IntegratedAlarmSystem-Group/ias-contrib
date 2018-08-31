@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
+import java.util.HashMap;
 import java.io.File;
 
 
@@ -49,7 +50,6 @@ public class MultiDummyPlugin extends Plugin {
     int refreshTime = 1000;
 
 
-
     // configuration
       File f =new File("dummy-config.json");
     PluginConfigFileReader configReader=new  PluginConfigFileReader(f);
@@ -59,9 +59,10 @@ public class MultiDummyPlugin extends Plugin {
 
     Value[] values=config.getValues();
 
-    String s1 = values[0].getId();
-    String id = s1;
-
+    HashMap<String, Double> valueMapping = new HashMap<String, Double>();
+    for (Value v : values ){
+        valueMapping.put(v.getId(), 0.0);
+    }
 
     // publisher
     KafkaPublisher publisher = new KafkaPublisher(config.getId(),
@@ -73,7 +74,9 @@ public class MultiDummyPlugin extends Plugin {
 
     // start plugin
     MultiDummyPlugin dummy = new MultiDummyPlugin(config, publisher);
-    dummy.valueId = id;
+    dummy.valueId = values[0].getId();
+    dummy.value = valueMapping.get(dummy.valueId);
+
     try {
       dummy.start();
     } catch (PublisherException pe) {
@@ -87,14 +90,10 @@ public class MultiDummyPlugin extends Plugin {
     dummy.startLoop();
 
 
-
-
-
-
     // instructions
     System.err.println("Plugin started, sending value 0. waiting for user input...");
 
-    System.err.println("\nCurrent ID: " + s1);
+    System.err.println("\nCurrent ID: " + dummy.valueId);
     System.err.println("Available commands:");
 
     System.err.println("  > value [double]");
@@ -113,16 +112,14 @@ public class MultiDummyPlugin extends Plugin {
     System.err.println("  Default refresh time  is: " + refreshTime +  "ms.\n");
 
     System.err.println("  > id [String]");
-    System.err.println("  Changes the Plugin's ID.\n");
-    System.err.println("  > All available IDs are: ");
+    System.err.println("  Changes the Plugin's ID.");
+    System.err.println("  All available IDs are: ");
       for(Value val : values) {
           System.err.println("     " + val.getId());
       }
 
     System.err.println("\n  > current");
     System.err.println("  Prints the current ID\n");
-
-
 
 
     // start reading values from input
@@ -139,18 +136,17 @@ public class MultiDummyPlugin extends Plugin {
       switch (arg[0].toLowerCase()) {
 
 
-
           // modify value
         case "value":
           try {
             Double value = Double.parseDouble(arg[1]);
             if(dummy.value == value){
                 System.err.println(">>value is already set to " + value + "!");
-            }else{
-            dummy.value = value;
-            dummy.updateMonitorPointValue(dummy.valueId, value);
-
-            System.err.println(">>" + id + " value updated to " + value);}
+            } else {
+            valueMapping.put(dummy.valueId, value);
+            dummy.value = valueMapping.get(dummy.valueId);
+            System.err.println(">>" + dummy.valueId + " value updated to " + value);
+            }
           } catch (Exception e) {
             System.err.println(">>Invalid value: " + arg[1]);
           }
@@ -227,23 +223,23 @@ public class MultiDummyPlugin extends Plugin {
 
           // change ID
           case "id":
-
-
               boolean found=false;
               for (int i=0;i<values.length;i=i+1){
                 if(values[i].getId().equals(arg[1])){
                     dummy.valueId = values[i].getId();
-                    System.err.println("ID changed to: " + arg[1]);
+                    dummy.value = valueMapping.get(dummy.valueId);
+                    System.err.println(">>ID changed to: " + values[i].getId());
                     found=true;
                     break;
                 }
               }
               if (!found){
-                  System.err.println("ID: " + arg[1] + " does not exist.");
+                  System.err.println(">>ID: " + arg[1] + " does not exist.");
               }
               break;
 
 
+          // print out current ID
           case "current":
               System.err.println(">>The current ID is: " + dummy.valueId);
               break;
