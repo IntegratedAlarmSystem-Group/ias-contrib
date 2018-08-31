@@ -38,6 +38,37 @@ public class MultiDummyPlugin extends Plugin {
   /**
    * runs the plugin.
    */
+
+  // method to print out instructions
+  public static void instructions(Value[] arrayOfValues) {
+      System.err.println("Available commands:");
+
+      System.err.println("  > value [double]");
+      System.err.println("  Changes the value the plugin is sending.");
+      System.err.println("  By default, any value outside ]0,50[ will trigger the alarm.\n");
+
+      System.err.println("  > mode [mode]");
+      System.err.println("  Changes the operational mode of the plugin. The options are:");
+      System.err.println("  operational, maintenance, startup, initialization, degraded, closing, shutteddown and unknown.\n");
+
+      System.err.println("  > update [int]");
+      System.err.println("  Changes the rate at wich the value in the plugin is updated (milliseconds).");
+      System.err.println("  If this value is higher than 1500 the value sent will be invalid.\n");
+
+      System.err.println("  > id [String]");
+      System.err.println("  Changes the Plugin's ID.");
+      System.err.println("  All available IDs are: ");
+      for (Value val : arrayOfValues) {
+          System.err.println("     " + val.getId());
+      }
+
+      System.err.println("\n  > current");
+      System.err.println("  Prints the current ID.\n");
+
+      System.err.println("  > ?");
+      System.err.println("  Shows all available commands.\n");
+  }
+
   public static void main(String[] args) throws Exception {
     System.err.println("Starting dummy plugin...");
 
@@ -51,8 +82,8 @@ public class MultiDummyPlugin extends Plugin {
 
 
     // configuration
-      File f =new File(args[0]);
-      System.err.println(args[0]);
+    File f =new File(args[0]);
+    System.err.println("File used: " + args[0]);
     PluginConfigFileReader configReader=new  PluginConfigFileReader(f);
     Future<PluginConfig> future=configReader.getPluginConfig();
 
@@ -92,35 +123,11 @@ public class MultiDummyPlugin extends Plugin {
 
 
     // instructions
-    System.err.println("Plugin started, sending value 0. waiting for user input...");
-
-    System.err.println("\nCurrent ID: " + dummy.valueId);
-    System.err.println("Available commands:");
-
-    System.err.println("  > value [double]");
-    System.err.println("  Changes the value the plugin is sending.");
-    System.err.println("  By default, any value outside ]0,50[ will trigger the alarm.");
-    System.err.println("  Default value is: 0.0.\n");
-
-    System.err.println("  > mode [mode]");
-    System.err.println("  Changes the operational mode of the plugin. The options are:");
-    System.err.println("  operational, maintenance, startup, initialization, degraded, closing, shutteddown and unknown.");
-    System.err.println("  Default mode is: operational.\n");
-
-    System.err.println("  > update [int]");
-    System.err.println("  Changes the rate at wich the value in the plugin is updated (milliseconds).");
-    System.err.println("  If this value is higher than 1500 the value sent will be invalid.");
-    System.err.println("  Default refresh time  is: " + refreshTime +  "ms.\n");
-
-    System.err.println("  > id [String]");
-    System.err.println("  Changes the Plugin's ID.");
-    System.err.println("  All available IDs are: ");
-      for(Value val : values) {
-          System.err.println("     " + val.getId());
-      }
-
-    System.err.println("\n  > current");
-    System.err.println("  Prints the current ID\n");
+      System.err.println("Plugin started, sending value 0. waiting for user input...");
+      System.err.println("\nCurrent ID: " + dummy.valueId);
+      System.err.println("Default value is: 0.0.");
+      System.err.println("Default mode is: operational.");
+      instructions(values);
 
 
     // start reading values from input
@@ -136,7 +143,6 @@ public class MultiDummyPlugin extends Plugin {
 
       switch (arg[0].toLowerCase()) {
 
-
           // modify value
         case "value":
           try {
@@ -146,12 +152,13 @@ public class MultiDummyPlugin extends Plugin {
             } else {
             valueMapping.put(dummy.valueId, value);
             dummy.value = valueMapping.get(dummy.valueId);
-            System.err.println(">>" + dummy.valueId + " value updated to " + value);
+            System.err.println(">>" + dummy.valueId + " value updated to: " + value);
             }
           } catch (Exception e) {
             System.err.println(">>Invalid value: " + arg[1]);
           }
           break;
+
 
         // operational mode
         case "mode":
@@ -204,6 +211,7 @@ public class MultiDummyPlugin extends Plugin {
           }
           break;
 
+
         // update time
         case "update":
           try {
@@ -214,12 +222,11 @@ public class MultiDummyPlugin extends Plugin {
             dummy.loopFuture.cancel(true);
             dummy.startLoop();
 
-            System.err.println(">>update time changed to " + value + "ms");
+            System.err.println(">>update time changed to: " + value + "ms");
           } catch (Exception e) {
             System.err.println(">>Invalid update time: " + arg[1]);
           }
           break;
-
 
 
           // change ID
@@ -243,6 +250,12 @@ public class MultiDummyPlugin extends Plugin {
           // print out current ID
           case "current":
               System.err.println(">>The current ID is: " + dummy.valueId);
+              break;
+
+
+          // print out instructions
+          case "?":
+              instructions(values);
               break;
 
 
