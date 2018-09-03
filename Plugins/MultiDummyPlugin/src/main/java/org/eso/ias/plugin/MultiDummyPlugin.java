@@ -22,6 +22,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Future;
 import java.util.HashMap;
+import java.util.Set;
 import java.io.File;
 
 
@@ -34,8 +35,10 @@ public class MultiDummyPlugin extends Plugin {
   private double value = 0;
   private String valueId;
   private int updateTime = 1000;
+  private HashMap<String, Double> hm;
 
-  /**
+
+    /**
    * runs the plugin.
    */
 
@@ -67,6 +70,15 @@ public class MultiDummyPlugin extends Plugin {
 
       System.err.println("  > ?");
       System.err.println("  Shows all available commands.\n");
+
+      // all value x
+
+      // stop value
+
+      // up to 30 ids
+
+      // unreliable bug
+
   }
 
   public static void main(String[] args) throws Exception {
@@ -89,9 +101,8 @@ public class MultiDummyPlugin extends Plugin {
 
     PluginConfig config = future.get();
 
-    Value[] values=config.getValues();
-
     HashMap<String, Double> valueMapping = new HashMap<String, Double>();
+    Value[] values=config.getValues();
     for (Value v : values ){
         valueMapping.put(v.getId(), 0.0);
     }
@@ -104,10 +115,14 @@ public class MultiDummyPlugin extends Plugin {
         Plugin.getScheduledExecutorService());
 
 
+
     // start plugin
-    MultiDummyPlugin dummy = new MultiDummyPlugin(config, publisher);
+    MultiDummyPlugin dummy = new MultiDummyPlugin(config, publisher, valueMapping);
+
     dummy.valueId = values[0].getId();
     dummy.value = valueMapping.get(dummy.valueId);
+
+
 
     try {
       dummy.start();
@@ -148,7 +163,7 @@ public class MultiDummyPlugin extends Plugin {
           try {
             Double value = Double.parseDouble(arg[1]);
             if(dummy.value == value){
-                System.err.println(">>value is already set to " + value + "!");
+                System.err.println(">>" + dummy.valueId + " value is already set to " + value + "!");
             } else {
             valueMapping.put(dummy.valueId, value);
             dummy.value = valueMapping.get(dummy.valueId);
@@ -162,7 +177,7 @@ public class MultiDummyPlugin extends Plugin {
 
         // operational mode
         case "mode":
-          String msg = ">>operational mode changed to: ";
+          String msg = ">>" + dummy.valueId + " operational mode changed to: ";
 
           switch (arg[1].toLowerCase()) {
             case "operational":
@@ -222,7 +237,7 @@ public class MultiDummyPlugin extends Plugin {
             dummy.loopFuture.cancel(true);
             dummy.startLoop();
 
-            System.err.println(">>update time changed to: " + value + "ms");
+            System.err.println(">>" + dummy.valueId + " update time changed to: " + value + "ms");
           } catch (Exception e) {
             System.err.println(">>Invalid update time: " + arg[1]);
           }
@@ -280,11 +295,12 @@ public class MultiDummyPlugin extends Plugin {
    */
   private ScheduledFuture<?> loopFuture;
 
-  private MultiDummyPlugin(PluginConfig config, MonitorPointSender sender) {
+  private MultiDummyPlugin(PluginConfig config, MonitorPointSender sender, HashMap<String, Double> hmConstructror) {
     super(config, sender, new HbKafkaProducer(
 			config.getId(), config.getSinkServer() + ":" + config.getSinkPort(),
 			new HbJsonSerializer())
 		);
+    hm = hmConstructror;
   }
 
   /**
@@ -295,8 +311,14 @@ public class MultiDummyPlugin extends Plugin {
    */
   @Override
   public void updateMonitorPointValue(String mPointID, Object value) {
+     Set<String> keys = hm.keySet();
     try {
-      super.updateMonitorPointValue(mPointID, value);
+        for (String key: keys){
+            super.updateMonitorPointValue(key, hm.get(key));
+        }
+
+
+      //super.updateMonitorPointValue(mPointID, value);
     } catch (PluginException pe) {
       System.err.println("Error sending " + mPointID + " monitor point to the core of the IAS");
       pe.printStackTrace();
