@@ -69,7 +69,11 @@ public class MultiDummyPlugin extends Plugin {
       System.err.println("  Changes all IDs to the same value.\n");
 
       System.err.println("  > change [String] to value [double]");
-      System.err.println("  Changes the specified ID to the specified value.\n");
+      System.err.println("  Changes the specified ID to the specified value.");
+      System.err.println("  > change [String] to mode [mode]");
+      System.err.println("  Changes the specified ID to the specified operational mode.");
+      System.err.println("  > change [String] to UpdateTime [int]");
+      System.err.println("  Changes the specified ID to the specified update time.\n");
 
       System.err.println("  > current");
       System.err.println("  Prints the current ID.\n");
@@ -144,7 +148,10 @@ public class MultiDummyPlugin extends Plugin {
         modeMapping.put(m.getId(), OperationalMode.OPERATIONAL);
     }
     OperationalMode idMode = modeMapping.get(values[0].getId());
-    dummy.setOperationalMode(dummy.valueId, idMode);
+      for (Value n : values){
+          dummy.setOperationalMode(n.getId(), idMode);
+      }
+
     dummy.startLoop();
 
 
@@ -189,68 +196,10 @@ public class MultiDummyPlugin extends Plugin {
         // operational mode
         case "mode":
           String msg = ">>" + dummy.valueId + " operational mode changed to: ";
-
-          switch (arg[1].toLowerCase()) {
-            case "operational":
-              modeMapping.put(dummy.valueId, OperationalMode.OPERATIONAL);
-              idMode = modeMapping.get(dummy.valueId);
-              dummy.setOperationalMode(dummy.valueId, idMode);
-              System.err.println(msg + arg[1]);
-              break;
-
-            case "maintenance":
-              modeMapping.put(dummy.valueId, OperationalMode.MAINTENANCE);
-              idMode = modeMapping.get(dummy.valueId);
-              dummy.setOperationalMode(dummy.valueId, idMode);
-              System.err.println(msg + arg[1]);
-              break;
-
-            case "startup":
-              modeMapping.put(dummy.valueId, OperationalMode.STARTUP);
-              idMode = modeMapping.get(dummy.valueId);
-              dummy.setOperationalMode(dummy.valueId, idMode);
-              System.err.println(msg + arg[1]);
-              break;
-
-            case "initialization":
-              modeMapping.put(dummy.valueId, OperationalMode.INITIALIZATION);
-              idMode = modeMapping.get(dummy.valueId);
-              dummy.setOperationalMode(dummy.valueId, idMode);
-              System.err.println(msg + arg[1]);
-              break;
-
-            case "degraded":
-              modeMapping.put(dummy.valueId, OperationalMode.DEGRADED);
-              idMode = modeMapping.get(dummy.valueId);
-              dummy.setOperationalMode(dummy.valueId, idMode);
-              System.err.println(msg + arg[1]);
-              break;
-
-            case "closing":
-              modeMapping.put(dummy.valueId, OperationalMode.CLOSING);
-              idMode = modeMapping.get(dummy.valueId);
-              dummy.setOperationalMode(dummy.valueId, idMode);
-              System.err.println(msg + arg[1]);
-              break;
-
-            case "shutteddown":
-              modeMapping.put(dummy.valueId, OperationalMode.SHUTTEDDOWN);
-              idMode = modeMapping.get(dummy.valueId);
-              dummy.setOperationalMode(dummy.valueId, idMode);
-              System.err.println(msg + arg[1]);
-              break;
-
-            case "unknown":
-              modeMapping.put(dummy.valueId, OperationalMode.UNKNOWN);
-              idMode = modeMapping.get(dummy.valueId);
-              dummy.setOperationalMode(dummy.valueId, idMode);
-              System.err.println(msg + arg[1]);
-              break;
-
-            default:
-              System.err.println(">>unrecongnized operational mode: " + arg[1]);
-              break;
-          }
+          modeMapping.put(dummy.valueId, OperationalMode.valueOf(arg[1].toUpperCase()));
+          idMode = modeMapping.get(dummy.valueId);
+          dummy.setOperationalMode(dummy.valueId, idMode);
+          System.err.println(msg + arg[1]);
           break;
 
 
@@ -307,30 +256,53 @@ public class MultiDummyPlugin extends Plugin {
               for (Value i : values ){
                   valueMapping.put(i.getId(), value);
               }
-              System.err.println("Changed all IDs to value: " + arg[1]);
+              System.err.println(">>Changed all IDs to value: " + arg[1]);
               break;
 
 
           // change value by specifying the ID
           case "change":
-              boolean exists=false;
-              Double Value = Double.parseDouble(arg[4]);
-              for (int i=0;i<values.length;i=i+1) {
-                  if (values[i].getId().equals(arg[1])) {
-                      valueMapping.put(values[i].getId(), Value);
-                      System.err.println(arg[1] + " has been changed to the value: " + arg[4]);
-                      exists=true;
+              found=false;
+              if (arg[3].equals("value")) {
+                  Double Value = Double.parseDouble(arg[4]);
+                  for (int i = 0; i < values.length; i = i + 1) {
+                      if (values[i].getId().equals(arg[1])) {
+                          valueMapping.put(values[i].getId(), Value);
+                          System.err.println(">>value in " + arg[1] + " has been changed to the value: " + arg[4]);
+                          found = true;
+                          break;
+                      }
                   }
-              }if (!exists){
-              System.err.println(">>ID: " + arg[1] + " does not exist.");
-          }
+                  if (!found) {
+                      System.err.println(">>ID: " + arg[1] + " does not exist.");
+                  }
 
-          break;
 
+              } else if (arg[3].equals("mode")) {
+                  String modemsg = ">>" + arg[1] + " has been changed to operational mode: ";
+                      for (int i = 0; i < values.length; i = i + 1) {
+                          if (values[i].getId().equals(arg[1])) {
+                              modeMapping.put(values[i].getId(), OperationalMode.valueOf(arg[4].toUpperCase()));
+                              idMode = modeMapping.get(values[i].getId());
+                              dummy.setOperationalMode(values[i].getId(), idMode);
+                              System.err.println(modemsg + arg[4]);
+                              found = true;
+                              break;
+                          }
+                      }
+                  if (!found) {
+                      System.err.println(">>ID: " + arg[1] + " does not exist.");
+                  }
+              } else if (arg[3].equals("UpdateTime")) {
+                  System.err.println(arg[4]);
+              } else {
+                  System.err.println(">>unrecognized command: " + line);
+              }
+              break;
 
           default:
-          System.err.println(">>unrecognized command: " + line);
-          break;
+              System.err.println(">>unrecognized command: " + line);
+              break;
       }
     }
 
