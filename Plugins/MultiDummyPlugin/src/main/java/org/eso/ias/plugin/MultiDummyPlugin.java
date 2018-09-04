@@ -126,10 +126,8 @@ public class MultiDummyPlugin extends Plugin {
 
     // start plugin
     MultiDummyPlugin dummy = new MultiDummyPlugin(config, publisher, valueMapping);
-
     dummy.valueId = values[0].getId();
     dummy.value = valueMapping.get(dummy.valueId);
-
 
 
     try {
@@ -141,7 +139,12 @@ public class MultiDummyPlugin extends Plugin {
     }
 
     // set mode
-    dummy.setPluginOperationalMode(OperationalMode.OPERATIONAL);
+    HashMap<String, OperationalMode> modeMapping = new HashMap<String, OperationalMode>();
+    for (Value m : values){
+        modeMapping.put(m.getId(), OperationalMode.OPERATIONAL);
+    }
+    OperationalMode idMode = modeMapping.get(values[0].getId());
+    dummy.setOperationalMode(dummy.valueId, idMode);
     dummy.startLoop();
 
 
@@ -189,42 +192,58 @@ public class MultiDummyPlugin extends Plugin {
 
           switch (arg[1].toLowerCase()) {
             case "operational":
-              dummy.setPluginOperationalMode(OperationalMode.OPERATIONAL);
+              modeMapping.put(dummy.valueId, OperationalMode.OPERATIONAL);
+              idMode = modeMapping.get(dummy.valueId);
+              dummy.setOperationalMode(dummy.valueId, idMode);
               System.err.println(msg + arg[1]);
               break;
 
             case "maintenance":
-              dummy.setPluginOperationalMode(OperationalMode.MAINTENANCE);
+              modeMapping.put(dummy.valueId, OperationalMode.MAINTENANCE);
+              idMode = modeMapping.get(dummy.valueId);
+              dummy.setOperationalMode(dummy.valueId, idMode);
               System.err.println(msg + arg[1]);
               break;
 
             case "startup":
-              dummy.setPluginOperationalMode(OperationalMode.STARTUP);
+              modeMapping.put(dummy.valueId, OperationalMode.STARTUP);
+              idMode = modeMapping.get(dummy.valueId);
+              dummy.setOperationalMode(dummy.valueId, idMode);
               System.err.println(msg + arg[1]);
               break;
 
             case "initialization":
-              dummy.setPluginOperationalMode(OperationalMode.INITIALIZATION);
+              modeMapping.put(dummy.valueId, OperationalMode.INITIALIZATION);
+              idMode = modeMapping.get(dummy.valueId);
+              dummy.setOperationalMode(dummy.valueId, idMode);
               System.err.println(msg + arg[1]);
               break;
 
             case "degraded":
-              dummy.setPluginOperationalMode(OperationalMode.DEGRADED);
+              modeMapping.put(dummy.valueId, OperationalMode.DEGRADED);
+              idMode = modeMapping.get(dummy.valueId);
+              dummy.setOperationalMode(dummy.valueId, idMode);
               System.err.println(msg + arg[1]);
               break;
 
             case "closing":
-              dummy.setPluginOperationalMode(OperationalMode.CLOSING);
+              modeMapping.put(dummy.valueId, OperationalMode.CLOSING);
+              idMode = modeMapping.get(dummy.valueId);
+              dummy.setOperationalMode(dummy.valueId, idMode);
               System.err.println(msg + arg[1]);
               break;
 
             case "shutteddown":
-              dummy.setPluginOperationalMode(OperationalMode.SHUTTEDDOWN);
+              modeMapping.put(dummy.valueId, OperationalMode.SHUTTEDDOWN);
+              idMode = modeMapping.get(dummy.valueId);
+              dummy.setOperationalMode(dummy.valueId, idMode);
               System.err.println(msg + arg[1]);
               break;
 
             case "unknown":
-              dummy.setPluginOperationalMode(OperationalMode.UNKNOWN);
+              modeMapping.put(dummy.valueId, OperationalMode.UNKNOWN);
+              idMode = modeMapping.get(dummy.valueId);
+              dummy.setOperationalMode(dummy.valueId, idMode);
               System.err.println(msg + arg[1]);
               break;
 
@@ -307,8 +326,6 @@ public class MultiDummyPlugin extends Plugin {
           }
 
           break;
-
-
 
 
           default:
