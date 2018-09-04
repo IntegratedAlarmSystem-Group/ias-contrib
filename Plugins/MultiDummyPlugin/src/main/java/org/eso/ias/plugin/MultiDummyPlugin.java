@@ -65,6 +65,9 @@ public class MultiDummyPlugin extends Plugin {
           System.err.println("     " + val.getId());
       }
 
+      System.err.println("  > allvalue [double]");
+      System.err.println("  Changes all IDs to the same value.\n");
+
       System.err.println("\n  > current");
       System.err.println("  Prints the current ID.\n");
 
@@ -77,7 +80,7 @@ public class MultiDummyPlugin extends Plugin {
 
       // up to 30 ids
 
-      // unreliable bug
+      // unreliable bug (fixed)
 
   }
 
@@ -271,6 +274,16 @@ public class MultiDummyPlugin extends Plugin {
           // print out instructions
           case "?":
               instructions(values);
+              break;
+
+
+          // change all IDs to the same value
+          case "allvalue":
+              Double value = Double.parseDouble(arg[1]);
+              for (Value i : values ){
+                  valueMapping.put(i.getId(), value);
+              }
+              System.err.println("Changed all IDs to value: " + arg[1]);
               break;
 
 
