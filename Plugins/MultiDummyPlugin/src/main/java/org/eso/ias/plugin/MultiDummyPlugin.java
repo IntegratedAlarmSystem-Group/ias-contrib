@@ -69,9 +69,11 @@ public class MultiDummyPlugin extends Plugin {
       System.err.println("  Changes all IDs to the same value.\n");
 
       System.err.println("  > change [String] to value [double]");
-      System.err.println("  Changes the specified ID to the specified value.");
+      System.err.println("  Changes the specified ID to the specified value.\n");
+
       System.err.println("  > change [String] to mode [mode]");
-      System.err.println("  Changes the specified ID to the specified operational mode.");
+      System.err.println("  Changes the specified ID to the specified operational mode.\n");
+
       System.err.println("  > change [String] to UpdateTime [int]");
       System.err.println("  Changes the specified ID to the specified update time.\n");
 
@@ -102,7 +104,7 @@ public class MultiDummyPlugin extends Plugin {
     System.err.println("Stopped logging");
 
     // IASIO
-    int refreshTime = 1000;
+    //int refreshTime = 1000;
 
 
     // configuration
@@ -152,7 +154,18 @@ public class MultiDummyPlugin extends Plugin {
           dummy.setOperationalMode(n.getId(), idMode);
       }
 
-    dummy.startLoop();
+      // set update time
+      HashMap<String, Integer> updateTimeMapping = new HashMap<String, Integer>();
+      for (Value t : values) {
+          updateTimeMapping.put(t.getId(), dummy.updateTime);
+      }
+
+      // set loop
+      HashMap<String, ScheduledFuture<?>> loopMapping = new HashMap<String, ScheduledFuture<?>>();
+      for (Value l : values){
+          ScheduledFuture<?> sf = dummy.startLoop(l.getId(), updateTimeMapping.get(l.getId()));
+          loopMapping.put(l.getId(), sf);
+      }
 
 
     // instructions
@@ -207,15 +220,17 @@ public class MultiDummyPlugin extends Plugin {
         case "update":
           try {
             Integer value = Integer.parseInt(arg[1]);
-            dummy.updateTime = value;
+            updateTimeMapping.put(dummy.valueId, value);
+            dummy.updateTime = updateTimeMapping.get(dummy.valueId);
 
             // restart loop
-            dummy.loopFuture.cancel(true);
-            dummy.startLoop();
+            loopMapping.get(dummy.valueId).cancel(true);
+            dummy.startLoop(dummy.valueId, value);
 
             System.err.println(">>update time changed to: " + value + "ms");
           } catch (Exception e) {
             System.err.println(">>Invalid update time: " + arg[1]);
+            e.printStackTrace(System.err);
           }
           break;
 
@@ -310,16 +325,12 @@ public class MultiDummyPlugin extends Plugin {
     System.err.println("Closing plugin");
 
     try {
-      dummy.loopFuture.cancel(true);
+      loopMapping.get(dummy.valueId).cancel(true);
     } catch (Exception e) {
       System.err.println("loop terminated");
     }
   }
 
-  /**
-   * the loop to keep the plugin running.
-   */
-  private ScheduledFuture<?> loopFuture;
 
   private MultiDummyPlugin(PluginConfig config, MonitorPointSender sender, HashMap<String, Double> hmConstructror) {
     super(config, sender, new HbKafkaProducer(
@@ -335,16 +346,9 @@ public class MultiDummyPlugin extends Plugin {
    * In the example we do not take any special action if the Plugin returns an
    * error when submitting a new value.
    */
-  @Override
-  public void updateMonitorPointValue(String mPointID, Object value) {
-     Set<String> keys = hm.keySet();
+  public void updateMonitorPointValue(String mPointID) {
     try {
-        for (String key: keys){
-            super.updateMonitorPointValue(key, hm.get(key));
-        }
-
-
-      //super.updateMonitorPointValue(mPointID, value);
+        super.updateMonitorPointValue(mPointID, hm.get(mPointID));
     } catch (PluginException pe) {
       System.err.println("Error sending " + mPointID + " monitor point to the core of the IAS");
       pe.printStackTrace();
@@ -354,9 +358,9 @@ public class MultiDummyPlugin extends Plugin {
   /**
    * The loop to update the value every 1 second
    */
-  private void startLoop() {
+  private ScheduledFuture<?> startLoop(String valueId, int updateTime) {
     // send data every second.
-    loopFuture = getScheduledExecutorService().scheduleAtFixedRate(
-        () -> updateMonitorPointValue(valueId, value), 0, updateTime, TimeUnit.MILLISECONDS);
+    return getScheduledExecutorService().scheduleAtFixedRate(
+        () -> updateMonitorPointValue(valueId), 0, updateTime, TimeUnit.MILLISECONDS);
   }
 }
