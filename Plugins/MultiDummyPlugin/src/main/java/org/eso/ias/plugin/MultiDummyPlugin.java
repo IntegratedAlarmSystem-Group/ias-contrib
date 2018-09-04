@@ -230,7 +230,6 @@ public class MultiDummyPlugin extends Plugin {
             System.err.println(">>update time changed to: " + value + "ms");
           } catch (Exception e) {
             System.err.println(">>Invalid update time: " + arg[1]);
-            e.printStackTrace(System.err);
           }
           break;
 
@@ -294,13 +293,12 @@ public class MultiDummyPlugin extends Plugin {
 
 
               } else if (arg[3].equals("mode")) {
-                  String modemsg = ">>" + arg[1] + " has been changed to operational mode: ";
                       for (int i = 0; i < values.length; i = i + 1) {
                           if (values[i].getId().equals(arg[1])) {
                               modeMapping.put(values[i].getId(), OperationalMode.valueOf(arg[4].toUpperCase()));
                               idMode = modeMapping.get(values[i].getId());
                               dummy.setOperationalMode(values[i].getId(), idMode);
-                              System.err.println(modemsg + arg[4]);
+                              System.err.println(">>" + arg[1] + " has been changed to operational mode: " + arg[4]);
                               found = true;
                               break;
                           }
@@ -308,8 +306,32 @@ public class MultiDummyPlugin extends Plugin {
                   if (!found) {
                       System.err.println(">>ID: " + arg[1] + " does not exist.");
                   }
+
               } else if (arg[3].equals("UpdateTime")) {
-                  System.err.println(arg[4]);
+                  Integer timevalue = Integer.parseInt(arg[4]);
+                  for (int i = 0; i < values.length; i = i + 1) {
+                      if (values[i].getId().equals(arg[1])) {
+                          try {
+                              updateTimeMapping.put(values[i].getId(), timevalue);
+                              dummy.updateTime = updateTimeMapping.get(values[i].getId());
+                              // restart loop
+                              loopMapping.get(values[i].getId()).cancel(true);
+                              dummy.startLoop(values[i].getId(), timevalue);
+                              System.err.println(">>" + arg[1] + " has been update to update time: " + arg[4] + "ms");
+                              found = true;
+                              break;
+                          } catch (Exception e) {
+                              System.err.println(">>Invalid update time: " + arg[4]);
+                              found = true;
+                          }
+                          break;
+                      }
+                  }
+                  if (!found) {
+                      System.err.println(">>ID: " + arg[1] + " does not exist.");
+                  }
+
+
               } else {
                   System.err.println(">>unrecognized command: " + line);
               }
