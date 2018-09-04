@@ -65,22 +65,27 @@ public class MultiDummyPlugin extends Plugin {
           System.err.println("     " + val.getId());
       }
 
-      System.err.println("  > allvalue [double]");
+      System.err.println("\n  > allvalue [double]");
       System.err.println("  Changes all IDs to the same value.\n");
 
-      System.err.println("\n  > current");
+      System.err.println("  > change [String] to value [double]");
+      System.err.println("  Changes the specified ID to the specified value.\n");
+
+      System.err.println("  > current");
       System.err.println("  Prints the current ID.\n");
 
       System.err.println("  > ?");
       System.err.println("  Shows all available commands.\n");
 
-      // all value x
+      // all value x (done)
 
       // stop value
 
       // up to 30 ids
 
       // unreliable bug (fixed)
+
+      // optional requirement
 
   }
 
@@ -154,7 +159,7 @@ public class MultiDummyPlugin extends Plugin {
     while ((line = br.readLine()) != null) {
       String[] arg = line.split(" ");
 
-      if (arg.length > 2) {
+      if (arg.length > 5) {
         System.err.println(">>Invalid expression: " + line);
         continue;
       }
@@ -240,7 +245,7 @@ public class MultiDummyPlugin extends Plugin {
             dummy.loopFuture.cancel(true);
             dummy.startLoop();
 
-            System.err.println(">>" + dummy.valueId + " update time changed to: " + value + "ms");
+            System.err.println(">>update time changed to: " + value + "ms");
           } catch (Exception e) {
             System.err.println(">>Invalid update time: " + arg[1]);
           }
@@ -285,6 +290,25 @@ public class MultiDummyPlugin extends Plugin {
               }
               System.err.println("Changed all IDs to value: " + arg[1]);
               break;
+
+
+          // change value by specifying the ID
+          case "change":
+              boolean exists=false;
+              Double Value = Double.parseDouble(arg[4]);
+              for (int i=0;i<values.length;i=i+1) {
+                  if (values[i].getId().equals(arg[1])) {
+                      valueMapping.put(values[i].getId(), Value);
+                      System.err.println(arg[1] + " has been changed to the value: " + arg[4]);
+                      exists=true;
+                  }
+              }if (!exists){
+              System.err.println(">>ID: " + arg[1] + " does not exist.");
+          }
+
+          break;
+
+
 
 
           default:
