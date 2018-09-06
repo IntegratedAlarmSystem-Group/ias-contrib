@@ -117,11 +117,23 @@ public class MultiDummyPlugin extends Plugin {
     }
 
     // publisher
-    KafkaPublisher publisher = new KafkaPublisher(config.getId(),
-        config.getMonitoredSystemId(),
-        config.getSinkServer(),
-        config.getSinkPort(),
-        Plugin.getScheduledExecutorService());
+      KafkaPublisher publisher;
+      if (args.length ==1){
+          publisher = new KafkaPublisher(config.getId(),
+                  config.getMonitoredSystemId(),
+                  config.getSinkServer(),
+                  config.getSinkPort(),
+                  Plugin.getScheduledExecutorService());
+          System.err.println("Server and Port taken from config.json file.");
+      } else {
+          publisher = new KafkaPublisher(config.getId(),
+                  config.getMonitoredSystemId(),
+                  args[1],
+                  Integer.parseInt(args[2]),
+                  Plugin.getScheduledExecutorService());
+          System.err.println("Server and Port taken from command line. Server: " + args[1] + ", Port: " + Integer.parseInt(args[2]));
+      }
+
 
 
     // start plugin
