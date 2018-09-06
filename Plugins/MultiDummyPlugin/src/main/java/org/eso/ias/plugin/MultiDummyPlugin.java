@@ -44,18 +44,21 @@ public class MultiDummyPlugin extends Plugin {
 
   // method to print out instructions
   public static void instructions(Value[] arrayOfValues) {
+      System.err.println("\nDefault ID is: " + arrayOfValues[0].getId());
+      System.err.println("Default value is: 0.0.");
+      System.err.println("Default mode is: operational.");
       System.err.println("Available commands:");
 
       System.err.println("  > value [double]");
-      System.err.println("  Changes the value the plugin is sending.");
+      System.err.println("  Changes the value the current ID is sending.");
       System.err.println("  By default, any value outside ]0,50[ will trigger the alarm.\n");
 
       System.err.println("  > mode [mode]");
-      System.err.println("  Changes the operational mode of the plugin. The options are:");
+      System.err.println("  Changes the operational mode of the current ID. The options are:");
       System.err.println("  operational, maintenance, startup, initialization, degraded, closing, shutteddown and unknown.\n");
 
       System.err.println("  > update [int]");
-      System.err.println("  Changes the rate at wich the value in the plugin is updated (milliseconds).");
+      System.err.println("  Changes the rate at which the value in the current ID is updated (milliseconds).");
       System.err.println("  If this value is higher than 1500 the value sent will be invalid.\n");
 
       System.err.println("  > id [String]");
@@ -68,13 +71,19 @@ public class MultiDummyPlugin extends Plugin {
       System.err.println("\n  > allvalue [double]");
       System.err.println("  Changes all IDs to the same value.\n");
 
+      System.err.println("  > allmode [mode]");
+      System.err.println("  Changes all IDs to the same mode.\n");
+
+      System.err.println("  > allupdatetime [int]");
+      System.err.println("  Changes all IDs to the same update time.\n");
+
       System.err.println("  > change [String] to value [double]");
       System.err.println("  Changes the specified ID to the specified value.\n");
 
       System.err.println("  > change [String] to mode [mode]");
       System.err.println("  Changes the specified ID to the specified operational mode.\n");
 
-      System.err.println("  > change [String] to UpdateTime [int]");
+      System.err.println("  > change [String] to updateTime [int]");
       System.err.println("  Changes the specified ID to the specified update time.\n");
 
       System.err.println("  > current");
@@ -82,17 +91,6 @@ public class MultiDummyPlugin extends Plugin {
 
       System.err.println("  > ?");
       System.err.println("  Shows all available commands.\n");
-
-      // all value x (done)
-
-      // stop value
-
-      // up to 30 ids
-
-      // unreliable bug (fixed)
-
-      // optional requirement
-
   }
 
   public static void main(String[] args) throws Exception {
@@ -103,18 +101,15 @@ public class MultiDummyPlugin extends Plugin {
     loggerContext.stop();
     System.err.println("Stopped logging");
 
-    // IASIO
-    //int refreshTime = 1000;
-
 
     // configuration
     File f =new File(args[0]);
     System.err.println("File used: " + args[0]);
     PluginConfigFileReader configReader=new  PluginConfigFileReader(f);
     Future<PluginConfig> future=configReader.getPluginConfig();
-
     PluginConfig config = future.get();
 
+    // set values
     HashMap<String, Double> valueMapping = new HashMap<String, Double>();
     Value[] values=config.getValues();
     for (Value v : values ){
@@ -127,7 +122,6 @@ public class MultiDummyPlugin extends Plugin {
         config.getSinkServer(),
         config.getSinkPort(),
         Plugin.getScheduledExecutorService());
-
 
 
     // start plugin
@@ -170,11 +164,7 @@ public class MultiDummyPlugin extends Plugin {
 
     // instructions
       System.err.println("Plugin started, sending value 0. waiting for user input...");
-      System.err.println("\nCurrent ID: " + dummy.valueId);
-      System.err.println("Default value is: 0.0.");
-      System.err.println("Default mode is: operational.");
       instructions(values);
-
 
     // start reading values from input
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -227,7 +217,7 @@ public class MultiDummyPlugin extends Plugin {
             loopMapping.get(dummy.valueId).cancel(true);
             dummy.startLoop(dummy.valueId, value);
 
-            System.err.println(">>update time changed to: " + value + "ms");
+            System.err.println(">>Update time changed to: " + value + "ms");
           } catch (Exception e) {
             System.err.println(">>Invalid update time: " + arg[1]);
           }
@@ -273,8 +263,28 @@ public class MultiDummyPlugin extends Plugin {
               System.err.println(">>Changed all IDs to value: " + arg[1]);
               break;
 
+          // change all IDs to the same mode
+          case "allmode":
+              for (Value p : values ){
+                  modeMapping.put(p.getId(), OperationalMode.valueOf(arg[1].toUpperCase()));
+                  dummy.setOperationalMode(p.getId(), OperationalMode.valueOf(arg[1].toUpperCase()));
+              }
+              System.err.println(">>Changed all IDs to mode: " + arg[1]);
+              break;
 
-          // change value by specifying the ID
+          //change all IDs to the same update time
+          case "allupdatetime":
+              Integer time = Integer.parseInt(arg[1]);
+              for (Value t : values ){
+                  updateTimeMapping.put(t.getId(), time);
+                  loopMapping.get(t.getId()).cancel(true);
+                  dummy.startLoop(t.getId(), time);
+              }
+              System.err.println(">>Changed all IDs update time to: " + arg[1]);
+              break;
+
+
+              // change value, mode or update time by specifying the ID
           case "change":
               found=false;
               if (arg[3].equals("value")) {
@@ -282,7 +292,7 @@ public class MultiDummyPlugin extends Plugin {
                   for (int i = 0; i < values.length; i = i + 1) {
                       if (values[i].getId().equals(arg[1])) {
                           valueMapping.put(values[i].getId(), Value);
-                          System.err.println(">>value in " + arg[1] + " has been changed to the value: " + arg[4]);
+                          System.err.println(">>Value in " + arg[1] + " has been changed to the value: " + arg[4]);
                           found = true;
                           break;
                       }
@@ -307,7 +317,7 @@ public class MultiDummyPlugin extends Plugin {
                       System.err.println(">>ID: " + arg[1] + " does not exist.");
                   }
 
-              } else if (arg[3].equals("UpdateTime")) {
+              } else if (arg[3].equals("updateTime")) {
                   Integer timevalue = Integer.parseInt(arg[4]);
                   for (int i = 0; i < values.length; i = i + 1) {
                       if (values[i].getId().equals(arg[1])) {
@@ -362,12 +372,7 @@ public class MultiDummyPlugin extends Plugin {
     hm = hmConstructror;
   }
 
-  /**
-   * Override method to catch the exception and log a message
-   * <p>
-   * In the example we do not take any special action if the Plugin returns an
-   * error when submitting a new value.
-   */
+
   public void updateMonitorPointValue(String mPointID) {
     try {
         super.updateMonitorPointValue(mPointID, hm.get(mPointID));
