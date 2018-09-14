@@ -20,7 +20,7 @@ RUN ./gradlew
 COPY . .
 RUN rm -rf dist
 RUN mkdir dist
-RUN ./gradlew build
+RUN ./gradlew build --refresh-dependencies
 
 # --------------------------------------
 # Move JARs and Clean
