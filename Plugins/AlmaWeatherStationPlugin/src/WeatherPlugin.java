@@ -186,7 +186,7 @@ public class WeatherPlugin extends Plugin {
 			});
 
 			logger.debug("Monitor point values updated");
-		}, 0, 1, TimeUnit.MILLISECONDS);
+		}, 0, 1, TimeUnit.SECONDS);
 		try {
 			loopFuture.get();
 		} catch (ExecutionException ee) {
