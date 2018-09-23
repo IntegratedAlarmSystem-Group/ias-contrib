@@ -33,7 +33,35 @@ class UtilityModule:
         self.antenna = str(antenna)
         self.ip_address = self.__get_ip_address()
         self.data = {}
-        
+        self.index = self.getIndexOfAntenna(self.antenna)
+
+    def getIndexOfAntenna(self,antenna):
+        '''
+        Get the index of the antenna (i.e. from 1 to 66) from the name
+        DA,DV,PM,CM
+
+        :param antenna: the name of the antenna like DA56
+        :return: the index in [1,66]
+        '''
+        if (len(antenna)!=4):
+            raise ValueError('Invalid antenna name '+antenna)
+        antennaType = antenna[:2]
+        i = int(antenna[2:])
+        if antennaType == 'DV' :
+            # DV[1-25] mapped to 1-25
+            return i
+        elif antennaType == 'DA':
+            # DA[41-65] mapped to 26-50
+            return i - 15
+        elif antennaType == 'CM':
+            # CM[1-12] mapped to 51-62
+            return 50+i
+        elif antennaType =='PM' :
+            # PM[1-4] mapped to 63-66
+            return 62+i
+        else:
+            raise ValueError('Unrecognized antenna type '+antenna)
+
     def __get_ip_address(self):
         '''
         Use the antenna name to get the utility module IP address
@@ -81,8 +109,13 @@ if __name__=="__main__":
     # The name of the monitor point is given
     # by the prefix plus the name of the antenna
     mPointIdPrefix="Array-UMStatus-"
+
+    templatePrefix="[!#"
+    templateSuffix= "!]"
+
+    idxPrefix = mPointIdPrefix+"Ant"
     
-    # The utility module to conncet to each antenna
+    # The utility module to connect to each antenna
     utilityModules = []
     for antenna in antennas:
       utilityModules.append(UtilityModule(antenna))
@@ -90,11 +123,12 @@ if __name__=="__main__":
       try:
         utm.get_utility_module_data()
         vals=[]
-	for mpName in utm.data:
+        for mpName in utm.data:
           vals.append("%s:%s" % (mpName,utm.data[mpName]))
         valToSend= ','.join(vals)
         idOfMp = mPointIdPrefix+utm.antenna
+        idx = idxPrefix+templatePrefix+utm.index+templateSuffix
         # This is the string expected by utilitymoduleRemoteRunner.py
-        print "{0} [{1}] MPoint sent with value '{2}'".format(datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"),idOfMp,valToSend)
+        print "{0} [{1}] [{2}] MPoint sent with value '{3}'".format(datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"),idOfMp,idx,valToSend)
       except Exception as e:
         print "Errror reading data from", utm.antenna

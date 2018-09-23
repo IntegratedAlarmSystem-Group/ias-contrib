@@ -23,7 +23,9 @@ antennas = [
         'PM01','PM02','PM03','PM04'
 ]
 
-mpoint_prefix = "Array-UMStatus"
+templatePrefix="[!#"
+templateSuffix= "!]"
+mpoint_prefix = "Array-UMStatus-Ant"+templatePrefix
 
 mpPrefix = '{"id":"'
 mpSuffix = '", "refreshTime":"10000", "filter":"", "filterOptions":""}'
@@ -47,8 +49,8 @@ if __name__ == '__main__':
     mpoints = ""
     cr = "\n"
     jsonConfig = []
-    for ant in antennas:
-      id = "%s-%s" % (mpoint_prefix,ant)
+    for ant in range(1,67):
+      id = "%s%s%s" % (mpoint_prefix,ant,templateSuffix)
       mpJson = "    %s%s%s" % (mpPrefix,id,mpSuffix)
       jsonConfig.append(mpJson)
     
