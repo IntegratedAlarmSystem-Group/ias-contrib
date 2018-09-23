@@ -64,8 +64,8 @@ if __name__=="__main__":
       mpId=parts[1][1:-1]
       idx=parts[2][1:-1]
       value=parts[7][1:-1]
-      print mpId, value
-      udpPlugin.submit(mpId, value, "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
+      print mpId, idx, value
+      udpPlugin.submit(idx, value, "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
       print "{0} [{1}] [{2}] MPoint sent with value '{3}'".format(datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"), mpId,idx,value)
     else:
       print "Wrong format, cannot extract data from ",parts
