@@ -28,7 +28,7 @@ templateSuffix= "!]"
 mpoint_prefix = "Array-UMStatus-Ant"+templatePrefix
 
 mpPrefix = '{"id":"'
-mpSuffix = '", "refreshTime":"10000", "filter":"", "filterOptions":""}'
+mpSuffix = '", "refreshTime":"60000", "filter":"", "filterOptions":""}'
 
 jsonHeader = '''{
   "id":"UtilityModules",
@@ -36,7 +36,7 @@ jsonHeader = '''{
   "sinkServer":"10.195.60.180",
   "sinkPort":"9092",
   "autoSendTimeInterval":"3",
-  "hbFrequency":"3",
+  "hbFrequency":"5",
   "properties": [],
   "values":[
 '''
