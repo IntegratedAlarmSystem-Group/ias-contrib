@@ -28,7 +28,7 @@ templateSuffix= "!]"
 mpoint_prefix = "Array-UMStatus-Ant"+templatePrefix
 
 mpPrefix = '{"id":"'
-mpSuffix = '", "refreshTime":"60000", "filter":"", "filterOptions":""}'
+mpSuffix = '", "refreshTime":"120000", "filter":"", "filterOptions":""}'
 
 jsonHeader = '''{
   "id":"UtilityModules",
