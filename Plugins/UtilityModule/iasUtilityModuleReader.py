@@ -127,7 +127,7 @@ if __name__=="__main__":
           vals.append("%s:%s" % (mpName,utm.data[mpName]))
         valToSend= ','.join(vals)
         idOfMp = mPointIdPrefix+utm.antenna
-        idx = idxPrefix+templatePrefix+utm.index+templateSuffix
+        idx = idxPrefix+templatePrefix+str(utm.index)+templateSuffix
         # This is the string expected by utilitymoduleRemoteRunner.py
         print "{0} [{1}] [{2}] MPoint sent with value '{3}'".format(datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S"),idOfMp,idx,valToSend)
       except Exception as e:
