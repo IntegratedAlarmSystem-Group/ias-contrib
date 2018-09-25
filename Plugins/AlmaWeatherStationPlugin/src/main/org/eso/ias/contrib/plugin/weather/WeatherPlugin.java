@@ -139,21 +139,6 @@ public class WeatherPlugin extends Plugin {
 	}
 
 	/**
-	 * Override method to catch the exception and log a message
-	 * <p>
-	 * In the example we do not take any special action if the Plugin returns an
-	 * error when submitting a new value.
-	 */
-	@Override
-	public void updateMonitorPointValue(String mPointID, Object value) {
-		try {
-			super.updateMonitorPointValue(mPointID, value);
-		} catch (PluginException pe) {
-			logger.error("Error sending {} monitor point to the core of the IAS", mPointID);
-		}
-	}
-
-	/**
 	 * The loop to get monitor values from the weather station and update the values
 	 * sent to the core of the IAS.
 	 */
