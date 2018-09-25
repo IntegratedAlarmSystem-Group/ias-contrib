@@ -52,6 +52,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class VisualInspectionPlugin implements Runnable {
 
 	/**
+	 * The default file name to read
+	 */
+	private static final String DEFAULT_FILENAME = "inspections.json";
+
+	/**
 	 * The plugin to filter and send data to the
 	 * BSDB
 	 */
@@ -148,11 +153,15 @@ public class VisualInspectionPlugin implements Runnable {
 	 * The main to start the plugin
 	 */
 	public static void main(String[] args) {
-    System.out.println("Starting the main");
+    VisualInspectionPlugin.logger.info("**** Starting VisualInspectionPlugin");
+
 		// Use apache CLI for command line parsing
 		Options options = new Options();
-		options.addOption("u","uport",true,"UDP port");
+		options.addOption("k","kafka-broker",true,"Kafka Broker (server:port)");
+		options.addOption("f","file-path",true,"Path of the file to read");
 		options.addOption("c","config-file", true,"Plugin configuration file");
+
+
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd=null;
@@ -164,19 +173,16 @@ public class VisualInspectionPlugin implements Runnable {
 			System.exit(-1);
 		}
 
-		if (!cmd.hasOption("u")) {
-			logger.error("UDP port missing");
-			printUsage(options);
-			System.exit(-2);
+		String kafkaBroker = null;
+		if (cmd.hasOption("k")) {
+			kafkaBroker = cmd.getOptionValue("k");
+			VisualInspectionPlugin.logger.info("Kafka broker obtained from command line: {}",kafkaBroker);
 		}
-		int udpPort=0;
-		try {
-			udpPort = Integer.parseInt(cmd.getOptionValue("u"));
-			VisualInspectionPlugin.logger.info("UDP port {}",udpPort);
-		} catch (Exception e) {
-			logger.error("Invalid UDP port {}",cmd.getOptionValue("u"));
-			printUsage(options);
-			System.exit(-3);
+
+		String inputFile = null;
+		if (cmd.hasOption("f")) {
+			inputFile = cmd.getOptionValue("f");
+			VisualInspectionPlugin.logger.info("Filepath to read obtained from command line: {}",inputFile);
 		}
 
 		if (!cmd.hasOption("c")) {
@@ -199,9 +205,22 @@ public class VisualInspectionPlugin implements Runnable {
 			System.exit(-5);
 		}
 
-		String kafkaBroker = pluginConfig.getSinkServer()+":"+pluginConfig.getSinkPort();
+		if (kafkaBroker == null) {
+			kafkaBroker = pluginConfig.getSinkServer()+":"+pluginConfig.getSinkPort();
+			VisualInspectionPlugin.logger.info("Kafka broker read from configuration file: {}",kafkaBroker);
+		}
 
-		logger.info("Kafka broker {}", kafkaBroker);
+		if (inputFile == null) {
+			try  {
+				inputFile = pluginConfig.getProperty("input-file").get().getValue();
+			} catch (Exception e) {
+				logger.error("Error reading the input-file from the configuration file {}",fileName, e);
+				printUsage(options);
+				System.exit(-5);
+			}
+			VisualInspectionPlugin.logger.info("Input file read from configuration file: {}",inputFile);
+		}
+
 		MonitorPointSender mpSender = new KafkaPublisher(
 				pluginConfig.getId(),
 				pluginConfig.getMonitoredSystemId(),
@@ -211,27 +230,28 @@ public class VisualInspectionPlugin implements Runnable {
 
 		HbProducer hbProducer = new HbKafkaProducer(pluginConfig.getId()+"HBSender", kafkaBroker, new HbJsonSerializer());
 
-		VisualInspectionPlugin udpPlugin = null;
-		try {
-			udpPlugin = new VisualInspectionPlugin(pluginConfig, mpSender, hbProducer, udpPort);
-		} catch (Exception e) {
-			VisualInspectionPlugin.logger.error("The VisualInspectionPlugin failed to build",e);
-			System.exit(-6);
-		}
-
-		CountDownLatch latch = null;
-		try {
-			latch = udpPlugin.setUp();
-		} catch(PluginException pe) {
-			VisualInspectionPlugin.logger.error("The VisualInspectionPlugin failed to start",pe);
-			System.exit(-7);
-		}
-		try {
-			latch.await();
-		} catch (InterruptedException ie) {
-			VisualInspectionPlugin.logger.error("VisualInspectionPlugin interrupted",ie);
-		}
-		VisualInspectionPlugin.logger.info("Done.");
+		// int updPort = 0;
+		// VisualInspectionPlugin udpPlugin = null;
+		// try {
+		// 	udpPlugin = new VisualInspectionPlugin(pluginConfig, mpSender, hbProducer, udpPort);
+		// } catch (Exception e) {
+		// 	VisualInspectionPlugin.logger.error("The VisualInspectionPlugin failed to build",e);
+		// 	System.exit(-6);
+		// }
+		//
+		// CountDownLatch latch = null;
+		// try {
+		// 	latch = udpPlugin.setUp();
+		// } catch(PluginException pe) {
+		// 	VisualInspectionPlugin.logger.error("The VisualInspectionPlugin failed to start",pe);
+		// 	System.exit(-7);
+		// }
+		// try {
+		// 	latch.await();
+		// } catch (InterruptedException ie) {
+		// 	VisualInspectionPlugin.logger.error("VisualInspectionPlugin interrupted",ie);
+		// }
+		// VisualInspectionPlugin.logger.info("Done.");
 
 	}
 
