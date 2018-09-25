@@ -1,0 +1,84 @@
+buildscript {
+  repositories {
+    jcenter()
+    maven {
+			url "http://artifactory.inria.cl:8081/artifactory/inria-maven"
+		}
+  }
+  dependencies {
+    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
+  }
+}
+
+apply plugin: 'java'
+apply plugin: "com.jfrog.artifactory"
+
+group = 'org.eso.ias'
+def version = System.getenv("version") ?: "dev"
+
+sourceSets {
+  main {
+    java {
+      srcDirs = ['src']
+    }
+  }
+}
+
+repositories {
+  mavenCentral()
+  jcenter()
+  maven {
+      url "http://artifactory.inria.cl:8081/artifactory/inria-maven"
+  }
+}
+
+dependencies {
+    compile 'org.slf4j:slf4j-api:1.7.25',
+    'ch.qos.logback:logback-classic:1.2.3',
+    'org.scala-lang:scala-library:2.12.4',
+    'commons-cli:commons-cli:1.4',
+    'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.3',
+    'org.eso.ias:ias-plugin:'+version,
+    'org.eso.ias:ias-basic-types:'+version,
+    'org.eso.ias:ias-utils:'+version,
+    'org.eso.ias:ias-heartbeat:'+version
+
+    runtime 'com.fasterxml.jackson.core:jackson-core:2.8.7',
+    'com.fasterxml.jackson.core:jackson-databind:2.8.7',
+    'com.fasterxml.jackson.core:jackson-annotations:2.8.7',
+    'org.apache.kafka:kafka-clients:1.0.0',
+    'ch.qos.logback:logback-core:1.2.3',
+    'org.scala-lang:scala-library:2.12.4',
+    'com.typesafe.scala-logging:scala-logging_2.12:3.9.0',
+    'commons-cli:commons-cli:1.4',
+    'org.eso.ias:ias-kafka-tools:'+version,
+    'org.eso.ias:ias-utils:'+version
+}
+
+
+jar {
+  manifest {
+    attributes 'Main-Class': 'org.eso.ias.contrib.plugin.visualinspection.VisualInspectionPlugin'
+  }
+
+  destinationDir = file('dist/')
+
+  // add dependencies to the jar - fat jar
+  from {
+    configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+}
+
+uploadArchives {
+	repositories {
+		maven {
+			credentials {
+				username System.getenv('ARTIFACTORY_USERNAME')
+				password System.getenv('ARTIFACTORY_PASSWORD')
+			}
+			url "http://artifactory.inria.cl:8081/artifactory/inria-maven"
+		}
+	}
+}
+
+defaultTasks 'build', 'clean'
