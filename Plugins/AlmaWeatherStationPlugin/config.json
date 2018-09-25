@@ -6,128 +6,52 @@
   "autoSendTimeInterval":"3",
   "properties": [
     {
-      "key": "WS-MeteoTB1-Temperature-Value",
-      "value": "1-temperature"
+      "key": "MeteoTB1",
+      "value": "1"
     },
     {
-      "key": "WS-MeteoTB1-WindSpeed-Value",
-      "value": "1-wind speed"
+      "key": "MeteoTB2",
+      "value": "2"
     },
     {
-      "key": "WS-MeteoTB1-Humidity-Value",
-      "value": "1-humidity"
+      "key": "MeteoOSF",
+      "value": "3"
     },
     {
-      "key": "WS-MeteoTB2-Temperature-Value",
-      "value": "2-temperature"
+      "key": "MeteoItinerant",
+      "value": "4"
     },
     {
-      "key": "WS-MeteoTB2-WindSpeed-Value",
-      "value": "2-wind speed"
+      "key": "Meteo201",
+      "value": "5"
     },
     {
-      "key": "WS-MeteoTB2-Humidity-Value",
-      "value": "2-humidity"
+      "key": "MeteoCentral",
+      "value": "6"
     },
     {
-      "key": "WS-MeteoOSF-Temperature-Value",
-      "value": "3-temperature"
+      "key": "Meteo309",
+      "value": "7"
     },
     {
-      "key": "WS-MeteoOSF-WindSpeed-Value",
-      "value": "3-wind speed"
+      "key": "Meteo410",
+      "value": "8"
     },
     {
-      "key": "WS-MeteoOSF-Humidity-Value",
-      "value": "3-humidity"
+      "key": "Meteo410",
+      "value": "8"
     },
     {
-      "key": "WS-MeteoItinerant-WindSpeed-Value",
-      "value": "4-wind speed"
+      "key": "Meteo131",
+      "value": "9"
     },
     {
-      "key": "WS-Meteo201-Temperature-Value",
-      "value": "5-temperature"
+      "key": "Meteo129",
+      "value": "10"
     },
     {
-      "key": "WS-Meteo201-WindSpeed-Value",
-      "value": "5-wind speed"
-    },
-    {
-      "key": "WS-Meteo201-Humidity-Value",
-      "value": "5-humidity"
-    },
-    {
-      "key": "WS-MeteoCentral-Temperature-Value",
-      "value": "6-temperature"
-    },
-    {
-      "key": "WS-MeteoCentral-WindSpeed-Value",
-      "value": "6-wind speed"
-    },
-    {
-      "key": "WS-MeteoCentral-Humidity-Value",
-      "value": "6-humidity"
-    },
-    {
-      "key": "WS-Meteo309-Temperature-Value",
-      "value": "7-temperature"
-    },
-    {
-      "key": "WS-Meteo309-WindSpeed-Value",
-      "value": "7-wind speed"
-    },
-    {
-      "key": "WS-Meteo309-Humidity-Value",
-      "value": "7-humidity"
-    },
-    {
-      "key": "WS-Meteo410-Temperature-Value",
-      "value": "8-temperature"
-    },
-    {
-      "key": "WS-Meteo410-WindSpeed-Value",
-      "value": "8-wind speed"
-    },
-    {
-      "key": "WS-Meteo410-Humidity-Value",
-      "value": "8-humidity"
-    },
-    {
-      "key": "WS-Meteo131-Temperature-Value",
-      "value": "9-temperature"
-    },
-    {
-      "key": "WS-Meteo131-WindSpeed-Value",
-      "value": "9-wind speed"
-    },
-    {
-      "key": "WS-Meteo131-Humidity-Value",
-      "value": "9-humidity"
-    },
-    {
-      "key": "WS-Meteo129-Temperature-Value",
-      "value": "10-temperature"
-    },
-    {
-      "key": "WS-Meteo129-WindSpeed-Value",
-      "value": "10-wind speed"
-    },
-    {
-      "key": "WS-Meteo129-Humidity-Value",
-      "value": "10-humidity"
-    },
-    {
-      "key": "WS-Meteo130-Temperature-Value",
-      "value": "11-temperature"
-    },
-    {
-      "key": "WS-Meteo130-Humidity-Value",
-      "value": "11-humidity"
-    },
-    {
-      "key": "WS-Meteo130-WindSpeed-Value",
-      "value": "11-wind speed"
+      "key": "Meteo130",
+      "value": "11"
     }
   ],
   "values": [
