@@ -8,7 +8,6 @@ import org.eso.ias.plugin.config.PluginConfig;
 import org.eso.ias.plugin.config.PluginConfigException;
 import org.eso.ias.plugin.config.PluginConfigFileReader;
 import org.eso.ias.plugin.config.Property;
-import org.eso.ias.plugin.config.Value;
 import org.eso.ias.plugin.publisher.MonitorPointSender;
 import org.eso.ias.plugin.publisher.PublisherException;
 import org.eso.ias.plugin.publisher.impl.KafkaPublisher;
@@ -22,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * IAS Plugin that runs in a never-ending loop and publishes data obtained
@@ -43,7 +43,7 @@ public class WeatherPlugin extends Plugin {
 	/**
 	 * The Collection of IAS Values to be sent by this Plugin.
 	 */
-	private static Collection<Value> iasValues;
+	private static Collection<String> valuesIds;
 
 	/**
 	* Hash map with the relation between the IAS Values and the
@@ -104,7 +104,7 @@ public class WeatherPlugin extends Plugin {
         logger.info("Refresh rate {} secs",refreshTime);
 
 		// Read the IAS Values that this Plugin is monitoring from the config file
-		this.iasValues = config.getValuesAsCollection();
+		this.valuesIds = config.getValuesAsCollection().stream().map(value -> value.getId()).collect(Collectors.toList());
 
 		// Read the relation IasValueID:StationID-SensorType from the properties
 		// and save it into an internal hash map
@@ -162,21 +162,21 @@ public class WeatherPlugin extends Plugin {
 		loopFuture = getScheduledExecutorService().scheduleAtFixedRate(() -> {
 			logger.debug("Updating monitor point values from the weather station");
 
-			this.iasValues.forEach(iasValue -> {
+			this.valuesIds.forEach(valueId -> {
 				try {
-					String[] parts = this.identifiersMap.get(iasValue.getId()).split("-");
+					String[] parts = this.identifiersMap.get(valueId).split("-");
 					int stationId = Integer.parseInt(parts[0]);
 					String sensorName = parts[1];
 
 					double value = this.weatherStationsPool.getValue(stationId, sensorName);
 					if(value == -Double.MAX_VALUE) {
 						value = Double.parseDouble("NaN");
-						setOperationalMode(iasValue.getId(), OperationalMode.SHUTTEDDOWN);
+						setOperationalMode(valueId, OperationalMode.SHUTTEDDOWN);
 					}
 					else {
-						setOperationalMode(iasValue.getId(), OperationalMode.OPERATIONAL);
+						setOperationalMode(valueId, OperationalMode.OPERATIONAL);
 					}
-					updateMonitorPointValue(iasValue.getId(), value);
+					updateMonitorPointValue(valueId, value);
 				} catch (Exception e) {
 					logger.error(e.getMessage());
 				}
