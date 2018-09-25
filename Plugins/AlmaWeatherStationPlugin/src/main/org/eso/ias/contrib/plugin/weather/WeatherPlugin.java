@@ -121,7 +121,7 @@ public class WeatherPlugin extends Plugin {
 	 */
 	private void initialize() {
 		Integer[] stationsIds = this.stationsIds.toArray(new Integer[this.stationsIds.size()]);
-		weatherStationsPool = new WeatherStationsPool(stationsIds, this.refreshTime);
+		weatherStationsPool = new WeatherStationsPool(stationsIds,this);
 
 		// Adds the shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release weather station shutdown hook"));

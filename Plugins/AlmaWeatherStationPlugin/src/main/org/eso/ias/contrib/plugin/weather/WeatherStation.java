@@ -1,5 +1,6 @@
 package  org.eso.ias.contrib.plugin.weather;
 
+import org.eso.ias.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -36,7 +37,7 @@ public class WeatherStation implements Runnable {
 	/**
 	 * Station id used in the soap request to obtain the current state.
 	 */
-	private int id;
+	private final int id;
 
 	/**
 	 * DOM parser.
@@ -60,16 +61,15 @@ public class WeatherStation implements Runnable {
 	private long lastUpdated = 0;
 
 	/**
-	 * Time to live of the values in this plugin in milliseconds. The weather
-	 * station values should be updated before the ttl time passes.
-	 */
-	private long ttl;
-
-	/**
 	 * Max difference between current time and weather station response time to
 	 * be consider as not responding.
 	 */
 	private int maxDelay = 600000;
+
+	/**
+	 * The plugin to notify with new samples
+	 */
+	private final Plugin plugin;
 
 	/**
 	 * Creates a station with the given id.
@@ -78,8 +78,11 @@ public class WeatherStation implements Runnable {
 	 *
 	 * @param id
 	 *            Identifier of the weather station to be requested.
+	 * @param plugin                The plugin to send new sample
 	 */
-	WeatherStation(int id, int timeToLive) {
+	WeatherStation(int id, Plugin plugin) {
+		Objects.requireNonNull(plugin);
+		this.plugin=plugin;
 
 		// Create the SOAP Request
 		String url = "http://weather.aiv.alma.cl/ws_weather.php";
@@ -92,7 +95,6 @@ public class WeatherStation implements Runnable {
 
 		// Weather Station id
 		this.id = id;
-		this.ttl = timeToLive;
 	}
 
 	@Override
@@ -174,9 +176,6 @@ public class WeatherStation implements Runnable {
 	 *             if it doesnt exists, or it is too old.
 	 */
 	public double getValue(String name) throws Exception {
-		// throw exception when out of date
-		if (System.currentTimeMillis() - lastUpdated > ttl)
-			throw new Exception("The values are too old, Weather Station " + id + " needs update.");
 
 		if (values.containsKey(name))
 			return values.get(name);
