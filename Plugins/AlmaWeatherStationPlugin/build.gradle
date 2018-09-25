@@ -63,7 +63,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'WeatherPlugin'
+        attributes 'Main-Class': 'org.eso.ias.contrib.plugin.weather.WeatherPlugin'
     }
     from('config') { include '*.json' into 'config' }
     destinationDir = file('dist/')
