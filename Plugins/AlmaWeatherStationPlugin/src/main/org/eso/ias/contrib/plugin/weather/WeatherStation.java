@@ -155,7 +155,7 @@ public class WeatherStation implements Runnable {
 			}
 
             // Update sensor values
-            String mPointName = "WS-"+id+sensorName+"-Value";
+            String mPointName = "WS-"+id+"-"+sensorName+"-Value";
 
 			try {
                 if (sensorValue == -Double.MAX_VALUE) {
