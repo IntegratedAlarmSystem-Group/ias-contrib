@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -66,6 +67,12 @@ public class WeatherStation implements Runnable {
 	 */
 	private final Plugin plugin;
 
+    /**
+     * Map the names of the monitor points returned by SOAP
+     * to those expected by the plugin
+     */
+	private final Map<String,String> mapOfMpointNames = new HashMap<>();
+
 	/**
 	 * Creates a station with the given id.
 	 * The id is the value associated with each station, necessary to get the
@@ -92,6 +99,11 @@ public class WeatherStation implements Runnable {
 
 		// Weather Station id
 		this.id = id;
+
+		// Only this mpoint wil be sent to the plugin
+		mapOfMpointNames.put("wind speed", "WindSpeed");
+        mapOfMpointNames.put("humidity", "Humidity");
+        mapOfMpointNames.put("temperature", "Temperature");
 	}
 
 	@Override
@@ -154,25 +166,29 @@ public class WeatherStation implements Runnable {
 				sensorValue = -Double.MAX_VALUE;
 			}
 
-            // Update sensor values
-            String mPointName = "WS-"+id+"-"+sensorName+"-Value";
+			String mappedMPName = mapOfMpointNames.get(sensorName);
+			if (mappedMPName!=null) {
+                // Update sensor values
+                String mPointName = "WS-"+id+"-"+sensorName+"-Value";
 
-			try {
-                if (sensorValue == -Double.MAX_VALUE) {
-                    sensorValue = Double.parseDouble("NaN");
-                    plugin.setOperationalMode(mPointName, OperationalMode.SHUTTEDDOWN);
-                } else {
-                    plugin.setOperationalMode(mPointName, OperationalMode.OPERATIONAL);
+
+                try {
+                    if (sensorValue == -Double.MAX_VALUE) {
+                        sensorValue = Double.parseDouble("NaN");
+                        plugin.setOperationalMode(mPointName, OperationalMode.SHUTTEDDOWN);
+                    } else {
+                        plugin.setOperationalMode(mPointName, OperationalMode.OPERATIONAL);
+                    }
+                } catch (Exception e) {
+                    logger.error("Error setting operational mode of mpoint {}",mPointName,e);
                 }
-            } catch (Exception e) {
-			    logger.error("Error setting operational mode of mpoint {}",mPointName,e);
-		    }
 
 
-			try {
-			    plugin.updateMonitorPointValue(sensorName, sensorValue);
-            } catch (Exception e) {
-			    logger.error("Error submitting mpoint {}: value lost",mPointName,e);
+                try {
+                    plugin.updateMonitorPointValue(sensorName, sensorValue);
+                } catch (Exception e) {
+                    logger.error("Error submitting mpoint {}: value lost",mPointName,e);
+                }
             }
 		}
 	}
