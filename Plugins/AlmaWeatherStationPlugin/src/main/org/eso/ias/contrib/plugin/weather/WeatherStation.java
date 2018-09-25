@@ -169,7 +169,7 @@ public class WeatherStation implements Runnable {
 			String mappedMPName = mapOfMpointNames.get(sensorName);
 			if (mappedMPName!=null) {
                 // Update sensor values
-                String mPointName = "WS-"+id+"-"+sensorName+"-Value";
+                String mPointName = "WS-"+id+"-"+mappedMPName+"-Value";
 
 
                 try {
