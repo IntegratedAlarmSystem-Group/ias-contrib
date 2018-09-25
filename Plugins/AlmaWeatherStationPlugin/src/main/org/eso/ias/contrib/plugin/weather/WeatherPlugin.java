@@ -3,7 +3,6 @@ package  org.eso.ias.contrib.plugin.weather;
 import org.eso.ias.heartbeat.publisher.HbKafkaProducer;
 import org.eso.ias.heartbeat.serializer.HbJsonSerializer;
 import org.eso.ias.plugin.Plugin;
-import org.eso.ias.plugin.PluginException;
 import org.eso.ias.plugin.config.PluginConfig;
 import org.eso.ias.plugin.config.PluginConfigException;
 import org.eso.ias.plugin.config.PluginConfigFileReader;
@@ -17,9 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -35,28 +32,10 @@ public class WeatherPlugin extends Plugin {
 	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
 
 	/**
-	 * The Set of IDs of the Weather Stations monitorized by this Plugin. It is a
-	 * Set to avoid duplication on setup.
-	 */
-	private static HashSet<Integer> stationsIds = new HashSet<>();
-
-	/**
-	 * The Collection of IAS Values to be sent by this Plugin.
-	 */
-	private static Collection<String> valuesIds;
-
-	/**
-	* Hash map with the relation between the IAS Values and the
-	* Monitorized Weather Stations Ids and the corresponding sensor type.
-	* The keys of the hashMap are the IAS Values Ids and the values are strings
-	* with the format StationID-SensorType
-	* They must be specified in the configuration properties as follow:
-	*		 {
-	*      "key": "WS-MeteoOSF-Temperature-Value",
-	*      "value": "3-temperature"
-	*    }
+	* The IDs of the weather station, like MeteoCentral or MeteoTB2
+	 * and their Identifer for SOAP
 	*/
-	private static HashMap<String, String> identifiersMap = new HashMap<String, String>();
+	private static Map<String, Integer> weatherStationsIds = new HashMap<>();
 
 	/**
 	 * the loop to keep the plugin running.
@@ -103,16 +82,11 @@ public class WeatherPlugin extends Plugin {
 		this.refreshTime = config.getAutoSendTimeInterval();
         logger.info("Refresh rate {} secs",refreshTime);
 
-		// Read the IAS Values that this Plugin is monitoring from the config file
-		this.valuesIds = config.getValuesAsCollection().stream().map(value -> value.getId()).collect(Collectors.toList());
-
-		// Read the relation IasValueID:StationID-SensorType from the properties
+		// Read the relation IasValueID:StationID from the properties
 		// and save it into an internal hash map
 		Property[] props = config.getProperties();
 		for (Property prop : props) {
-			String value = prop.getValue();
-			this.identifiersMap.put(prop.getKey(), value);
-			this.stationsIds.add(Integer.parseInt(value.split("-")[0]));
+		    weatherStationsIds.put(prop.getKey(), Integer.valueOf(prop.getValue()));
 		}
 	}
 
@@ -120,8 +94,7 @@ public class WeatherPlugin extends Plugin {
 	 * Connect to the Weather Stations and add the shutdown hook.
 	 */
 	private void initialize() {
-		Integer[] stationsIds = this.stationsIds.toArray(new Integer[this.stationsIds.size()]);
-		weatherStationsPool = new WeatherStationsPool(stationsIds,this);
+		weatherStationsPool = new WeatherStationsPool(weatherStationsIds,this);
 
 		// Adds the shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release weather station shutdown hook"));
@@ -136,46 +109,6 @@ public class WeatherPlugin extends Plugin {
 			loopFuture.cancel(false);
 		}
 		weatherStationsPool.release();
-	}
-
-	/**
-	 * The loop to get monitor values from the weather station and update the values
-	 * sent to the core of the IAS.
-	 */
-	private void startLoop() {
-		// send data every second.
-		loopFuture = getScheduledExecutorService().scheduleAtFixedRate(() -> {
-			logger.debug("Updating monitor point values from the weather station");
-
-			this.valuesIds.forEach(valueId -> {
-				try {
-					String[] parts = this.identifiersMap.get(valueId).split("-");
-					int stationId = Integer.parseInt(parts[0]);
-					String sensorName = parts[1];
-
-					double value = this.weatherStationsPool.getValue(stationId, sensorName);
-					if(value == -Double.MAX_VALUE) {
-						value = Double.parseDouble("NaN");
-						setOperationalMode(valueId, OperationalMode.SHUTTEDDOWN);
-					}
-					else {
-						setOperationalMode(valueId, OperationalMode.OPERATIONAL);
-					}
-					updateMonitorPointValue(valueId, value);
-				} catch (Exception e) {
-					logger.error(e.getMessage());
-				}
-			});
-
-			logger.debug("Monitor point values updated");
-		}, 0, 1, TimeUnit.SECONDS);
-		try {
-			loopFuture.get();
-		} catch (ExecutionException ee) {
-			logger.error("Execution exception getting values from the weather station", ee);
-		} catch (Exception e) {
-			logger.warn("Loop to get monitor point values from the weather station terminated");
-		}
 	}
 
 	private static void printUsage() {
@@ -257,11 +190,6 @@ public class WeatherPlugin extends Plugin {
 
 		// Connect to the Weather Stations.
 		plugin.initialize();
-
-		// Start getting data from the weather stations pool
-		// This method exits when the user presses CTRL+C
-		// and the shutdown hook disconnects from the weather station.
-		plugin.startLoop();
 
 		logger.info("Configuration done.");
 	}

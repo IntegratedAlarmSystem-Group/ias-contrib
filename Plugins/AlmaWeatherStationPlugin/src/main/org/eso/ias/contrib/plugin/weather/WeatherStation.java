@@ -1,6 +1,7 @@
 package  org.eso.ias.contrib.plugin.weather;
 
 import org.eso.ias.plugin.Plugin;
+import org.eso.ias.types.OperationalMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -37,7 +38,7 @@ public class WeatherStation implements Runnable {
 	/**
 	 * Station id used in the soap request to obtain the current state.
 	 */
-	private final int id;
+	private final String id;
 
 	/**
 	 * DOM parser.
@@ -55,16 +56,10 @@ public class WeatherStation implements Runnable {
 	 */
 	private HashMap<String, Double> values = new HashMap<>();
 
-	/**
-	 * The timestamp from the last time the values were updated.
-	 */
-	private long lastUpdated = 0;
-
-	/**
-	 * Max difference between current time and weather station response time to
-	 * be consider as not responding.
-	 */
-	private int maxDelay = 600000;
+    /**
+     * The ID of the weather station for SOAP
+     */
+	private final int soapWsId;
 
 	/**
 	 * The plugin to notify with new samples
@@ -76,13 +71,15 @@ public class WeatherStation implements Runnable {
 	 * The id is the value associated with each station, necessary to get the
 	 * data through SOAP request.
 	 *
-	 * @param id
-	 *            Identifier of the weather station to be requested.
+	 * @param id the identifier of the weather like MeteoCentral
+     * @param soapWsId The ID of the weather station for SOAP
 	 * @param plugin                The plugin to send new sample
 	 */
-	WeatherStation(int id, Plugin plugin) {
+	WeatherStation(String id, int soapWsId, Plugin plugin) {
 		Objects.requireNonNull(plugin);
+		Objects.requireNonNull(id);
 		this.plugin=plugin;
+		this.soapWsId=soapWsId;
 
 		// Create the SOAP Request
 		String url = "http://weather.aiv.alma.cl/ws_weather.php";
@@ -157,11 +154,27 @@ public class WeatherStation implements Runnable {
 				sensorValue = -Double.MAX_VALUE;
 			}
 
-			// Update sensor values
-			values.put(sensorName, sensorValue);
-		}
+            // Update sensor values
+            String mPointName = "WS-"+id+sensorName+"-Value";
 
-		lastUpdated = System.currentTimeMillis();
+			try {
+                if (sensorValue == -Double.MAX_VALUE) {
+                    sensorValue = Double.parseDouble("NaN");
+                    plugin.setOperationalMode(mPointName, OperationalMode.SHUTTEDDOWN);
+                } else {
+                    plugin.setOperationalMode(mPointName, OperationalMode.OPERATIONAL);
+                }
+            } catch (Exception e) {
+			    logger.error("Error setting operational mode of mpoint {}",mPointName,e);
+		    }
+
+
+			try {
+			    plugin.updateMonitorPointValue(sensorName, sensorValue);
+            } catch (Exception e) {
+			    logger.error("Error submitting mpoint {}: value lost",mPointName,e);
+            }
+		}
 	}
 
 	/**
@@ -209,7 +222,7 @@ public class WeatherStation implements Runnable {
 	* @return The SOAP Request Response
 	*/
 	private String sendSoapRequest(){
-		return soap.sendRequest(Integer.toString(this.id));
+		return soap.sendRequest(Integer.toString(soapWsId));
 	}
 
 	/**

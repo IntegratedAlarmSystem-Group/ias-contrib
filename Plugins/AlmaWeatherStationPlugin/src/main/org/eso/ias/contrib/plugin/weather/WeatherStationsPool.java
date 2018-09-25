@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -27,7 +28,7 @@ public class WeatherStationsPool {
 	/**
 	 * the HashMap of weather stations that conform this WeatherStationsPool
 	 */
-	private static Map<Integer, WeatherStation> stations = new HashMap<Integer, WeatherStation>();
+	private static Map<String, WeatherStation> stations = new HashMap<>();
 
 	/**
 	 * The scheduled executor to run the weather stations in parallel.
@@ -38,25 +39,24 @@ public class WeatherStationsPool {
 	 * The Constructor
 	 *
 	 * @param stationsIds
-	 *								An array of integers corresponding to the ids of the
+	 *								An array of Strings and WS SOAP ids corresponding to the ids of the
 	 *								weather stations monitorized by this WeatherStationsPool
+     *							    like MeteoCentral
 	 *
 	 * @param plugin                The plugin to send new sample
 	 */
-	WeatherStationsPool(Integer[] stationsIds, Plugin plugin) {
+	WeatherStationsPool(Map<String,Integer> stationsIds, Plugin plugin) {
 		logger.info("starting weather stations ");
-		int poolSize = stationsIds.length;
-		this.schedExSvc = Executors.newScheduledThreadPool(poolSize, r -> {
+		this.schedExSvc = Executors.newScheduledThreadPool(stationsIds.size(), r -> {
 			Thread t = new Thread(r);
 			t.setDaemon(true);
 			return t;
 		});
-		for( int i = 0; i < poolSize; i++ ){
-			int id = stationsIds[i];
-			this.stations.put(id, new WeatherStation(id, plugin));
-			this.schedExSvc.scheduleAtFixedRate(this.stations.get(id), 0, 1, TimeUnit.SECONDS);
-		}
 
+        stationsIds.keySet().forEach( id -> {
+            this.stations.put(id, new WeatherStation(id, stationsIds.get(id),plugin));
+            this.schedExSvc.scheduleAtFixedRate(this.stations.get(id), 0, 1, TimeUnit.SECONDS);
+        });
 	}
 
 	/**
