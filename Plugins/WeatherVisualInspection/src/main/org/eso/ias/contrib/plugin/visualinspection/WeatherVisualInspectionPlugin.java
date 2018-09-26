@@ -1,7 +1,20 @@
 package  org.eso.ias.contrib.plugin.visualinspection;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eso.ias.plugin.config.Property;
 import java.io.IOException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.concurrent.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.eso.ias.heartbeat.publisher.HbKafkaProducer;
 import org.eso.ias.heartbeat.serializer.HbJsonSerializer;
 import org.eso.ias.plugin.Plugin;
@@ -13,13 +26,7 @@ import org.eso.ias.plugin.publisher.MonitorPointSender;
 import org.eso.ias.plugin.publisher.PublisherException;
 import org.eso.ias.plugin.publisher.impl.KafkaPublisher;
 import org.eso.ias.types.OperationalMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * IAS Plugin that runs in a never-ending loop and publishes data obtained
@@ -47,7 +54,7 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 	/**
 	 * The path to the config file for the plugin.
 	 */
-	private static final String configPath = "config.json";
+	private static String configPath = "config.json";
 
 	/**
 	 * The Json File to read
@@ -84,14 +91,14 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 	 *
 	 * @param config
 	 *            The configuration of the plugin.
-	 * @param sender
-	 *            The sender.
 	 */
-	private WeatherVisualInspectionPlugin(PluginConfig config, MonitorPointSender sender) {
+	private WeatherVisualInspectionPlugin(PluginConfig config) {
 		// Connection with the Kafka healthyness queue to report its own health state
-		super(config, sender, new HbKafkaProducer(
-			config.getId()+"HBSender", config.getSinkServer() + ":" + config.getSinkPort(),
-			new HbJsonSerializer())
+
+		super(
+			config,
+			new KafkaPublisher(config.getId(), config.getMonitoredSystemId(), config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService()),
+			new HbKafkaProducer(config.getId()+"HBSender", config.getSinkServer() + ":" + config.getSinkPort(), new HbJsonSerializer())
 		);
 
 		idOfMPoints=config.getMapOfValues().keySet();
@@ -171,8 +178,9 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 	 *
 	 * @param options The options expected in the command line
 	 */
-	private static void printUsage() {
-		System.out.println("Usage: java - jar alma-weather-plugin.jar");
+	private static void printUsage(Options options) {
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp( "java - jar WeatherVisualInspection.jar", options );
 	}
 
 	/**
@@ -222,7 +230,34 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 	 */
 	public static void main(String[] args) {
 
-		logger.info("Started...");
+		logger.info("**** Starting VisualInspectionPlugin");
+
+		// Use apache CLI for command line parsing
+		Options options = new Options();
+		options.addOption("f", "file-path", true, "Path of the file to read");
+		options.addOption("c", "config-file", true, "Plugin configuration file");
+
+		CommandLineParser parser = new DefaultParser();
+		CommandLine cmd=null;
+		try {
+			cmd = parser.parse(options, args);
+		} catch (ParseException pe) {
+			logger.error("Error parsing the comamnd line: "+pe.getMessage());
+			printUsage(options);
+			System.exit(-1);
+		}
+
+		String jsonFilePath = null;
+		if (cmd.hasOption("f")) {
+			jsonFilePath = cmd.getOptionValue("f");
+			logger.info("Filepath to read obtained from command line: {}",jsonFilePath);
+		}
+
+		if (cmd.hasOption("c")) {
+			configPath = cmd.getOptionValue("c");
+		}
+		logger.info("Configuration file name {}",configPath);
+
 		PluginConfig config = null;
 		try {
 			File configFile = new File(configPath);
@@ -264,18 +299,27 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 				config.setSinkServer(sinkServer);
 				config.setSinkPort(sinkPort);
 			} catch (NumberFormatException e) {
-				printUsage();
+				printUsage(options);
 				System.exit(-2);
 			}
 		}
 		logger.info("Kafka sink server: " + sinkServer + ":" + sinkPort);
 
-		// Instantiate a KafkaPublisher
-		KafkaPublisher kafkaPublisher = new KafkaPublisher(config.getId(), config.getMonitoredSystemId(),
-				config.getSinkServer(), config.getSinkPort(), Plugin.getScheduledExecutorService());
+		/*JSON file to read can be set using the command line*/
+		if (jsonFilePath != null && !jsonFilePath.isEmpty()) {
+			Property[] properties= config.getProperties();
+			for (int i = 0; i < properties.length; i++) {
+				if (properties[i].getKey().equals("input-file")) {
+					properties[i].setValue(jsonFilePath);
+					break;
+				}
+			}
+			config.setProperties(properties);
+			logger.info("Reading json file parsed by command line {}", jsonFilePath);
+		}
 
 		// Instantiate the WeatherVisualInspectionPlugin
-		WeatherVisualInspectionPlugin plugin = new WeatherVisualInspectionPlugin(config, kafkaPublisher);
+		WeatherVisualInspectionPlugin plugin = new WeatherVisualInspectionPlugin(config);
 
 		// Start the Plugin
 		try {
