@@ -1,3 +1,7 @@
+package  org.eso.ias.contrib.plugin.weather;
+
+import org.eso.ias.plugin.Plugin;
+import org.eso.ias.types.OperationalMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -10,8 +14,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.StringReader;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Date;
 
 /**
  * A class that parses and saves weather data from
@@ -25,7 +29,7 @@ public class WeatherStation implements Runnable {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
+	private static final Logger logger = LoggerFactory.getLogger(WeatherStation.class);
 
 	/**
 	 * Value used as Zero timestamp in the Alma Observatory
@@ -35,7 +39,7 @@ public class WeatherStation implements Runnable {
 	/**
 	 * Station id used in the soap request to obtain the current state.
 	 */
-	private int id;
+	private final String id;
 
 	/**
 	 * DOM parser.
@@ -53,32 +57,36 @@ public class WeatherStation implements Runnable {
 	 */
 	private HashMap<String, Double> values = new HashMap<>();
 
-	/**
-	 * The timestamp from the last time the values were updated.
-	 */
-	private long lastUpdated = 0;
+    /**
+     * The ID of the weather station for SOAP
+     */
+	private final int soapWsId;
 
 	/**
-	 * Time to live of the values in this plugin in milliseconds. The weather
-	 * station values should be updated before the ttl time passes.
+	 * The plugin to notify with new samples
 	 */
-	private long ttl;
+	private final Plugin plugin;
 
-	/**
-	 * Max difference between current time and weather station response time to
-	 * be consider as not responding.
-	 */
-	private int maxDelay = 600000;
+    /**
+     * Map the names of the monitor points returned by SOAP
+     * to those expected by the plugin
+     */
+	private final Map<String,String> mapOfMpointNames = new HashMap<>();
 
 	/**
 	 * Creates a station with the given id.
 	 * The id is the value associated with each station, necessary to get the
 	 * data through SOAP request.
 	 *
-	 * @param id
-	 *            Identifier of the weather station to be requested.
+	 * @param id the identifier of the weather like MeteoCentral
+     * @param soapWsId The ID of the weather station for SOAP
+	 * @param plugin                The plugin to send new sample
 	 */
-	WeatherStation(int id, int timeToLive) {
+	WeatherStation(String id, int soapWsId, Plugin plugin) {
+		Objects.requireNonNull(plugin);
+		Objects.requireNonNull(id);
+		this.plugin=plugin;
+		this.soapWsId=soapWsId;
 
 		// Create the SOAP Request
 		String url = "http://weather.aiv.alma.cl/ws_weather.php";
@@ -91,7 +99,11 @@ public class WeatherStation implements Runnable {
 
 		// Weather Station id
 		this.id = id;
-		this.ttl = timeToLive;
+
+		// Only this mpoint wil be sent to the plugin
+		mapOfMpointNames.put("wind speed", "WindSpeed");
+        mapOfMpointNames.put("humidity", "Humidity");
+        mapOfMpointNames.put("temperature", "Temperature");
 	}
 
 	@Override
@@ -117,13 +129,6 @@ public class WeatherStation implements Runnable {
 	 */
 	@Override
 	public void run() {
-		updateValues();
-	}
-
-	/**
-	 * Send a SOAP request and handle the response to update the values
-	 */
-	public void updateValues(){
 		this.handleResponse(this.sendSoapRequest());
 	}
 
@@ -134,12 +139,16 @@ public class WeatherStation implements Runnable {
 	 *							String corresponding to a Weather Station SOAP Request Response
 	 */
 	private void handleResponse(String response) {
-		if (response == null)
-			return;
+		if (response == null) {
+		    logger.error("WS {} got an empty response from SOAP",id);
+		    return;
+        }
 
 		Document doc = parseDOM(response);
-		if (doc == null)
-			return;
+		if (doc == null) {
+            logger.error("WS {} error parsing the response from SOAP",id);
+            return;
+        }
 
 		Node weatherNode = Objects.requireNonNull(doc).getElementsByTagName("weather").item(0);
 		NamedNodeMap weatherAttributes = weatherNode.getAttributes();
@@ -161,35 +170,31 @@ public class WeatherStation implements Runnable {
 				sensorValue = -Double.MAX_VALUE;
 			}
 
-			// Update sensor values
-			if (!values.containsKey(sensorName))
-				values.put(sensorName, sensorValue);
-			values.replace(sensorName, sensorValue);
+			String mappedMPName = mapOfMpointNames.get(sensorName);
+			if (mappedMPName!=null) {
+                // Update sensor values
+                String mPointName = "WS-"+id+"-"+mappedMPName+"-Value";
 
+
+                try {
+                    if (sensorValue == -Double.MAX_VALUE) {
+                        sensorValue = Double.parseDouble("NaN");
+                        plugin.setOperationalMode(mPointName, OperationalMode.SHUTTEDDOWN);
+                    } else {
+                        plugin.setOperationalMode(mPointName, OperationalMode.OPERATIONAL);
+                    }
+                } catch (Exception e) {
+                    logger.error("Error setting operational mode of mpoint {}",mPointName,e);
+                }
+
+
+                try {
+                    plugin.updateMonitorPointValue(mPointName, sensorValue);
+                } catch (Exception e) {
+                    logger.error("Error submitting mpoint {}: value lost",mPointName,e);
+                }
+            }
 		}
-
-		lastUpdated = System.currentTimeMillis();
-	}
-
-	/**
-	 * Parses the xml and saves it. (for testing purposes)
-	 */
-	public void updateValues(String xml) {
-		Document doc = parseDOM(xml);
-		NodeList sensors = Objects.requireNonNull(doc).getElementsByTagName("sensor");
-		for (int i = 0; i < sensors.getLength(); i++) {
-			Node sensor = sensors.item(i);
-
-			NamedNodeMap atts = sensor.getAttributes();
-			String name = atts.getNamedItem("name").getTextContent();
-			double value = Double.parseDouble(sensor.getTextContent());
-
-			if (!values.containsKey(name))
-				values.put(name, value);
-			values.replace(name, value);
-		}
-
-		lastUpdated = System.currentTimeMillis();
 	}
 
 	/**
@@ -204,9 +209,6 @@ public class WeatherStation implements Runnable {
 	 *             if it doesnt exists, or it is too old.
 	 */
 	public double getValue(String name) throws Exception {
-		// throw exception when out of date
-		if (System.currentTimeMillis() - lastUpdated > ttl)
-			throw new Exception("The values are too old, Weather Station " + id + " needs update.");
 
 		if (values.containsKey(name))
 			return values.get(name);
@@ -240,7 +242,7 @@ public class WeatherStation implements Runnable {
 	* @return The SOAP Request Response
 	*/
 	private String sendSoapRequest(){
-		return soap.sendRequest(Integer.toString(this.id));
+		return soap.sendRequest(Integer.toString(soapWsId));
 	}
 
 	/**

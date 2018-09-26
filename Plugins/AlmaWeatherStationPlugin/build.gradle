@@ -19,7 +19,7 @@ def version = System.getenv("version") ?: "dev"
 sourceSets {
     main {
         java {
-            srcDirs = ['src']
+            srcDirs = ['src/main']
         }
         resources {
             srcDirs = ['resources']
@@ -59,12 +59,11 @@ dependencies {
     'org.eso.ias:ias-utils:'+version
 
 
-    testCompile 'junit:junit:4.12'
 }
 
 jar {
     manifest {
-        attributes 'Main-Class': 'WeatherPlugin'
+        attributes 'Main-Class': 'org.eso.ias.contrib.plugin.weather.WeatherPlugin'
     }
     from('config') { include '*.json' into 'config' }
     destinationDir = file('dist/')

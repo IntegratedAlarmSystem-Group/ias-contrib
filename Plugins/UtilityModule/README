@@ -15,7 +15,11 @@ This plugin is composed of 2 files:
                                  monitor points
 
 The plugin produces one monitor point of type STRING for each antenna
+<<<<<<< Updated upstream
 with ID=Array-UMStatus-PM04 and value 
+=======
+with ID=Array-UMStatus-Ant[!#43!] and value
+>>>>>>> Stashed changes
 'AC-POWER:0,AT-ZENITH:0,HVAC:0,FIRE:0,UPS-POWER:1,STOW-PIN:1,RX-CAB-TEMP:0,DRIVE-CAB-TEMP:1,ANTENNA-POS:0,E-STOP:0'
 
 NOTE
