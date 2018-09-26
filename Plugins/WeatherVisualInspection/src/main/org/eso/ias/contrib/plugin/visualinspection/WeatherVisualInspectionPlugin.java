@@ -1,5 +1,6 @@
 package  org.eso.ias.contrib.plugin.visualinspection;
 
+import org.eso.ias.utils.ISO8601Helper;
 import org.eso.ias.plugin.config.Property;
 import java.io.IOException;
 import java.io.File;
@@ -37,6 +38,17 @@ import org.eso.ias.types.OperationalMode;
 public class WeatherVisualInspectionPlugin extends Plugin {
 
 	/**
+	 * The key used to read the path of the json file from the
+	 * {@link PluginConfig} properties.
+	 */
+	private static final String JSON_FILEPATH_KEY = "input-file";
+
+	/**
+	 * The value to send when the monitor point is malfuncioning
+	 */
+	private static final String VALUE_WHEN_FAILED = "None";
+
+	/**
 	 * The logger.
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(WeatherVisualInspectionPlugin.class);
@@ -59,7 +71,7 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 	/**
 	 * The Json File to read
 	 */
-	private File jsonFile;
+	private String jsonFilePath;
 
 	/**
 	 * Refresh time in seconds
@@ -82,7 +94,7 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 	private final Set<String> idOfMPoints;
 
 	/**
-	 * The mapper to convert received strings into {@link MessageDao}
+	 * The mapper to convert received strings into {@link WeatherStationInspectionRegistry}
 	 */
 	private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -109,50 +121,52 @@ public class WeatherVisualInspectionPlugin extends Plugin {
         logger.info("Refresh rate {} secs",refreshTime);
 
 		// Read the location of the json input file
-		String jsonFilePath = null;
+		this.jsonFilePath = null;
 		try  {
-			jsonFilePath = config.getProperty("input-file").get().getValue();
+			this.jsonFilePath = config.getProperty(JSON_FILEPATH_KEY).get().getValue();
 		} catch (Exception e) {
 			logger.error("Error reading the path to the input-file from the configuration file", e);
 			System.exit(-5);
 		}
-		jsonFile = new File(jsonFilePath);
-		if (!jsonFile.exists()) {
-			logger.error("The json file does not exist: "+jsonFilePath);
-			System.exit(-6);
-		}
-		logger.info("Json input file read successfully: {}",jsonFilePath);
 	}
 
 	/**
-	 *  Updates monitor point only for recognized IDs
-	 *
-	 * @see #updateMonitorPointValue(String, Object)
-	 */
-	@Override
-	public OperationalMode setOperationalMode(String mPointId, OperationalMode opMode) throws PluginException {
-			if (idOfMPoints.contains(mPointId)) {
-					return super.setOperationalMode(mPointId, opMode);
-			} else {
-					return null;
-			}
-	}
-
-	/**
-	 * The weather station tries to publish all the monitor points
-	 * but not all the weather sstations have the device installed
-	 * This method only publishes the monito points
-	 * defined in the config file and silently discard the others.
+	 * Sets a given monitor point with {@link OperationalMode} OPERATIONAL
+	 * and updates the value with a given value
 	 *
 	 * @param mPointID
-	 * @param value
 	 * @throws PluginException
 	 */
-	@Override
-	public void updateMonitorPointValue(String mPointID, Object value) throws PluginException {
-			if (idOfMPoints.contains(mPointID)) {
-			 super.updateMonitorPointValue(mPointID, value);
-			}
+	private void updateMonitorPointOperational(String mPointID, String value) throws PluginException {
+		updateMonitorPointValue(mPointID, value);
+		setOperationalMode(mPointID, OperationalMode.OPERATIONAL);
+	}
+
+	/**
+	 * Sets a given monitor point with {@link OperationalMode} MALFUNCTIONING
+	 * and updates the value with None
+	 *
+	 * @param mPointID
+	 * @throws PluginException
+	 */
+	private void updateMonitorPointMalfunctioning(String mPointID) throws PluginException {
+		updateMonitorPointValue(mPointID, VALUE_WHEN_FAILED);
+		setOperationalMode(mPointID, OperationalMode.DEGRADED);
+	}
+
+	/**
+	 * Sets all the monitor points with {@link OperationalMode} MALFUNCTIONING
+	 * and updates the value with None
+	 *
+	 * @param mPointID
+	 * @throws PluginException
+	 */
+	private void updateAllMonitorPointsMalfunctioning() throws PluginException {
+		Iterator<String> iterator = idOfMPoints.iterator();
+		while(iterator.hasNext()) {
+			String mPointID = iterator.next();
+			updateMonitorPointMalfunctioning(mPointID);
+		}
 	}
 
 	/**
@@ -191,23 +205,43 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 			public void run() {
 				logger.debug("Updating monitor point values");
 				try {
+					File jsonFile = new File(jsonFilePath);
+
 					if (jsonFile.exists()){
+						logger.info("Json input file read successfully: {}",jsonFilePath);
 						try {
 							registries = Arrays.asList(mapper.readValue(jsonFile, WeatherStationInspectionRegistry[].class));
+							unsetPluginOperationalMode();
+
+							// Iterate through registries
+							for (int i = 0; i < registries.size(); i++) {
+								WeatherStationInspectionRegistry registry = registries.get(i);
+								logger.debug("Sending visual inspection registry: " + registry);
+								String monitorPointId = "WS-" + registry.getStation() + "-LastInspection";
+								String timestamp = registry.getTimestamp();
+
+								// Validate registry timestamp, send as OPERATIONAL if correct and DEGRADED if not
+								try {
+									ISO8601Helper.timestampToMillis(registry.getTimestamp());
+									updateMonitorPointOperational(monitorPointId, timestamp);
+								} catch (Exception e) {
+									logger.error("Exception parsing the timestamp [{}]", timestamp ,e);
+									updateMonitorPointMalfunctioning(monitorPointId);
+								}
+							}
+						// Set the whole plugin DEGRADED if the JSON file cannot be parsed
 						} catch (IOException e) {
 							logger.error("Error parsing a registries from the json file", e);
-							System.exit(-6);
-						}
-						for (int i = 0; i < registries.size(); i++) {
-							WeatherStationInspectionRegistry registry = registries.get(i);
-							logger.debug("Sending visual inspection registry: " + registry);
-							String monitorPointId = "WS-" + registry.getStation() + "-LastInspection";
-							updateMonitorPointValue(monitorPointId, registry.getTimestamp());
+							updateAllMonitorPointsMalfunctioning();
 						}
 
 					}
+					// Set the whole plugin DEGRADED if the JSON file does not exist
+					else {
+						updateAllMonitorPointsMalfunctioning();
+					}
 				} catch (PluginException pe) {
-					logger.error("Error sending Temperature monitor point to the core of the IAS");
+					logger.error("Error sending monitor point to the core of the IAS");
 				}
 			}
 		}, 2, 30, TimeUnit.SECONDS);
@@ -309,7 +343,7 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 		if (jsonFilePath != null && !jsonFilePath.isEmpty()) {
 			Property[] properties= config.getProperties();
 			for (int i = 0; i < properties.length; i++) {
-				if (properties[i].getKey().equals("input-file")) {
+				if (properties[i].getKey().equals(JSON_FILEPATH_KEY)) {
 					properties[i].setValue(jsonFilePath);
 					break;
 				}
