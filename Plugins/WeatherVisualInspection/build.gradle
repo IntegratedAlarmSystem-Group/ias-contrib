@@ -58,7 +58,7 @@ dependencies {
 
 jar {
   manifest {
-    attributes 'Main-Class': 'org.eso.ias.contrib.plugin.visualinspection.VisualInspectionPlugin'
+    attributes 'Main-Class': 'org.eso.ias.contrib.plugin.visualinspection.WeatherVisualInspectionPlugin'
   }
 
   destinationDir = file('dist/')
