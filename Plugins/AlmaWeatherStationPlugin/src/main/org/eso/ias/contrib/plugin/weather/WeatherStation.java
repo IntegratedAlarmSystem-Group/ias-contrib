@@ -129,7 +129,6 @@ public class WeatherStation implements Runnable {
 	 */
 	@Override
 	public void run() {
-	    logger.info("WS {} updating",id);
 		this.handleResponse(this.sendSoapRequest());
 	}
 
@@ -140,12 +139,16 @@ public class WeatherStation implements Runnable {
 	 *							String corresponding to a Weather Station SOAP Request Response
 	 */
 	private void handleResponse(String response) {
-		if (response == null)
-			return;
+		if (response == null) {
+		    logger.error("WS {} got an empty response from SOAP",id);
+		    return;
+        }
 
 		Document doc = parseDOM(response);
-		if (doc == null)
-			return;
+		if (doc == null) {
+            logger.error("WS {} error parsing the response from SOAP",id);
+            return;
+        }
 
 		Node weatherNode = Objects.requireNonNull(doc).getElementsByTagName("weather").item(0);
 		NamedNodeMap weatherAttributes = weatherNode.getAttributes();
@@ -186,7 +189,7 @@ public class WeatherStation implements Runnable {
 
 
                 try {
-                    plugin.updateMonitorPointValue(sensorName, sensorValue);
+                    plugin.updateMonitorPointValue(mPointName, sensorValue);
                 } catch (Exception e) {
                     logger.error("Error submitting mpoint {}: value lost",mPointName,e);
                 }
