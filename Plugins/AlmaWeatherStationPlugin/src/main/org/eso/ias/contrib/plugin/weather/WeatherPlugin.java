@@ -98,7 +98,6 @@ public class WeatherPlugin extends Plugin {
     @Override
     public void updateMonitorPointValue(String mPointID, Object value) throws PluginException {
         if (idOfMPoints.contains(mPointID)) {
-        	logger.info("Updating {}",mPointID);
          super.updateMonitorPointValue(mPointID, value);
         }
     }
