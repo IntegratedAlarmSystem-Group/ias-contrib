@@ -11,45 +11,15 @@
     }
   ],
   "values": [
-    {
-      "id": "WS-MeteoTB1-Temperature-Value",
-      "refreshTime": 30000
-    },
-    {
-      "id": "WS-MeteoTB2-Temperature-Value",
-      "refreshTime": 30000
-    },
-    {
-      "id": "WS-MeteoOSF-Temperature-Value",
-      "refreshTime": 30000
-    },
-    {
-      "id": "WS-Meteo201-Temperature-Value",
-      "refreshTime": 30000
-    },
-    {
-      "id": "WS-MeteoCentral-Temperature-Value",
-      "refreshTime": 30000
-    },
-    {
-      "id": "WS-Meteo309-Temperature-Value",
-      "refreshTime": 30000
-    },
-    {
-      "id": "WS-Meteo410-Temperature-Value",
-      "refreshTime": 30000
-    },
-    {
-      "id": "WS-Meteo131-Temperature-Value",
-      "refreshTime": 30000
-    },
-    {
-      "id": "WS-Meteo129-Temperature-Value",
-      "refreshTime": 30000
-    },
-    {
-      "id": "WS-Meteo130-Temperature-Value",
-      "refreshTime": 30000
-    }
+    { "id": "WS-Meteo129-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-Meteo131-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-Meteo130-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-Meteo201-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-Meteo309-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-Meteo410-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-MeteoCentral-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-MeteoOSF-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-MeteoTB1-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-MeteoTB2-LastInspection", "refreshTime": 30000 }
   ]
 }

@@ -127,7 +127,7 @@ public class VisualInspectionPlugin implements Runnable {
 			PluginConfig config,
 			MonitorPointSender sender,
 			HbProducer hbProducer,
-			int udpPort) throws SocketException {
+			string inputFile) throws SocketException {
 		Objects.requireNonNull(config);
 		Objects.requireNonNull(sender);
 		Objects.requireNonNull(hbProducer);
