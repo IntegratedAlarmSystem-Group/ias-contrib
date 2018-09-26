@@ -9,7 +9,6 @@ import org.eso.ias.plugin.PluginException;
 import org.eso.ias.plugin.config.PluginConfig;
 import org.eso.ias.plugin.config.PluginConfigException;
 import org.eso.ias.plugin.config.PluginConfigFileReader;
-import org.eso.ias.plugin.config.Property;
 import org.eso.ias.plugin.publisher.MonitorPointSender;
 import org.eso.ias.plugin.publisher.PublisherException;
 import org.eso.ias.plugin.publisher.impl.KafkaPublisher;
@@ -24,7 +23,9 @@ import java.util.concurrent.*;
 
 /**
  * IAS Plugin that runs in a never-ending loop and publishes data obtained
- * periodically from a set of weather stations to a Kafka Queue
+ * periodically from a JSON file to a Kafka Queue.
+ * This data corresponds to the timestamp of the last visual inspection of the
+ * weather stations.
  */
 public class WeatherVisualInspectionPlugin extends Plugin {
 
@@ -151,14 +152,12 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 	 * Add the shutdown hook.
 	 */
 	private CountDownLatch initialize() {
-		// Adds the shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release shutdown hook"));
 		return done;
 	}
 
 	/**
-	 * Terminate the thread that publishes the data and disconnects from the weather
-	 * station pool.
+	 * Terminate the thread that publishes the data
 	 */
 	private void cleanUp() {
 		if (loopFuture != null) {
@@ -167,10 +166,18 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 		done.countDown();
 	}
 
+	/**
+	 * Print the usage string
+	 *
+	 * @param options The options expected in the command line
+	 */
 	private static void printUsage() {
 		System.out.println("Usage: java - jar alma-weather-plugin.jar");
 	}
 
+	/**
+	 * Starts the loop that reads the data from the JSON file
+	 */
 	private void startLoop() {
 		loopFuture=getScheduledExecutorService().scheduleAtFixedRate(new Runnable() {
 			public void run() {
@@ -195,7 +202,7 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 					logger.error("Error sending Temperature monitor point to the core of the IAS");
 				}
 			}
-		}, 1, 2, TimeUnit.SECONDS);
+		}, 2, 30, TimeUnit.SECONDS);
 		try {
 			loopFuture.get();
 		} catch (ExecutionException ee) {

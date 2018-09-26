@@ -7,7 +7,7 @@
   "properties": [
     {
       "key": "input-file",
-      "value": "test/example_inspections.json"
+      "value": "inspections.json"
     }
   ],
   "values": [

@@ -4,7 +4,7 @@
   {"station": "Meteo201", "timestamp": "2018-09-25T00:00:00.0"},
   {"station": "Meteo309", "timestamp": "1-01-01T00:00:00.0"},
   {"station": "MeteoItinerant", "timestamp": "1-01-01T00:00:00.0"},
-  {"station": "MeteoCentral", "timestamp": "1-01-01T00:00:00.0"},
+  {"station": "MeteoCentral", "timestamp": "2018-01-01T00:00:00.0"},
   {"station": "Meteo410", "timestamp": "1-01-01T00:00:00.0"},
   {"station": "MeteoTB2", "timestamp": "1-01-01T00:00:00.0"},
   {"station": "Meteo131", "timestamp": "1-01-01T00:00:00.0"},
