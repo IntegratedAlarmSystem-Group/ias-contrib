@@ -181,7 +181,7 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 	private void startLoop() {
 		loopFuture=getScheduledExecutorService().scheduleAtFixedRate(new Runnable() {
 			public void run() {
-				logger.info("Updating monitor point values");
+				logger.debug("Updating monitor point values");
 				try {
 					if (jsonFile.exists()){
 						try {
