@@ -3,6 +3,7 @@ package  org.eso.ias.contrib.plugin.weather;
 import org.eso.ias.heartbeat.publisher.HbKafkaProducer;
 import org.eso.ias.heartbeat.serializer.HbJsonSerializer;
 import org.eso.ias.plugin.Plugin;
+import org.eso.ias.plugin.PluginException;
 import org.eso.ias.plugin.config.PluginConfig;
 import org.eso.ias.plugin.config.PluginConfigException;
 import org.eso.ias.plugin.config.PluginConfigFileReader;
@@ -63,8 +64,41 @@ public class WeatherPlugin extends Plugin {
 	 */
 	private static final String KAFKA_SERVERS_PROP_NAME = "org.eso.ias.plugins.kafka.server";
 
+	/** The IDs of the monitor points to send to the BSDB */
+	private final Set<String> idOfMPoints;
 
-	/**
+    /**
+     *  Updates monitor point only for recognized IDs
+     *
+     * @see #updateMonitorPointValue(String, Object)
+     */
+    @Override
+    public OperationalMode setOperationalMode(String mPointId, OperationalMode opMode) throws PluginException {
+        if (idOfMPoints.contains(mPointId)) {
+            return super.setOperationalMode(mPointId, opMode);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * The weather station tries to publish all the monitor points
+     * but not all the weather sstations have the device installed
+     * This method only publishes the monito points
+     * defined in the config file and silently discard the others.
+     *
+     * @param mPointID
+     * @param value
+     * @throws PluginException
+     */
+    @Override
+    public void updateMonitorPointValue(String mPointID, Object value) throws PluginException {
+        if (idOfMPoints.contains(mPointID)) {
+         super.updateMonitorPointValue(mPointID, value);
+        }
+    }
+
+    /**
 	 * Constructor
 	 *
 	 * @param config
@@ -78,6 +112,10 @@ public class WeatherPlugin extends Plugin {
 			"AlmaWeatherPlugin"+"HBSender", config.getSinkServer() + ":" + config.getSinkPort(),
 			new HbJsonSerializer())
 		);
+
+		idOfMPoints=config.getMapOfValues().keySet();
+		logger.info("Will produce {} monitor points",idOfMPoints.size());
+		idOfMPoints.forEach(id -> WeatherPlugin.logger.info("Recognized MP {}",id));
 
 		this.refreshTime = config.getAutoSendTimeInterval();
         logger.info("Refresh rate {} secs",refreshTime);
