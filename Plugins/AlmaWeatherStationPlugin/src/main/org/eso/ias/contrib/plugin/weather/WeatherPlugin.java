@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 /**
  * IAS Plugin that runs in a never-ending loop and publishes data obtained
@@ -67,6 +66,11 @@ public class WeatherPlugin extends Plugin {
 	/** The IDs of the monitor points to send to the BSDB */
 	private final Set<String> idOfMPoints;
 
+	/**
+	 * The latch to be notified about termination
+	 */
+	private final CountDownLatch done = new CountDownLatch(1);
+
     /**
      *  Updates monitor point only for recognized IDs
      *
@@ -94,6 +98,7 @@ public class WeatherPlugin extends Plugin {
     @Override
     public void updateMonitorPointValue(String mPointID, Object value) throws PluginException {
         if (idOfMPoints.contains(mPointID)) {
+        	logger.info("Updating {}",mPointID);
          super.updateMonitorPointValue(mPointID, value);
         }
     }
@@ -131,11 +136,12 @@ public class WeatherPlugin extends Plugin {
 	/**
 	 * Connect to the Weather Stations and add the shutdown hook.
 	 */
-	private void initialize() {
+	private CountDownLatch initialize() {
 		weatherStationsPool = new WeatherStationsPool(weatherStationsIds,this);
 
 		// Adds the shutdown hook
 		Runtime.getRuntime().addShutdownHook(new Thread(this::cleanUp, "Release weather station shutdown hook"));
+		return done;
 	}
 
 	/**
@@ -147,6 +153,7 @@ public class WeatherPlugin extends Plugin {
 			loopFuture.cancel(false);
 		}
 		weatherStationsPool.release();
+		done.countDown();
 	}
 
 	private static void printUsage() {
@@ -227,8 +234,14 @@ public class WeatherPlugin extends Plugin {
 		}
 
 		// Connect to the Weather Stations.
-		plugin.initialize();
+		CountDownLatch latch = plugin.initialize();
+		try {
+			WeatherPlugin.logger.info("Waiting");
+			latch.await();
+		} catch (InterruptedException ie) {
+			WeatherPlugin.logger.error("Plugin interrupted",ie);
+		}
 
-		logger.info("Configuration done.");
+		logger.info("Done.");
 	}
 }

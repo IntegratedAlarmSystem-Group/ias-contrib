@@ -29,7 +29,7 @@ public class WeatherStation implements Runnable {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
+	private static final Logger logger = LoggerFactory.getLogger(WeatherStation.class);
 
 	/**
 	 * Value used as Zero timestamp in the Alma Observatory
@@ -129,6 +129,7 @@ public class WeatherStation implements Runnable {
 	 */
 	@Override
 	public void run() {
+	    logger.info("WS {} updating",id);
 		this.handleResponse(this.sendSoapRequest());
 	}
 

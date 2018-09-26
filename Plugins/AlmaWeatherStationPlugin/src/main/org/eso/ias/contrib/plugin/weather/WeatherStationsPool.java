@@ -4,11 +4,8 @@ import org.eso.ias.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +20,7 @@ public class WeatherStationsPool {
 	/**
 	 * The logger.
 	 */
-	private static final Logger logger = LoggerFactory.getLogger(WeatherPlugin.class);
+	private static final Logger logger = LoggerFactory.getLogger(WeatherStationsPool.class);
 
 	/**
 	 * the HashMap of weather stations that conform this WeatherStationsPool
@@ -56,29 +53,8 @@ public class WeatherStationsPool {
         stationsIds.keySet().forEach( id -> {
             this.stations.put(id, new WeatherStation(id, stationsIds.get(id),plugin));
             this.schedExSvc.scheduleAtFixedRate(this.stations.get(id), 0, 1, TimeUnit.SECONDS);
+            logger.info("WS {} with id {} instantiated and loop activated",id,stationsIds.get(id));
         });
-	}
-
-	/**
-	 * returns the requested value in the station with the given id, if the station
-	 * doesn't exists in this weather station pool throws an exception..
-	 *
-	 * @param stationId
-	 *            of the station accesed.
-	 * @param name
-	 *            the name of the sensor requested.
-	 * @return the value requested.
-	 * @throws Exception
-	 *             if the station doesnt exist.
-	 */
-	public double getValue(int stationId, String name) throws Exception {
-		WeatherStation station = this.stations.get(stationId);
-		if (station != null){
-			return station.getValue(name);
-		}
-
-		// throws exception when station was not found
-		throw new Exception("The station " + stationId + " doesn't exist.");
 	}
 
 	/**
@@ -87,6 +63,7 @@ public class WeatherStationsPool {
 	 */
 	public void release() {
 		schedExSvc.shutdown();
+		logger.info("Executor is shut down");
 	}
 
 }
