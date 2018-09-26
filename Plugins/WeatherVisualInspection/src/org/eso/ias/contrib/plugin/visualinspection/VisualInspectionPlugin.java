@@ -1,5 +1,9 @@
 package org.eso.ias.contrib.plugin.visualinspection;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.DatagramPacket;
@@ -63,6 +67,16 @@ public class VisualInspectionPlugin implements Runnable {
 	private final Plugin plugin;
 
 	/**
+	 * The Json File to read
+	 */
+	private File jsonFile;
+
+	/**
+	 * The list of registries of type {@link WeatherStationInspectionRegistry}
+	 */
+	private List<WeatherStationInspectionRegistry> registries = null;
+
+	/**
 	 * The UDP port to receive messages
 	 */
 	public final int udpPort;
@@ -120,23 +134,35 @@ public class VisualInspectionPlugin implements Runnable {
 	 * @param config the configuration of the plugin
 	 * @param sender the publisher of monitor points to the BSDB
 	 * @param hbProducer the sender of heartbeats
-	 * @param udpPort the UDP port
-	 * @throws SocketException in case of error creating the UDP socket
+	 * @param jsonFilePath path to the file to read
 	 */
 	public VisualInspectionPlugin(
 			PluginConfig config,
 			MonitorPointSender sender,
 			HbProducer hbProducer,
-			string inputFile) throws SocketException {
+			String jsonFilePath) throws SocketException {
 		Objects.requireNonNull(config);
 		Objects.requireNonNull(sender);
 		Objects.requireNonNull(hbProducer);
 		plugin = new Plugin(config,sender,hbProducer);
-
-		if (udpPort<1024) {
-			throw new IllegalArgumentException("Invalid UDP port: "+udpPort);
+		jsonFile = new File(jsonFilePath);
+		if (!jsonFile.exists()) {
+			logger.error("Error opening the json file: "+jsonFilePath);
+			System.exit(-6);
 		}
-		this.udpPort = udpPort;
+		if (jsonFile.exists()){
+			try {
+				registries = Arrays.asList(MAPPER.readValue(jsonFile, WeatherStationInspectionRegistry[].class));
+			} catch (IOException e) {
+				logger.error("Error parsing a registries from the json file {}",jsonFilePath, e);
+				System.exit(-6);
+			}
+			for (int i = 0; i < registries.size(); i++) {
+				System.out.println("  registries["+i+"] = " + registries.get(i));
+			}
+
+		}
+		udpPort = 0;
 	}
 
 	/**
@@ -179,10 +205,10 @@ public class VisualInspectionPlugin implements Runnable {
 			VisualInspectionPlugin.logger.info("Kafka broker obtained from command line: {}",kafkaBroker);
 		}
 
-		String inputFile = null;
+		String jsonFilePath = null;
 		if (cmd.hasOption("f")) {
-			inputFile = cmd.getOptionValue("f");
-			VisualInspectionPlugin.logger.info("Filepath to read obtained from command line: {}",inputFile);
+			jsonFilePath = cmd.getOptionValue("f");
+			VisualInspectionPlugin.logger.info("Filepath to read obtained from command line: {}",jsonFilePath);
 		}
 
 		if (!cmd.hasOption("c")) {
@@ -210,15 +236,15 @@ public class VisualInspectionPlugin implements Runnable {
 			VisualInspectionPlugin.logger.info("Kafka broker read from configuration file: {}",kafkaBroker);
 		}
 
-		if (inputFile == null) {
+		if (jsonFilePath == null) {
 			try  {
-				inputFile = pluginConfig.getProperty("input-file").get().getValue();
+				jsonFilePath = pluginConfig.getProperty("input-file").get().getValue();
 			} catch (Exception e) {
-				logger.error("Error reading the input-file from the configuration file {}",fileName, e);
+				logger.error("Error reading the path to the input-file from the configuration file {}",fileName, e);
 				printUsage(options);
 				System.exit(-5);
 			}
-			VisualInspectionPlugin.logger.info("Input file read from configuration file: {}",inputFile);
+			VisualInspectionPlugin.logger.info("Input file read from configuration file: {}",jsonFilePath);
 		}
 
 		MonitorPointSender mpSender = new KafkaPublisher(
@@ -230,18 +256,17 @@ public class VisualInspectionPlugin implements Runnable {
 
 		HbProducer hbProducer = new HbKafkaProducer(pluginConfig.getId()+"HBSender", kafkaBroker, new HbJsonSerializer());
 
-		// int updPort = 0;
-		// VisualInspectionPlugin udpPlugin = null;
-		// try {
-		// 	udpPlugin = new VisualInspectionPlugin(pluginConfig, mpSender, hbProducer, udpPort);
-		// } catch (Exception e) {
-		// 	VisualInspectionPlugin.logger.error("The VisualInspectionPlugin failed to build",e);
-		// 	System.exit(-6);
-		// }
-		//
+		VisualInspectionPlugin visualInspectionPlugin = null;
+		try {
+			visualInspectionPlugin = new VisualInspectionPlugin(pluginConfig, mpSender, hbProducer, jsonFilePath);
+		} catch (Exception e) {
+			VisualInspectionPlugin.logger.error("The VisualInspectionPlugin failed to build",e);
+			System.exit(-6);
+		}
+
 		// CountDownLatch latch = null;
 		// try {
-		// 	latch = udpPlugin.setUp();
+		// 	latch = visualInspectionPlugin.setUp();
 		// } catch(PluginException pe) {
 		// 	VisualInspectionPlugin.logger.error("The VisualInspectionPlugin failed to start",pe);
 		// 	System.exit(-7);
@@ -258,42 +283,43 @@ public class VisualInspectionPlugin implements Runnable {
 	@Override
 	public void run() {
 		// The buffer
-		byte[] buffer = new byte[2048];
-		logger.debug("UDP loop thread started");
-		// The loop to get monitor from the socket
-		while (!terminateThread.get()) {
-			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-			try {
-				udpSocket.receive(packet);
-			} catch (Exception e) {
-				if (!terminateThread.get()) {
-					logger.error("Error receiving data from UDP socket.",e);
-				}
-				logger.debug("Interrupted");
-				continue;
-			}
-			String receivedString = new String(packet.getData());
-			logger.debug("Packet of size {} received from {}:{}: [{}]",
-					receivedString.length(),
-					packet.getAddress(),
-					packet.getPort(),
-					receivedString);
-			// Put the string in the buffer
-			if (receivedString.isEmpty()) {
-				logger.warn("Got an empty string from the socket?!?");
-				continue;
-			}
-			boolean addedToQueue = receivedStringQueue.offer(receivedString);
-			if (!addedToQueue) {
-				logger.warn("Queue full: string rejected: [{}]",receivedString);
-			} else {
-				logger.debug("String [{}] pushed in buffer (size of buffer ={})",
-						receivedString,
-						receivedStringQueue.size());
-			}
-		}
-		done.countDown();
-		logger.debug("UDP loop thread terminated");
+		System.out.println("!!!!! RUN !!!!!");
+		// byte[] buffer = new byte[2048];
+		// logger.debug("UDP loop thread started");
+		// // The loop to get monitor from the socket
+		// while (!terminateThread.get()) {
+		// 	DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+		// 	try {
+		// 		udpSocket.receive(packet);
+		// 	} catch (Exception e) {
+		// 		if (!terminateThread.get()) {
+		// 			logger.error("Error receiving data from UDP socket.",e);
+		// 		}
+		// 		logger.debug("Interrupted");
+		// 		continue;
+		// 	}
+		// 	String receivedString = new String(packet.getData());
+		// 	logger.debug("Packet of size {} received from {}:{}: [{}]",
+		// 			receivedString.length(),
+		// 			packet.getAddress(),
+		// 			packet.getPort(),
+		// 			receivedString);
+		// 	// Put the string in the buffer
+		// 	if (receivedString.isEmpty()) {
+		// 		logger.warn("Got an empty string from the socket?!?");
+		// 		continue;
+		// 	}
+		// 	boolean addedToQueue = receivedStringQueue.offer(receivedString);
+		// 	if (!addedToQueue) {
+		// 		logger.warn("Queue full: string rejected: [{}]",receivedString);
+		// 	} else {
+		// 		logger.debug("String [{}] pushed in buffer (size of buffer ={})",
+		// 				receivedString,
+		// 				receivedStringQueue.size());
+		// 	}
+		// }
+		// done.countDown();
+		// logger.debug("UDP loop thread terminated");
 	}
 
 	/**
