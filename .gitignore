@@ -9,9 +9,10 @@
 
 # Package Files #
 *.jar
-!AlmaWeatherStationPlugin/gradle/wrapper/gradle-wrapper.jar
-!DummyPlugin/gradle/wrapper/gradle-wrapper.jar
-!WeatherVisualInspection/gradle/wrapper/gradle-wrapper.jar
+# !AlmaWeatherStationPlugin/gradle/wrapper/gradle-wrapper.jar
+# !DummyPlugin/gradle/wrapper/gradle-wrapper.jar
+# !WeatherVisualInspection/gradle/wrapper/gradle-wrapper.jar
+!gradle-wrapper.jar
 .settings/
 *.war
 *.ear
