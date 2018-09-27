@@ -1,0 +1,13 @@
+[
+  {"station": "Meteo129", "timestamp": "1-01-01T00:00:00.0", "username": "my_user1"},
+  {"station": "MeteoOSF", "timestamp": "1-01-01T00:00:00.0", "username": "my_user2"},
+  {"station": "Meteo201", "timestamp": "2018-09-25T00:00:00.0", "username": "my_user3"},
+  {"station": "Meteo309", "timestamp": "1-01-01T00:00:00.0", "username": "my_user4"},
+  {"station": "MeteoItinerant", "timestamp": "1-01-01T00:00:00.0", "username": "my_user5"},
+  {"station": "MeteoCentral", "timestamp": "2018-01-01T00:00:00.0", "username": "my_user6"},
+  {"station": "Meteo410", "timestamp": "1-01-01T00:00:00.0", "username": "my_user7"},
+  {"station": "MeteoTB2", "timestamp": "1-01-01T00:00:00.0", "username": "my_user8"},
+  {"station": "Meteo131", "timestamp": "1-01-01T00:00:00.0", "username": "my_user9"},
+  {"station": "MeteoTB1", "timestamp": "1-01-01T00:00:00.0", "username": "my_user10"},
+  {"station": "Meteo130", "timestamp": "1-01-01T00:00:00.0", "username": "my_user11"}
+]
