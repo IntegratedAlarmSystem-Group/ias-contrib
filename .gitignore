@@ -11,6 +11,8 @@
 *.jar
 !AlmaWeatherStationPlugin/gradle/wrapper/gradle-wrapper.jar
 !DummyPlugin/gradle/wrapper/gradle-wrapper.jar
+!WeatherVisualInspectionPlugin/gradle/wrapper/gradle-wrapper.jar
+.settings/
 *.war
 *.ear
 *.zip
