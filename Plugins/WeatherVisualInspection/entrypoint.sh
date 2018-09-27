@@ -6,4 +6,4 @@
 #     sleep 1
 # done
 ls -la
-java -jar "${1}" weather-visual-inspection-plugin.jar
+java -jar "${1}" weather-visual-inspection-plugin.jar "${2}"

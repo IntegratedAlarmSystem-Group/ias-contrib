@@ -124,6 +124,7 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 		this.jsonFilePath = null;
 		try  {
 			this.jsonFilePath = config.getProperty(JSON_FILEPATH_KEY).get().getValue();
+			logger.info("Reading input values from json file: {}",jsonFilePath);
 		} catch (Exception e) {
 			logger.error("Error reading the path to the input-file from the configuration file", e);
 			System.exit(-5);
@@ -238,6 +239,7 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 					}
 					// Set the whole plugin DEGRADED if the JSON file does not exist
 					else {
+						logger.error("The Json input file does not exist: {}",jsonFilePath);
 						updateAllMonitorPointsMalfunctioning();
 					}
 				} catch (PluginException pe) {
@@ -283,7 +285,7 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 
 		String jsonFilePath = null;
 		if (cmd.hasOption("f")) {
-			jsonFilePath = cmd.getOptionValue("f");
+			jsonFilePath = cmd.getOptionValue("f").trim();
 			logger.info("Filepath to read obtained from command line: {}",jsonFilePath);
 		}
 
