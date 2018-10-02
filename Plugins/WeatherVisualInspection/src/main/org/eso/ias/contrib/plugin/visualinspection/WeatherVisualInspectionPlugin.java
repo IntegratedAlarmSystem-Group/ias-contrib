@@ -209,7 +209,7 @@ public class WeatherVisualInspectionPlugin extends Plugin {
 					File jsonFile = new File(jsonFilePath);
 
 					if (jsonFile.exists()){
-						logger.info("Json input file read successfully: {}",jsonFilePath);
+						logger.debug("Json input file read successfully: {}",jsonFilePath);
 						try {
 							registries = Arrays.asList(mapper.readValue(jsonFile, WeatherStationInspectionRegistry[].class));
 							unsetPluginOperationalMode();
