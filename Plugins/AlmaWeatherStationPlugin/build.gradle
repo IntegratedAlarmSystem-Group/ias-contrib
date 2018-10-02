@@ -43,7 +43,7 @@ repositories {
 dependencies {
     compile 'org.slf4j:slf4j-api:1.7.25',
     'ch.qos.logback:logback-classic:1.2.3',
-    'org.scala-lang:scala-library:2.12.4',
+    'org.scala-lang:scala-library:2.12.6',
     'org.eso.ias:ias-plugin:'+version,
     'org.eso.ias:ias-basic-types:'+version,
     'org.eso.ias:ias-heartbeat:'+version
@@ -53,7 +53,7 @@ dependencies {
     'com.fasterxml.jackson.core:jackson-annotations:2.8.7',
     'org.apache.kafka:kafka-clients:1.0.0',
     'ch.qos.logback:logback-core:1.2.3',
-    'org.scala-lang:scala-library:2.12.4',
+    'org.scala-lang:scala-library:2.12.6',
     'com.typesafe.scala-logging:scala-logging_2.12:3.9.0',
     'org.eso.ias:ias-kafka-tools:'+version,
     'org.eso.ias:ias-utils:'+version
