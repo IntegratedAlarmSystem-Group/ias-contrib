@@ -15,15 +15,7 @@ This plugin is composed of 2 files:
                                  monitor points
 
 The plugin produces one monitor point of type STRING for each antenna
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-with ID=Array-UMStatus-PM04 and value 
-=======
 with ID=Array-UMStatus-Ant[!#43!] and value
->>>>>>> Stashed changes
-=======
-with ID=Array-UMStatus-Ante[!#43!] and value
->>>>>>> master
 'AC-POWER:0,AT-ZENITH:0,HVAC:0,FIRE:0,UPS-POWER:1,STOW-PIN:1,RX-CAB-TEMP:0,DRIVE-CAB-TEMP:1,ANTENNA-POS:0,E-STOP:0'
 
 NOTE
@@ -36,11 +28,11 @@ only to schedule by minutes (there are tricks anyhow...)
 Another solution is to run the script throgh watch:
  > watch -n 10 ./utilitymodulePlugin.py 11112
 
-The UDP plugin must be started the same way as the one for the Antenna pad association 
+The UDP plugin must be started the same way as the one for the Antenna pad association
 but with a different port number
 > nohup iasRun -l j org.eso.ias.plugin.network.UdpPlugin -u 11112  -c ./antennaPadsPlugin.json >/dev/null &
 
-Another possibly better solution is to run only one java UDP plugin tocloocet data from antenna/pads 
+Another possibly better solution is to run only one java UDP plugin tocloocet data from antenna/pads
 and the utility modules.
 
 This plugin offers script to generate the IASIOs to add to the iasios.json and the configuration
