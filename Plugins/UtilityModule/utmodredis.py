@@ -73,10 +73,14 @@ import time
 if __name__=="__main__":
     apes = [ 'APE1', 'APE2', 'TFINT' ]
     UMStates = {}
+    AntennasPads = {}
     for ape in apes:
         vrfs = VRFS("http://vrfs.alma.cl/getAntInfoWS.php?wsdl")
         ut = UTModRedis("metis.osf.alma.cl", "6379", "5")
         antennas = vrfs.get_antenna_list(ape)
+        for element in antennas:
+            print "Antenmna",element['antenna'],"Pad",element['pad']
+            AntennasPads[element["antenna"]]=element['pad'] 
         for element in antennas:
             key = "%s:%s" % ("UtilityModulePublisher", element["antenna"])
             auxiliar = {"Fire_Alarm": 0, "Emergency_Stop":0, "AC_Power":0, "UPS_Power":0, "Stow_Pin":0,
@@ -99,6 +103,11 @@ if __name__=="__main__":
                   UMStatusWord= "AC-POWER:%s,AT-ZENITH:%s,HVAC:%s,FIRE:%s,UPS-POWER:%s,STOW-PIN:%s,RX-CAB-TEMP:%s,DRIVE-CAB-TEMP:%s,ANTENNA-POS:%s,E-STOP:%s" % (
                                 ac_power,  at_zenith,hvac,fire, ups_power,stow_pin,rx_cab_temp, drive_cab_temp,antenna_pos, e_stop)
                   UMStates[element["antenna"]]=UMStatusWord
+    # print the UM state of each antenna
     for k in UMStates:
         print k, UMStates[k]
-
+    # Print association of antennas to pads
+    l =[]
+    for k in AntennasPads:
+        l.append(k+':'+AntennasPads[k])
+    print  ",".join(l)
