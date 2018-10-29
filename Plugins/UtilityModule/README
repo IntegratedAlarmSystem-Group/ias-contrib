@@ -1,39 +1,19 @@
-At any given time, the antennas are connected to one APE or another.
-Accesing their utility module is possibkle ony from the APE where they
-are connected.
-However we want to run only one single plugin in APE1 so
-we have to run the commands in each APEs with ssh, collect and parse the
-output to get the values of the monitor points to send to the java
-UDP plugin.
+utmodredis reads from redis the bits of the utility modules and the pad of each antenna.
 
-
-This plugin is composed of 2 files:
-  * iasUtilityModuleReader.py: runs locally to get the moinitor point of the utility
-                               modules connected to each APEs
-  * iasUtilityModuleSsRunner.py: runs generatePluginConfig.py in each APE by means
-                                 of ssh then parse the output to get the values of the
-                                 monitor points
-
-The plugin produces one monitor point of type STRING for each antenna
-with ID=Array-UMStatus-Ant[!#43!] and value
+The plugin produces 
+* one monitor point of type STRING for each antenna with ID=Array-UMStatus-Ant[!#43!] and value
 'AC-POWER:0,AT-ZENITH:0,HVAC:0,FIRE:0,UPS-POWER:1,STOW-PIN:1,RX-CAB-TEMP:0,DRIVE-CAB-TEMP:1,ANTENNA-POS:0,E-STOP:0'
+* one monitor point with the pad of each antenna with ID=ANTPAD and value =
+'DV19:A093,DV18:A075,DA60:A043,DA64:A015,DA49:A024,DA48:A070,DA61:A094,DA53:A033,DV11:A016,DV10:A062,DV13:A111,DV12:A092,DV15:A047,DV14:A087,DV17:A060,DV16:A069,CM06:N606,DA52:A082,DA51:A101,DA56:A091,DA59:A076,DA57:A089,DA46:A096,CM09:N603,PM02:T701,DA54:A073,CM04:N605,DA63:A085,DA55:A108,DA45:A134,CM01:N602,PM01:T703,CM03:J503,DA44:A001,DA50:A105,DA47:A049,DA41:A058,CM05:J506,DV20:A072,DV21:A011,DV22:A083,DV23:A022,DV24:A088,DV25:A086,DV08:A042,DV09:A074,DV06:A027,DV07:A008,DV04:A066,DV05:A007,DV02:A104,DV03:A044,DV01:A045,CM02:J502,CM10:J501,DA43:A035,DA62:A135,DA42:A023,PM04:T704,CM12:J504,CM11:N604,CM07:N601,CM08:J505,DA65:A068,PM03:T702,DA58:A090'
 
 NOTE
-Antennas are accesible only from the APE where they are connected i.e.
-one between APE1, APE2 and TFINT
-
-The script runs once every 10 seconds. Unfortunately crontab allows
-only to schedule by minutes (there are tricks anyhow...)
+The script runs once every 10 seconds.
 
 Another solution is to run the script throgh watch:
- > watch -n 10 ./utilitymodulePlugin.py 11112
+ > watch -n 10 ./utmodredis.py 11112
 
-The UDP plugin must be started the same way as the one for the Antenna pad association
-but with a different port number
-> nohup iasRun -l j org.eso.ias.plugin.network.UdpPlugin -u 11112  -c ./antennaPadsPlugin.json >/dev/null &
-
-Another possibly better solution is to run only one java UDP plugin tocloocet data from antenna/pads
-and the utility modules.
+The java UDP plugin must be started with a command like
+> nohup iasRun -l j org.eso.ias.plugin.network.UdpPlugin -u 11112  -c ./config.json >/dev/null &
 
 This plugin offers script to generate the IASIOs to add to the iasios.json and the configuration
 of the UDP plugin.
