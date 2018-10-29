@@ -19,7 +19,11 @@
 
 import redis
 import json
-import traceback
+import traceback, sys, time
+from datetime import datetime
+
+from IASLogging.logConf import Log
+from IasPlugin2.UdpPlugin import UdpPlugin
 
 class UTModRedis:
     
@@ -71,6 +75,23 @@ from vrfs import VRFS
 import time
 
 if __name__=="__main__":
+    logger = Log.initLogging(__file__)
+
+    # Get the UDP port number from the command line
+    if len(sys.argv)!=2:
+      logger.error("UDP port expected in command line")
+      sys.exit(-1)
+    try:
+      udpPort = int(sys.argv[1])
+    except ValueError:
+      logger.error("Invalid port number %s",(sys.argv[1]))
+      sys.exit(-2)
+    logger.info("Will send alarms to UDP port %d",udpPort)
+
+    udpPlugin = UdpPlugin("localhost",udpPort)
+    udpPlugin.start()
+
+
     apes = [ 'APE1', 'APE2', 'TFINT' ]
     UMStates = {}
     AntennasPads = {}
@@ -110,4 +131,21 @@ if __name__=="__main__":
     l =[]
     for k in AntennasPads:
         l.append(k+':'+AntennasPads[k])
-    print  ",".join(l)
+    antspads =  ",".join(l)
+
+    udpPlugin.submit("Array-AntennasToPads", antspads, "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
+    logger.info("Sent {}",antspads)
+    time.sleep(0.10)
+
+    templatePrefix="[!#"
+    templateSuffix= "!]"
+    mpoint_prefix = "Array-UMStatus-Ant"+templatePrefix
+    for ant in UMStates:
+        idx = mpoint_prefix+ant+templateSuffix
+        udpPlugin.submit(idx, UMStates[ant], "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
+        logger.info("Sent %s with ID %s",UMStates[ant],idx)
+        time.sleep(0.10)
+
+    time.sleep(1)
+
+    udpPlugin.shutdown()
