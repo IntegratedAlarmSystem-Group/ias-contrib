@@ -13,7 +13,7 @@
 # !DummyPlugin/gradle/wrapper/gradle-wrapper.jar
 # !WeatherVisualInspection/gradle/wrapper/gradle-wrapper.jar
 !gradle-wrapper.jar
-.settings/
+.settings
 *.war
 *.ear
 *.zip
