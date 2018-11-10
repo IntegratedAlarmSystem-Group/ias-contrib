@@ -179,7 +179,7 @@ if __name__=="__main__":
     logger.info("Will send alarms every %d seconds ",loopSecs)
 
     while True:
-        logger.inf("Running a new loop")
+        logger.info("Running a new loop")
         try:
             udpPlugin = UdpPlugin("localhost",udpPort)
         except:
