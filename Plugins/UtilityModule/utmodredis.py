@@ -161,8 +161,8 @@ if __name__=="__main__":
     logger = Log.initLogging(__file__)
 
     # Get the UDP port number from the command line
-    if len(sys.argv)!=2:
-        logger.error("UDP port expected in command line")
+    if len(sys.argv)!=3:
+        logger.error("UDP port and loop time (seconds) expected in command line")
         sys.exit(-1)
     try:
         udpPort = int(sys.argv[1])
