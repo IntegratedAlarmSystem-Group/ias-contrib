@@ -134,7 +134,7 @@ if __name__=="__main__":
     antspads =  ",".join(l)
 
     udpPlugin.submit("Array-AntennasToPads", antspads, "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
-    logger.info("Sent {}",antspads)
+    logger.info("Sent %s",antspads)
     time.sleep(0.10)
 
     templatePrefix="[!#"
