@@ -190,7 +190,7 @@ if __name__=="__main__":
         try:
             udpPlugin.start()
             runIteration(udpPlugin)
-            logger.inf("Loop terminated: all data sent")
+            logger.info("Loop terminated: all data sent")
         except:
             logger.error("Exception starting the plugin or geting data")
         finally:
