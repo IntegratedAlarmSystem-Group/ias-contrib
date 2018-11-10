@@ -183,11 +183,17 @@ if __name__=="__main__":
             udpPlugin = UdpPlugin("localhost",udpPort)
         except:
             logger.error("Exception building the UdpPlugin with port {}",udpPort)
-            sys.exit(-4)
+            time.sleep(loopSecs)
+            continue
 
         try:
             udpPlugin.start()
             runIteration(udpPlugin)
+        except:
+            logger.error("Exception starting the plugin or geting data")
         finally:
-            udpPlugin.shutdown()
+            try:
+                udpPlugin.shutdown()
+            except:
+                logger.error("Exception closing the UPD plugin")
         time.sleep(loopSecs)
