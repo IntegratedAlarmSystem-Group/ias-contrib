@@ -74,6 +74,28 @@ class UTModRedis:
 from vrfs import VRFS
 import time
 
+def getAntennaIndex(antName):
+    '''
+    Build the index of the antenna from its name
+    for example DA41 is 26
+
+    :param antName: The name of the antenna like PM02
+    :return: the index of the antenna for the template
+    '''
+    if antName is None or len(antName)!=4:
+        raise ValueError("Invalid antenna name: "+antName)
+    antType = antName[:2]
+    antNum  = int(antName[2:])
+    if antType=='DV':
+        return str(antNum)
+    elif antType=='DA':
+        return str(antNum-15)
+    elif antType=='CM':
+        return str(antNum+50)
+    elif antType=='PM':
+        return str(antNum+62)
+    else:raise ValueError('Unrecognized antenna type '+antType)
+
 if __name__=="__main__":
     logger = Log.initLogging(__file__)
 
@@ -141,11 +163,12 @@ if __name__=="__main__":
     templateSuffix= "!]"
     mpoint_prefix = "Array-UMStatus-Ant"+templatePrefix
     for ant in UMStates:
-        idx = mpoint_prefix+ant[2:]+templateSuffix
+        antIndex=getAntennaIndex(ant)
+        idx = mpoint_prefix+antIndex+templateSuffix
         udpPlugin.submit(idx, UMStates[ant], "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
         logger.info("Sent %s with ID %s",UMStates[ant],idx)
-        time.sleep(0.10)
+        time.sleep(0.05)
 
-    time.sleep(1)
+    time.sleep(0.5)
 
     udpPlugin.shutdown()
