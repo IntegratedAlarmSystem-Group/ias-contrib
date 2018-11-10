@@ -141,7 +141,7 @@ if __name__=="__main__":
     templateSuffix= "!]"
     mpoint_prefix = "Array-UMStatus-Ant"+templatePrefix
     for ant in UMStates:
-        idx = mpoint_prefix+ant+templateSuffix
+        idx = mpoint_prefix+ant[2:]+templateSuffix
         udpPlugin.submit(idx, UMStates[ant], "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
         logger.info("Sent %s with ID %s",UMStates[ant],idx)
         time.sleep(0.10)
