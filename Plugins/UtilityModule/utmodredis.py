@@ -147,6 +147,7 @@ def runIteration(udpPlugin):
 
     udpPlugin.submit("Array-AntennasToPads", antspads, "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
     logger.info("Sent %s",antspads)
+    time.sleep(0.05)
 
     templatePrefix="[!#"
     templateSuffix= "!]"
@@ -156,6 +157,7 @@ def runIteration(udpPlugin):
         idx = mpoint_prefix+antIndex+templateSuffix
         udpPlugin.submit(idx, UMStates[ant], "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
         logger.info("Sent %s with ID %s",UMStates[ant],idx)
+        time.sleep(0.05)
 
 if __name__=="__main__":
     logger = Log.initLogging(__file__)
