@@ -17,18 +17,11 @@
 # License along with this library; if not, write to alarms_status the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1
 
-import os, sys, subprocess
+import sys, time
+from datetime import datetime
 from IASLogging.logConf import Log
 from IasPlugin2.UdpPlugin import UdpPlugin
 from RedisMonitorPointsDic import RedisMonitorPointDic
-
-# def getMon(mon):
-#     pipe = subprocess.Popen("%s/RedisMonitorPoints.py %s 2>&1" % (os.path.dirname(__file__), mon), stdout=subprocess.PIPE, shell=True)
-#     output, error = pipe.communicate()
-#     if error is not None:
-#         print ("Error: %s" % error)
-#         sys.exit(1)
-#     return output.strip()
 
 def getMon(component):
     monitor_points = RedisMonitorPointDic(component, "metis.osf.alma.cl", 6379, 100000)
@@ -46,13 +39,8 @@ def toDict( arr ):
             dic[splitted[0]] = str(splitted[1])
     return dic
 
-def emptyResponse():
-    print "OK: data retrieved |nan|"
-    sys.exit()
 def log(txt):
     pass
-def verboseLog(txt):
-    print txt
 
 def antennaNames():
     DV = range(1,26)
@@ -70,6 +58,30 @@ def antennaNames():
     for cm in CM:
         ret.append('CM'+'%02d'%(cm))
     return ret
+
+def toAlarm(value, priority='SET_MEDIUM',invertLogic=False):
+    '''
+    Return the alarm with the passed priority
+    if the value is not 0; otherwise return cleared
+
+    @param value The numeric value to convert to an alarm
+    @param priority The priority of the alarm if the value activates the alarm
+    @param invertLogic reverse the logic 
+           (i.e. the alarm is set when the value is 0; unset otherwise)
+    @return the alarm with the passed state and priority
+    '''
+    val = float(value)
+
+    if not invertLogic:
+        if val == 0:
+            return 'CLEARED'
+        else:
+            return priority
+    else:
+       if val == 0:
+            return priority
+       else:
+            return 'CLEARED'
 
 def buildMPointName(antName,device, mPointName):
     '''
@@ -89,52 +101,72 @@ def buildMPointName(antName,device, mPointName):
     ant = antName[:2]
 
     return 'Array-%s-%s-%s%s%d%s' % (device,mPointName,ant,templatePrefix,int(num), templateSuffix)
-    
 
-def runLoop():
+def submitMPoint(plugin,id,value, type,mode='OPERATIONAL'):
+    ''' 
+    Sumbit a monitor point to the UDP plugin that will. in turno,
+    forward to the java counterpart and from there to the IAS
+
+    @param plugin The UDP plugin
+    @param id The identifier of the monitor point
+    @param value The value of the monitor point
+    @param the type of the monitor point
+    @param mode the operational mode
+    ''' 
+    if value is not None:
+        try:
+            plugin.submit(id, value, type, timestamp=datetime.utcnow(), operationalMode=mode) 
+            print "Submitted %s with value %s, type %s and mode %s" % (id,value,type,mode)
+        except Exception, e:
+            print "Error submitting %s with value %s: %s" % (id,value,str(e))
+    else:
+        print "Got a NULL value for",id,"value lost"
+        
+def getLaserLockedValue():
     '''
-    Get and submits all the monitor points of all the antennas
+    Get the value of LASER_LOCKED from redis
+
+    @return the value of the LASER_LOCKED monitor point or None if not 
+            available in redis
     '''
-    log("Logging activated")
-
-
-    log("About to read MLD monitor points")
-   # mld = toDict( getMon("CONTROL_CentralLO_MLD") )
-    #mld = getMon("CONTROL_CentralLO_MLD_10b7c33e01080095")
     mld = getMon("CONTROL_CentralLO_MLD_10b7c33e01080095")
+    if mld is None:
+        return None
     if "INPUT_SWITCH" not in mld.keys():
-        log("INPUT_SWITCH not found in MLD")
-        log(mld)
-        emptyResponse()
-
-    #mld["INPUT_SWITCH"] = "1"
-
-    log("MLD switch found: %s" % mld["INPUT_SWITCH"])
-    #print "OK: data retrieved | LASER_LOCKED=0"
-    #sys.exit()
+        print "INPUT_SWITCH not found in MLD"
+        return None
 
     if mld["INPUT_SWITCH"] == "1.0":
         ml = getMon("CONTROL_CentralLO_ML_930008016217fc10")
-        log("ML selected")
+        print "ML selected"
 
     elif mld["INPUT_SWITCH"] == "2.0":
         ml = getMon("CONTROL_CentralLO_ML2_3000080205eba710")
-        log("ML2 selected")
+        print "ML2 selected"
 
     else:
-        emptyResponse()
-
-#    for k in  ml.keys():
-#        print "key=",k,"value=",ml[k]
+        print "Unknown INPUTS_SWITCH"
+        return None
 
     if "LASER_LOCKED" in ml.keys():
-        laser_locked_id="Array-Laser-Locked"
-        print laser_locked_id, ml["LASER_LOCKED"]
-        #print "OK: data retrieved | LASER_LOCKED=%s " % "0.0"
+        return  ml["LASER_LOCKED"]
     else:
-        emptyResponse()
+        print "LASER_LOCKED not foundD"
+        return None
+    
 
-        #print("Unexpected error:", sys.exc_info()[0])
+def runLoop(plugin):
+    '''
+    Get and submits all the monitor points of all the antennas
+
+    @param plugin the UDP plugin to send values to the IAS
+    '''
+
+    laser_locked =  getLaserLockedValue()
+    if laser_locked is not None:
+        laser_locked_id="Array-Laser-Locked"
+        val = toAlarm( laser_locked, 'SET_CRITICAL',invertLogic=True )
+        submitMPoint(plugin, laser_locked_id, val,"ALARM")
 
     antNames = antennaNames()
     for ant in  antNames:
@@ -147,20 +179,23 @@ def runLoop():
         temp9_id=buildMPointName(ant,'CRIO','TEMP0')
         pres0_id=buildMPointName(ant,'CRIO','VACUUM-PRES0')
         pres1_id=buildMPointName(ant,'CRIO','VACUUM-PRES1')
-        print "%s ="%(temp0_id), cryo["TEMP0_TEMP"]
-        print "%s ="%(temp5_id), cryo["TEMP5_TEMP"]
-        print "%s ="%(temp9_id), cryo["TEMP9_TEMP"]
-        print "%s ="%(pres0_id), cryo["VACUUM_GAUGE_SENSOR0_PRESSURE"]
-        print "%s ="%(pres1_id), cryo["VACUUM_GAUGE_SENSOR1_PRESSURE"]
+        if "TEMP0_TEMP" in cryo.keys():
+            submitMPoint(plugin, temp0_id,  cryo["TEMP0_TEMP"],"DOUBLE")
+        if "TEMP5_TEMP" in cryo.keys():
+            submitMPoint(plugin, temp5_id,  cryo["TEMP5_TEMP"],"DOUBLE")
+        if "TEMP9_TEMP" in cryo.keys():
+            submitMPoint(plugin, temp9_id,  cryo["TEMP9_TEMP"],"DOUBLE")
+        if "VACUUM_GAUGE_SENSOR0_PRESSURE" in cryo.keys():
+            submitMPoint(plugin, pres0_id,  cryo["VACUUM_GAUGE_SENSOR0_PRESSURE"],"DOUBLE")
+        if "VACUUM_GAUGE_SENSOR1_PRESSURE" in cryo.keys():
+            submitMPoint(plugin, pres1_id,  cryo["VACUUM_GAUGE_SENSOR1_PRESSURE"],"DOUBLE")
 
-        print "Getting CMPR of",ant
         cmpr = getMon("CONTROL/%s/CMPR"%(ant))
 #    for k in  cmpr.keys():
 #        print "key=",k,"value=",cmpr[k]
         cmpr_DriveOn_id=buildMPointName(ant,'CMPR','DRIVE_ON')
-        print "%s ="%(cmpr_DriveOn_id), cmpr["COMPRESSOR_DRIVE_INDICATION_ON"]
-
-
+        if "COMPRESSOR_DRIVE_INDICATION_ON" in  cmpr.keys():
+            submitMPoint(plugin, cmpr_DriveOn_id,  cmpr["COMPRESSOR_DRIVE_INDICATION_ON"],"DOUBLE")
 
 if __name__=="__main__":
     logger = Log.initLogging(__file__)
@@ -185,7 +220,27 @@ if __name__=="__main__":
         sys.exit(-3)
     logger.info("Will send alarms every %d seconds ",loopSecs)
 
-    runLoop()
+    while True:
+        logger.info("Running a new loop")
+        try:
+            udpPlugin = UdpPlugin("localhost",udpPort)
+        except:
+            logger.error("Exception building the UdpPlugin with port {}",udpPort)
+            time.sleep(loopSecs)
+            continue
+
+        try:
+            udpPlugin.start()
+            runLoop(udpPlugin)
+            logger.info("Loop terminated: all data sent")
+        except Exception, e:
+            logger.error("Exception starting the plugin or getting data: "+str(e))
+        finally:
+            try:
+                udpPlugin.shutdown()
+            except:
+                logger.error("Exception closing the UPD plugin")
+        time.sleep(loopSecs)
 
 
 
