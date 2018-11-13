@@ -195,7 +195,8 @@ def runLoop(plugin):
 #        print "key=",k,"value=",cmpr[k]
         cmpr_DriveOn_id=buildMPointName(ant,'CMPR','DRIVE_ON')
         if "COMPRESSOR_DRIVE_INDICATION_ON" in  cmpr.keys():
-            submitMPoint(plugin, cmpr_DriveOn_id,  cmpr["COMPRESSOR_DRIVE_INDICATION_ON"],"DOUBLE")
+            val = toAlarm(  cmpr["COMPRESSOR_DRIVE_INDICATION_ON"], invertLogic=True )
+            submitMPoint(plugin, cmpr_DriveOn_id, val,"ALARM")
 
 if __name__=="__main__":
     logger = Log.initLogging(__file__)
