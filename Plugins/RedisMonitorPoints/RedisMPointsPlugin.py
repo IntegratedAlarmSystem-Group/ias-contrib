@@ -184,7 +184,7 @@ def runLoop(plugin):
         cmpr = getMon("CONTROL/%s/CMPR"%(ant))
 #    for k in  cmpr.keys():
 #        print "key=",k,"value=",cmpr[k]
-        cmpr_DriveOn_id=buildMPointName(ant,'CMPR','DRIVE_ON')
+        cmpr_DriveOn_id=buildMPointName(ant,'CMPR','DRIVE')
         if "COMPRESSOR_DRIVE_INDICATION_ON" in  cmpr.keys():
             val = toAlarm(  cmpr["COMPRESSOR_DRIVE_INDICATION_ON"], invertLogic=True )
             submitMPoint(plugin, cmpr_DriveOn_id, val,"ALARM")
