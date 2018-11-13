@@ -29,16 +29,6 @@ def getMon(component):
 
     return monitor_points.get_monitor_points()
 
-
-
-def toDict( arr ):
-    dic = {}
-    for val in arr.split("|")[1].split(" "):
-        splitted = val.split("=")
-        if len(splitted) == 2:
-            dic[splitted[0]] = str(splitted[1])
-    return dic
-
 def log(txt):
     pass
 
@@ -95,7 +85,6 @@ def buildMPointName(antName,device, mPointName):
     '''
     templatePrefix="[!#"
     templateSuffix= "!]"
-    mpoint_prefix = "Array-UMStatus-Ant"+templatePrefix
 
     num = antName[2:]
     ant = antName[:2]
@@ -160,7 +149,9 @@ def runLoop(plugin):
     Get and submits all the monitor points of all the antennas
 
     @param plugin the UDP plugin to send values to the IAS
+    @return the exection time of the loop in msecs
     '''
+    startTime = int(round(time.time() * 1000))
 
     laser_locked =  getLaserLockedValue()
     if laser_locked is not None:
@@ -197,6 +188,7 @@ def runLoop(plugin):
         if "COMPRESSOR_DRIVE_INDICATION_ON" in  cmpr.keys():
             val = toAlarm(  cmpr["COMPRESSOR_DRIVE_INDICATION_ON"], invertLogic=True )
             submitMPoint(plugin, cmpr_DriveOn_id, val,"ALARM")
+    return int(round(time.time() * 1000))-startTime
 
 if __name__=="__main__":
     logger = Log.initLogging(__file__)
@@ -232,8 +224,8 @@ if __name__=="__main__":
 
         try:
             udpPlugin.start()
-            runLoop(udpPlugin)
-            logger.info("Loop terminated: all data sent")
+            execTime=runLoop(udpPlugin)
+            logger.info("Loop terminated: all data sent in %d msecs",execTime)
         except Exception, e:
             logger.error("Exception starting the plugin or getting data: "+str(e))
         finally:
@@ -241,7 +233,10 @@ if __name__=="__main__":
                 udpPlugin.shutdown()
             except:
                 logger.error("Exception closing the UPD plugin")
-        time.sleep(loopSecs)
+	if loopSecs>execTime/1000:
+                sleepTime =  loopSecs-execTime/1000
+                logger.info("Will sleep for %d secs",sleepTime)
+                time.sleep(sleepTime)
 
 
 
