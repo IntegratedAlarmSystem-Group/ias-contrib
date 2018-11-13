@@ -176,7 +176,7 @@ def runLoop(plugin):
 #            print "CRIO key=",k,"value=",cryo[k]
         temp0_id=buildMPointName(ant,'CRIO','TEMP0')
         temp5_id=buildMPointName(ant,'CRIO','TEMP5')
-        temp9_id=buildMPointName(ant,'CRIO','TEMP0')
+        temp9_id=buildMPointName(ant,'CRIO','TEMP9')
         pres0_id=buildMPointName(ant,'CRIO','VACUUM-PRES0')
         pres1_id=buildMPointName(ant,'CRIO','VACUUM-PRES1')
         if "TEMP0_TEMP" in cryo.keys():
