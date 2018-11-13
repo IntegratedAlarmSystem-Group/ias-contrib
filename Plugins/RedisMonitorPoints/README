@@ -1,0 +1,4 @@
+A monitor point that connects to redis, get selected monitor poinds and sends them to the IAS
+
+It require redis python package
+
