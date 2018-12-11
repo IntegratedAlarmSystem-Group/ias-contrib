@@ -11,16 +11,9 @@
     }
   ],
   "values": [
-    { "id": "WS-Meteo129-LastInspection", "refreshTime": 30000 },
-    { "id": "WS-Meteo131-LastInspection", "refreshTime": 30000 },
-    { "id": "WS-Meteo130-LastInspection", "refreshTime": 30000 },
-    { "id": "WS-Meteo201-LastInspection", "refreshTime": 30000 },
-    { "id": "WS-Meteo309-LastInspection", "refreshTime": 30000 },
-    { "id": "WS-Meteo410-LastInspection", "refreshTime": 30000 },
-    { "id": "WS-MeteoCentral-LastInspection", "refreshTime": 30000 },
-    { "id": "WS-MeteoItinerant-LastInspection", "refreshTime": 30000 },
-    { "id": "WS-MeteoOSF-LastInspection", "refreshTime": 30000 },
-    { "id": "WS-MeteoTB1-LastInspection", "refreshTime": 30000 },
-    { "id": "WS-MeteoTB2-LastInspection", "refreshTime": 30000 }
+    { "id": "WS-Inner-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-P-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-S-LastInspection", "refreshTime": 30000 },
+    { "id": "WS-W-LastInspection", "refreshTime": 30000 }
   ]
 }

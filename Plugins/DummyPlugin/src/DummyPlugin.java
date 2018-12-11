@@ -51,16 +51,16 @@ public class DummyPlugin extends Plugin {
     int sinkPort = 9092;
 
     if (args.length > 0) {
-      sinkServer = args[0];
+      id = args[0];
       if (args.length > 1) {
-        try {
-          sinkPort = Integer.parseInt(args[1]);
-        } catch (NumberFormatException e) {
-          System.err.println("Sink port" + args[1] + " must be an integer.");
-          System.exit(1);
-        }
+        sinkServer = args[1];
         if (args.length > 2) {
-          id = args[2];
+          try {
+            sinkPort = Integer.parseInt(args[2]);
+          } catch (NumberFormatException e) {
+            System.err.println("Sink port" + args[2] + " must be an integer.");
+            System.exit(1);
+          }
         }
       }
     }
