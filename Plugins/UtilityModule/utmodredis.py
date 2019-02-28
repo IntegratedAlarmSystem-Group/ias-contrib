@@ -120,7 +120,13 @@ def runIteration(udpPlugin):
                         "Rx_Cabin_Temperature":0, "HVAC":0, "Antenna_Position":0,
                         "Drive_Cabin_Temperature":0, "Shutter_Status_at_Zenith":0}
             # Utility module status of the antenna
-            um = ut.get_jason_dictionary(key)
+            print "Getting status of the UM of antenna ",element
+            try:
+ 	        um = ut.get_jason_dictionary(key)
+            except Exception,e:
+                print "Error getting the state of ", element
+		print e
+	        um = None
             if um is not None:
                 ac_power=um["AC_Power"]
                 at_zenith=um["Shutter_Status_at_Zenith"]
