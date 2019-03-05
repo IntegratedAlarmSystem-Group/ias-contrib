@@ -89,7 +89,7 @@ def buildUMStatusMPointName(antName):
 
     templatePrefix="[!#"
     templateSuffix= "!]"
-    return "Array-UMStatus-Ant-"+antType+templatePrefix+str(antNum)+templateSuffix
+    return "Array-UMStatus-"+antType+templatePrefix+str(antNum)+templateSuffix
 
 def runIteration(udpPlugin):
     '''
