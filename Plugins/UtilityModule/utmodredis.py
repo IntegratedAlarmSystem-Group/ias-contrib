@@ -74,27 +74,22 @@ class UTModRedis:
 from vrfs import VRFS
 import time
 
-def getAntennaIndex(antName):
+def buildUMStatusMPointName(antName):
     '''
-    Build the index of the antenna from its name
-    for example DA41 is 26
+    Cleans the name of the passed antenn by removing the leading 0 
+    i.e. DV01 beomes DV1
 
-    :param antName: The name of the antenna like PM02
-    :return: the index of the antenna for the template
+    :param antName: The name of the antenna like PM02 or DA55
+    :return: the cleaned antenna name
     '''
     if antName is None or len(antName)!=4:
         raise ValueError("Invalid antenna name: "+antName)
     antType = antName[:2]
     antNum  = int(antName[2:])
-    if antType=='DV':
-        return str(antNum)
-    elif antType=='DA':
-        return str(antNum-15)
-    elif antType=='CM':
-        return str(antNum+50)
-    elif antType=='PM':
-        return str(antNum+62)
-    else:raise ValueError('Unrecognized antenna type '+antType)
+
+    templatePrefix="[!#"
+    templateSuffix= "!]"
+    return "Array-UMStatus-Ant-"+antType+templatePrefix+str(antNum)+templateSuffix
 
 def runIteration(udpPlugin):
     '''
@@ -155,13 +150,9 @@ def runIteration(udpPlugin):
     logger.info("Sent %s",antspads)
     time.sleep(0.05)
 
-    templatePrefix="[!#"
-    templateSuffix= "!]"
-    mpoint_prefix = "Array-UMStatus-Ant"+templatePrefix
     for ant in UMStates:
-        antIndex=getAntennaIndex(ant)
-        idx = mpoint_prefix+antIndex+templateSuffix
-        udpPlugin.submit(idx, UMStates[ant], "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
+        mPointName=buildUMStatusMPointName(ant)
+        udpPlugin.submit(mPointName, UMStates[ant], "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
         logger.info("Sent %s with ID %s",UMStates[ant],idx)
         time.sleep(0.05)
 
