@@ -74,27 +74,22 @@ class UTModRedis:
 from vrfs import VRFS
 import time
 
-def getAntennaIndex(antName):
+def buildUMStatusMPointName(antName):
     '''
-    Build the index of the antenna from its name
-    for example DA41 is 26
+    Cleans the name of the passed antenn by removing the leading 0 
+    i.e. DV01 beomes DV1
 
-    :param antName: The name of the antenna like PM02
-    :return: the index of the antenna for the template
+    :param antName: The name of the antenna like PM02 or DA55
+    :return: the cleaned antenna name
     '''
     if antName is None or len(antName)!=4:
         raise ValueError("Invalid antenna name: "+antName)
     antType = antName[:2]
     antNum  = int(antName[2:])
-    if antType=='DV':
-        return str(antNum)
-    elif antType=='DA':
-        return str(antNum-15)
-    elif antType=='CM':
-        return str(antNum+50)
-    elif antType=='PM':
-        return str(antNum+62)
-    else:raise ValueError('Unrecognized antenna type '+antType)
+
+    templatePrefix="[!#"
+    templateSuffix= "!]"
+    return "Array-UMStatus-"+antType+templatePrefix+str(antNum)+templateSuffix
 
 def runIteration(udpPlugin):
     '''
@@ -120,7 +115,13 @@ def runIteration(udpPlugin):
                         "Rx_Cabin_Temperature":0, "HVAC":0, "Antenna_Position":0,
                         "Drive_Cabin_Temperature":0, "Shutter_Status_at_Zenith":0}
             # Utility module status of the antenna
-            um = ut.get_jason_dictionary(key)
+            print "Getting status of the UM of antenna ",element
+            try:
+ 	        um = ut.get_jason_dictionary(key)
+            except Exception,e:
+                print "Error getting the state of ", element
+		print e
+	        um = None
             if um is not None:
                 ac_power=um["AC_Power"]
                 at_zenith=um["Shutter_Status_at_Zenith"]
@@ -149,13 +150,9 @@ def runIteration(udpPlugin):
     logger.info("Sent %s",antspads)
     time.sleep(0.05)
 
-    templatePrefix="[!#"
-    templateSuffix= "!]"
-    mpoint_prefix = "Array-UMStatus-Ant"+templatePrefix
     for ant in UMStates:
-        antIndex=getAntennaIndex(ant)
-        idx = mpoint_prefix+antIndex+templateSuffix
-        udpPlugin.submit(idx, UMStates[ant], "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
+        mPointName=buildUMStatusMPointName(ant)
+        udpPlugin.submit(mPointName, UMStates[ant], "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
         logger.info("Sent %s with ID %s",UMStates[ant],idx)
         time.sleep(0.05)
 
