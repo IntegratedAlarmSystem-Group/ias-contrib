@@ -49,6 +49,7 @@ def isOperational(device):
     return j['data']['data']['_n']
   else:
     print "Error from REST server code",r.status_code
+    print r.json()
     return None
 
 def isPsShutdown(device):
@@ -92,15 +93,16 @@ def runLoop(plugin):
     psdName = 'CONTROL/'+ant+'/PSD'
     fepsName= 'CONTROL/'+ant+'/FEPS'
     cmprName= 'CONTROL/'+ant+'/CMPR'
-    crioName= 'CONTROL/'+ant+'/Cryostat'
+    cryoName= 'CONTROL/'+ant+'/FrontEnd/Cryostat'
     print ant
     print '\tPSA',  buildMPointName(ant,'PSA','OPERATIONAL'), isOperational(psaName)
     print '\tPSA',  buildMPointName(ant,'PSA','SHUTDOWN'), isPsShutdown(psaName)
     print '\tPSD',  buildMPointName(ant,'PSD','OPERATIONAL'), isOperational(psdName)
     print '\tPSD',  buildMPointName(ant,'PSD','SHUTDOWN'), isPsShutdown(psdName)
-    #print '\tFEPS', isOperational(fepsName),isFepsShutdown(fepsName)
+    print '\tFEPS', isOperational(fepsName),isFepsShutdown(fepsName)
     print '\tCMPR',  buildMPointName(ant,'CMPR','OPERATIONAL'), isOperational(cmprName)
-    #print '\tCRIO', isOperational(crioName)
+    print '\tCRYO', isOperational(cryoName)
+    print '\tCMPR',  buildMPointName(ant,'CRYO','OPERATIONAL'), isOperational(cryoName)
 
   return int(round(time.time() * 1000))-startTime
 
