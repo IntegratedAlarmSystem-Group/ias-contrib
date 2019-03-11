@@ -18,7 +18,12 @@ CM = ('CM', range(1,13))
 
 antennaTypes = [ DV, DA, CM, PM ]
 
+firstRow = True
 for tp in antennaTypes:
   for antNum in tp[1]:
     for mPName in mPointIds:
-      print startTag+mPName+'-'+tp[0]+'[!#'+str(antNum)+endTag
+      if not firstRow:
+        print ','
+      else:
+        firstRow=False
+      print startTag+mPName+'-'+tp[0]+'[!#'+str(antNum)+endTag,
