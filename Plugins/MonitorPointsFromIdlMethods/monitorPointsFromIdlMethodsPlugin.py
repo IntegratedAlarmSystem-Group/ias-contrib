@@ -94,12 +94,12 @@ def runLoop(plugin):
     cmprName= 'CONTROL/'+ant+'/CMPR'
     crioName= 'CONTROL/'+ant+'/Cryostat'
     print ant
-    print '\tPSA',  buildMPointName(ant,'PSA','OPERATONAL'), isOperational(psaName)
+    print '\tPSA',  buildMPointName(ant,'PSA','OPERATIONAL'), isOperational(psaName)
     print '\tPSA',  buildMPointName(ant,'PSA','SHUTDOWN'), isPsShutdown(psaName)
-    print '\tPSD',  buildMPointName(ant,'PSD','OPERATONAL'), isOperational(psdName)
+    print '\tPSD',  buildMPointName(ant,'PSD','OPERATIONAL'), isOperational(psdName)
     print '\tPSD',  buildMPointName(ant,'PSD','SHUTDOWN'), isPsShutdown(psdName)
     #print '\tFEPS', isOperational(fepsName),isFepsShutdown(fepsName)
-    print '\tCMPR',  buildMPointName(ant,'CMPR','OPERATONAL'), isOperational(cmprName)
+    print '\tCMPR',  buildMPointName(ant,'CMPR','OPERATIONAL'), isOperational(cmprName)
     #print '\tCRIO', isOperational(crioName)
 
   return int(round(time.time() * 1000))-startTime
