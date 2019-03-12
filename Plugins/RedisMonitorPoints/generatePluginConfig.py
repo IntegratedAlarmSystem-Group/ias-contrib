@@ -18,11 +18,11 @@ nonTemplatedPointIds = [
 ]
 
 baseIds = [
-    "Array-CRIO-TEMP0-",
-    "Array-CRIO-TEMP5-",
-    "Array-CRIO-TEMP9-",
-    "Array-CRIO-VACUUM-PRES0-",
-    "Array-CRIO-VACUUM-PRES1-",
+    "Array-CRIO-TEMP0-VALUE-",
+    "Array-CRIO-TEMP5-VALUE-",
+    "Array-CRIO-TEMP9-VALUE-",
+    "Array-CRIO-VACUUM-PRES0-VALUE-",
+    "Array-CRIO-VACUUM-PRES1-VALUE-",
     "Array-CMPR-DRIVE-"
 ]
 

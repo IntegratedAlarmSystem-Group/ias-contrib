@@ -23,8 +23,17 @@ from IASLogging.logConf import Log
 from IasPlugin2.UdpPlugin import UdpPlugin
 from RedisMonitorPointsDic import RedisMonitorPointDic
 
+# The plugin discard monitor points
+# whose timestamp is older than 1 minute
+#
+# The timestamp is the one read from the redis DB: if the last
+# entry of the monitor point is older than the validity
+# threshold the value is discarded and never sent to the IAS
+validityThreshold = 6000
+
+
 def getMon(component):
-    monitor_points = RedisMonitorPointDic(component, "metis.osf.alma.cl", 6379, 100000)
+    monitor_points = RedisMonitorPointDic(component, "metis.osf.alma.cl", 6379, validityThreshold)
     log("RedisMonitorPointDic(%s) created" % component)
 
     return monitor_points.get_monitor_points()
@@ -60,7 +69,10 @@ def toAlarm(value, priority='SET_MEDIUM',invertLogic=False):
            (i.e. the alarm is set when the value is 0; unset otherwise)
     @return the alarm with the passed state and priority
     '''
+    if value is None:
+        return None
     val = float(value)
+
 
     if not invertLogic:
         if val == 0:
@@ -88,8 +100,11 @@ def buildMPointName(antName,device, mPointName):
 
     num = antName[2:]
     ant = antName[:2]
-
-    return 'Array-%s-%s-%s%s%d%s' % (device,mPointName,ant,templatePrefix,int(num), templateSuffix)
+    
+    if device=='CMPR' and mPointName =='DRIVE':
+      return 'Array-%s-%s-%s%s%d%s' % (device,mPointName,ant,templatePrefix,int(num), templateSuffix)
+    else:
+      return 'Array-%s-%s-VALUE-%s%s%d%s' % (device,mPointName,ant,templatePrefix,int(num), templateSuffix)
 
 def submitMPoint(plugin,id,value, type,mode='OPERATIONAL'):
     ''' 
@@ -228,6 +243,8 @@ if __name__=="__main__":
             logger.info("Loop terminated: all data sent in %d msecs",execTime)
         except Exception, e:
             logger.error("Exception starting the plugin or getting data: "+str(e))
+            time.sleep(loopSecs)
+            continue
         finally:
             try:
                 udpPlugin.shutdown()

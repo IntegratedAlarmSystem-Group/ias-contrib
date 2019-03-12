@@ -99,6 +99,7 @@ def runIteration(udpPlugin):
     :param udpPlugin: the UdpPlugin to send data to
     :return:
     '''
+    logger.info("Iteration started")
     apes = [ 'APE1', 'APE2', 'TFINT' ]
     UMStates = {}
     AntennasPads = {}
@@ -107,7 +108,7 @@ def runIteration(udpPlugin):
         ut = UTModRedis("metis.osf.alma.cl", "6379", "5")
         antennas = vrfs.get_antenna_list(ape)
         for element in antennas:
-            print "Antenmna",element['antenna'],"Pad",element['pad']
+            logger.info("Antenna %s in pad %s",element['antenna'],element['pad'])
             AntennasPads[element["antenna"]]=element['pad']
         for element in antennas:
             key = "%s:%s" % ("UtilityModulePublisher", element["antenna"])
@@ -115,12 +116,11 @@ def runIteration(udpPlugin):
                         "Rx_Cabin_Temperature":0, "HVAC":0, "Antenna_Position":0,
                         "Drive_Cabin_Temperature":0, "Shutter_Status_at_Zenith":0}
             # Utility module status of the antenna
-            print "Getting status of the UM of antenna ",element
+            logger.info("Getting status of the UM of antenna %s",element)
             try:
  	        um = ut.get_jason_dictionary(key)
             except Exception,e:
-                print "Error getting the state of ", element
-		print e
+                logger.exception("Error getting the state of %s", element)
 	        um = None
             if um is not None:
                 ac_power=um["AC_Power"]
@@ -137,9 +137,10 @@ def runIteration(udpPlugin):
                 UMStatusWord= "AC-POWER:%s,AT-ZENITH:%s,HVAC:%s,FIRE:%s,UPS-POWER:%s,STOW-PIN:%s,RX-CAB-TEMP:%s,DRIVE-CAB-TEMP:%s,ANTENNA-POS:%s,E-STOP:%s" % (
                     ac_power,  at_zenith,hvac,fire, ups_power,stow_pin,rx_cab_temp, drive_cab_temp,antenna_pos, e_stop)
                 UMStates[element["antenna"]]=UMStatusWord
+    logger.info("Data read ")
     # print the UM state of each antenna
     for k in UMStates:
-        print k, UMStates[k]
+        logger.info("UM of %s = %s", k, UMStates[k])
     # Print association of antennas to pads
     l =[]
     for k in AntennasPads:
@@ -153,8 +154,9 @@ def runIteration(udpPlugin):
     for ant in UMStates:
         mPointName=buildUMStatusMPointName(ant)
         udpPlugin.submit(mPointName, UMStates[ant], "STRING", timestamp=datetime.utcnow(), operationalMode='OPERATIONAL')
-        logger.info("Sent %s with ID %s",UMStates[ant],idx)
+        logger.info("Sent %s with value %s",mPointName,UMStates[ant])
         time.sleep(0.05)
+    logger.info("Iteration done")
 
 if __name__=="__main__":
     logger = Log.initLogging(__file__)
@@ -181,6 +183,7 @@ if __name__=="__main__":
         logger.info("Running a new loop")
         try:
             udpPlugin = UdpPlugin("localhost",udpPort)
+            logger.info("UDP plugin built")
         except:
             logger.error("Exception building the UdpPlugin with port {}",udpPort)
             time.sleep(loopSecs)
@@ -188,13 +191,21 @@ if __name__=="__main__":
 
         try:
             udpPlugin.start()
-            runIteration(udpPlugin)
-            logger.info("Loop terminated: all data sent")
+            logger.info("UDP plugin started")
         except:
             logger.error("Exception starting the plugin or geting data")
+            udpPlugin.shutdown()
+            time.sleep(loopSecs)
+            continue
+
+        try:
+            runIteration(udpPlugin)
+        except Exception, e:
+            logger.exception("Exception getting data")
         finally:
             try:
                 udpPlugin.shutdown()
+                logger.info("UDP plugin shut down")
             except:
                 logger.error("Exception closing the UPD plugin")
         time.sleep(loopSecs)
