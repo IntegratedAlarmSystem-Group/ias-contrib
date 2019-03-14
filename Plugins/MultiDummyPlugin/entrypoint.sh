@@ -6,4 +6,5 @@
 #     sleep 1
 # done
 ls -la
+ls -la config_files
 java -jar "${1}" multi-dummy-plugin.jar "${2}"
