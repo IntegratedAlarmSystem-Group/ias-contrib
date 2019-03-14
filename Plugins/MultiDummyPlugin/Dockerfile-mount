@@ -28,8 +28,7 @@ RUN ./gradlew build --refresh-dependencies
 WORKDIR /usr/src/multi_dummy_plugin
 RUN mv src/dist/multi-dummy-plugin.jar multi-dummy-plugin.jar
 RUN rm -rf /usr/src/multi_dummy_plugin/src
-# COPY config_files /usr/src/multi_dummy_plugin/config_files
 COPY entrypoint.sh /usr/src/multi_dummy_plugin
 RUN mkdir /usr/src/multi_dummy_plugin/config_files
 VOLUME /usr/src/multi_dummy_plugin/config_files
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["java", "-jar", "multi-dummy-plugin.jar"]

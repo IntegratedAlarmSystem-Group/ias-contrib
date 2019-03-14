@@ -1,7 +1,7 @@
 {
   "id":"Plugin-ID",
   "monitoredSystemId":"ACS",
-  "sinkServer":"kafka",
+  "sinkServer":"localhost",
   "sinkPort":"9092",
   "autoSendTimeInterval":"3",
   "hbFrequency":"10",
