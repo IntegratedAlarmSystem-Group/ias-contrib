@@ -94,15 +94,14 @@ def runLoop(plugin):
     fepsName= 'CONTROL/'+ant+'/FEPS'
     cmprName= 'CONTROL/'+ant+'/CMPR'
     cryoName= 'CONTROL/'+ant+'/FrontEnd/Cryostat'
-    print ant
+    print">>>>>>>>>>>", ant , "<<<<<<<<<<<<<<<<"
     print '\tPSA',  buildMPointName(ant,'PSA','OPERATIONAL'), isOperational(psaName)
     print '\tPSA',  buildMPointName(ant,'PSA','SHUTDOWN'), isPsShutdown(psaName)
     print '\tPSD',  buildMPointName(ant,'PSD','OPERATIONAL'), isOperational(psdName)
     print '\tPSD',  buildMPointName(ant,'PSD','SHUTDOWN'), isPsShutdown(psdName)
     print '\tFEPS', isOperational(fepsName),isFepsShutdown(fepsName)
     print '\tCMPR',  buildMPointName(ant,'CMPR','OPERATIONAL'), isOperational(cmprName)
-    print '\tCRYO', isOperational(cryoName)
-    print '\tCMPR',  buildMPointName(ant,'CRYO','OPERATIONAL'), isOperational(cryoName)
+    print '\tCRYO',  buildMPointName(ant,'CRYO','OPERATIONAL'), isOperational(cryoName)
 
   return int(round(time.time() * 1000))-startTime
 
@@ -145,7 +144,7 @@ if __name__ == "__main__":
           execTime=runLoop(udpPlugin)
           logger.info("Loop terminated: all data sent in %d msecs",execTime)
       except Exception, e:
-          logger.error("Exception starting the plugin or getting data: "+str(e))
+          logger.exception("Exception starting the plugin or getting data")
       finally:
           try:
               udpPlugin.shutdown()
