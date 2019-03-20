@@ -6,17 +6,26 @@
   "autoSendTimeInterval":"3",
   "hbFrequency":"10",
   "properties": [
-    {"key":"a-key",
-      "value":"itsValue"},
-    {"key":"Anotherkey",
-      "value":"AnotherValue"}],
+    {
+      "key":"a-key",
+      "value":"itsValue"
+    },
+    {
+      "key":"Anotherkey",
+      "value":"AnotherValue"
+      }
+  ],
   "values":[
-    {"id":"AlarmID",
+    {
+      "id":"AlarmID",
       "refreshTime":"500",
       "filter":"",
       "filterOptions":""},
-    {"id":"TempID",
+    {
+      "id":"TempID",
       "refreshTime":"1500",
       "filter":"",
-      "filterOptions":""}]
+      "filterOptions":""
+    }
+  ]
 }

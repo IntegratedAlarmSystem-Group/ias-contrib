@@ -1,0 +1,34 @@
+FROM centos:7
+RUN yum update -y && \
+  yum install java-1.8.0-openjdk-devel \
+  -y
+ENV JAVA_HOME /usr/lib/jvm/java-1.8.0-openjdk
+# --------------------------------------
+# Install Gradle
+# --------------------------------------
+WORKDIR /usr/src/multi_dummy_plugin/src
+COPY gradlew .
+COPY gradle ./gradle
+COPY gradle.properties .
+COPY settings.gradle .
+COPY build.gradle .
+RUN ./gradlew
+
+# --------------------------------------
+# Build Project
+# --------------------------------------
+COPY . .
+RUN rm -rf dist
+RUN mkdir dist
+RUN ./gradlew build --refresh-dependencies
+
+# --------------------------------------
+# Move JARs and Clean
+# --------------------------------------
+WORKDIR /usr/src/multi_dummy_plugin
+RUN mv src/dist/multi-dummy-plugin.jar multi-dummy-plugin.jar
+RUN rm -rf /usr/src/multi_dummy_plugin/src
+COPY entrypoint.sh /usr/src/multi_dummy_plugin
+RUN mkdir /usr/src/multi_dummy_plugin/config_files
+VOLUME /usr/src/multi_dummy_plugin/config_files
+ENTRYPOINT ["java", "-jar", "multi-dummy-plugin.jar"]
