@@ -33,6 +33,20 @@
     "docUrl": "http://www.alma.cl",
     "templateId": "DV"
   },
+  {
+    "id": "Array-CRYO-OPERATIONAL-DV",
+    "shortDesc": "CRYO operational state",
+    "iasType": "STRING",
+    "docUrl": "http://www.alma.cl",
+    "templateId": "DV"
+  },
+  {
+    "id": "Array-FEPS-OPERATIONAL-DV",
+    "shortDesc": "FEPS operational state",
+    "iasType": "STRING",
+    "docUrl": "http://www.alma.cl",
+    "templateId": "DV"
+  },
 
   {
     "id": "Array-PSA-SHUTDOWN-DA",
@@ -65,6 +79,20 @@
   {
     "id": "Array-CMPR-OPERATIONAL-DA",
     "shortDesc": "CMPR operational state",
+    "iasType": "STRING",
+    "docUrl": "http://www.alma.cl",
+    "templateId": "DA"
+  },
+  {
+    "id": "Array-CRYO-OPERATIONAL-DA",
+    "shortDesc": "CRYO operational state",
+    "iasType": "STRING",
+    "docUrl": "http://www.alma.cl",
+    "templateId": "DA"
+  },
+  {
+    "id": "Array-FEPS-OPERATIONAL-DA",
+    "shortDesc": "FEPS operational state",
     "iasType": "STRING",
     "docUrl": "http://www.alma.cl",
     "templateId": "DA"
@@ -105,6 +133,20 @@
     "docUrl": "http://www.alma.cl",
     "templateId": "PM"
   },
+  {
+    "id": "Array-CRYO-OPERATIONAL-PM",
+    "shortDesc": "CRYO operational state",
+    "iasType": "STRING",
+    "docUrl": "http://www.alma.cl",
+    "templateId": "PM"
+  },
+  {
+    "id": "Array-FEPS-OPERATIONAL-PM",
+    "shortDesc": "FEPS operational state",
+    "iasType": "STRING",
+    "docUrl": "http://www.alma.cl",
+    "templateId": "PM"
+  },
 
   {
     "id": "Array-PSA-SHUTDOWN-CM",
@@ -137,6 +179,20 @@
   {
     "id": "Array-CMPR-OPERATIONAL-CM",
     "shortDesc": "CMPR operational state",
+    "iasType": "STRING",
+    "docUrl": "http://www.alma.cl",
+    "templateId": "CM"
+  },
+  {
+    "id": "Array-CRYO-OPERATIONAL-CM",
+    "shortDesc": "CRYO operational state",
+    "iasType": "STRING",
+    "docUrl": "http://www.alma.cl",
+    "templateId": "CM"
+  },
+  {
+    "id": "Array-FEPS-OPERATIONAL-CM",
+    "shortDesc": "FEPS operational state",
     "iasType": "STRING",
     "docUrl": "http://www.alma.cl",
     "templateId": "CM"

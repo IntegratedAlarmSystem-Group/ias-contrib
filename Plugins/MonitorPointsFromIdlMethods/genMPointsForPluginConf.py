@@ -8,7 +8,9 @@ mPointIds = [
   'Array-PSA-SHUTDOWN',
   'Array-PSD-OPERATIONAL',
   'Array-PSD-SHUTDOWN',
-  'Array-CMPR-OPERATIONAL'
+  'Array-CMPR-OPERATIONAL',
+  'Array-CRYO-OPERATIONAL',
+  'Array-FEPS-OPERATIONAL'
 ]
 
 DV = ('DV', range(1,26))
