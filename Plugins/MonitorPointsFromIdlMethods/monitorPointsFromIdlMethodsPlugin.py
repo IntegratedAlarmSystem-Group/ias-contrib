@@ -41,6 +41,25 @@ def buildMPointName(antName,device, mPointName):
     
     return 'Array-%s-%s-%s%s%d%s' % (device,mPointName,ant,templatePrefix,int(num), templateSuffix)
 
+def submitMPoint(plugin,id,value, mPointType,mode='OPERATIONAL'):
+    ''' 
+    Sumbit a monitor point to the UDP plugin that will. in turn,
+    forward to the java counterpart and from there to the IAS
+    @param plugin The UDP plugin
+    @param id The identifier of the monitor point
+    @param value The value of the monitor point
+    @param the type of the monitor point
+    @param mode the operational mode
+    ''' 
+    if value is not None:
+        try:
+            plugin.submit(id, value, mPointType, timestamp=datetime.utcnow(), operationalMode=mode) 
+            print "Submitted %s with value %s, type %s and mode %s" % (id,value,mPointType,mode)
+        except Exception, e:
+            print "Error submitting %s with value %s: %s" % (id,value,str(e))
+    else:
+        print "Got a NULL value for",id,"value lost"
+
 def isOperational(device):
   data = "{\"componentName\": \""+device+"\", \"methodName\": \"getHwState\", \"arguments\": {}}"
   r = requests.post(restSvcUrl, data=data)
@@ -95,11 +114,20 @@ def runLoop(plugin):
     cmprName= 'CONTROL/'+ant+'/CMPR'
     cryoName= 'CONTROL/'+ant+'/FrontEnd/Cryostat'
     print">>>>>>>>>>>", ant , "<<<<<<<<<<<<<<<<"
-    print '\tPSA',  buildMPointName(ant,'PSA','OPERATIONAL'), isOperational(psaName),  buildMPointName(ant,'PSA','SHUTDOWN'), isPsShutdown(psaName)
-    print '\tPSD',  buildMPointName(ant,'PSD','OPERATIONAL'), isOperational(psdName),  buildMPointName(ant,'PSD','SHUTDOWN'), isPsShutdown(psdName)
-    print '\tFEPS', isOperational(fepsName),isFepsShutdown(fepsName)
-    print '\tCMPR',  buildMPointName(ant,'CMPR','OPERATIONAL'), isOperational(cmprName)
-    print '\tCRYO',  buildMPointName(ant,'CRYO','OPERATIONAL'), isOperational(cryoName)
+    mPointName =  buildMPointName(ant,'PSA','OPERATIONAL')
+    submitMPoint(plugin,mPointName, isOperational(psaName), 'STRING',mode='OPERATIONAL')
+    mPointName =  buildMPointName(ant,'PSA','SHUTDOWN')
+    submitMPoint(plugin,mPointName, isPsShutdown(psaName), 'BOOLEAN',mode='OPERATIONAL')
+    mPointName =  buildMPointName(ant,'PSD','OPERATIONAL')
+    submitMPoint(plugin,mPointName, isOperational(psdName), 'STRING',mode='OPERATIONAL')
+    mPointName =  buildMPointName(ant,'PSD','SHUTDOWN')
+    submitMPoint(plugin,mPointName, isPsShutdown(psdName), 'BOOLEAN',mode='OPERATIONAL')
+    mPointName = buildMPointName(ant,'CMPR','OPERATIONAL')
+    submitMPoint(plugin,mPointName, isOperational(cmprName), 'STRING',mode='OPERATIONAL')
+    mPointName = buildMPointName(ant,'CRYO','OPERATIONAL')
+    submitMPoint(plugin,mPointName, isOperational(cryoName), 'STRING',mode='OPERATIONAL')
+    mPointName = buildMPointName(ant,'FEPS','OPERATIONAL')
+    submitMPoint(plugin,mPointName, isOperational(fepsName), 'STRING',mode='OPERATIONAL')
 
   return int(round(time.time() * 1000))-startTime
 
