@@ -95,10 +95,8 @@ def runLoop(plugin):
     cmprName= 'CONTROL/'+ant+'/CMPR'
     cryoName= 'CONTROL/'+ant+'/FrontEnd/Cryostat'
     print">>>>>>>>>>>", ant , "<<<<<<<<<<<<<<<<"
-    print '\tPSA',  buildMPointName(ant,'PSA','OPERATIONAL'), isOperational(psaName)
-    print '\tPSA',  buildMPointName(ant,'PSA','SHUTDOWN'), isPsShutdown(psaName)
-    print '\tPSD',  buildMPointName(ant,'PSD','OPERATIONAL'), isOperational(psdName)
-    print '\tPSD',  buildMPointName(ant,'PSD','SHUTDOWN'), isPsShutdown(psdName)
+    print '\tPSA',  buildMPointName(ant,'PSA','OPERATIONAL'), isOperational(psaName),  buildMPointName(ant,'PSA','SHUTDOWN'), isPsShutdown(psaName)
+    print '\tPSD',  buildMPointName(ant,'PSD','OPERATIONAL'), isOperational(psdName),  buildMPointName(ant,'PSD','SHUTDOWN'), isPsShutdown(psdName)
     print '\tFEPS', isOperational(fepsName),isFepsShutdown(fepsName)
     print '\tCMPR',  buildMPointName(ant,'CMPR','OPERATIONAL'), isOperational(cmprName)
     print '\tCRYO',  buildMPointName(ant,'CRYO','OPERATIONAL'), isOperational(cryoName)
