@@ -1,16 +1,16 @@
 #! /usr/bin/env python
 
-startTag= '{"id":"'
+startTag= '    {"id":"'
 endTag = '!]", "refreshTime":"60000", "filter":"", "filterOptions":""}'
 
 mPointIds = [
-  'Array-PSA-OPERATIONAL',
-  'Array-PSA-SHUTDOWN',
-  'Array-PSD-OPERATIONAL',
-  'Array-PSD-SHUTDOWN',
-  'Array-CMPR-OPERATIONAL',
-  'Array-CRYO-OPERATIONAL',
-  'Array-FEPS-OPERATIONAL'
+  'Array-PSA-OPERATIONAL-Value',
+  'Array-PSA-SHUTDOWN-Value',
+  'Array-PSD-OPERATIONAL-Value',
+  'Array-PSD-SHUTDOWN-Value',
+  'Array-CMPR-OPERATIONAL-Value',
+  'Array-CRYO-OPERATIONAL-Value',
+  'Array-FEPS-OPERATIONAL-Value'
 ]
 
 DV = ('DV', range(1,26))
