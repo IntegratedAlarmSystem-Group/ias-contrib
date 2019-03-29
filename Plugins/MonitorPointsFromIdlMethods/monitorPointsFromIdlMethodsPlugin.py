@@ -171,6 +171,8 @@ if __name__ == "__main__":
           logger.info("Loop terminated: all data sent in %d msecs",execTime)
       except Exception, e:
           logger.exception("Exception starting the plugin or getting data")
+          time.sleep(loopSecs)
+          continue
       finally:
           try:
               udpPlugin.shutdown()
